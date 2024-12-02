@@ -10,7 +10,10 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-console.log('Environment:', import.meta.env.MODE);
-console.log('Using database URL:', firebaseConfig.databaseURL);
+// Log environment information
+const environment = import.meta.env.MODE;
+console.log(`Running in ${environment} mode`);
+console.log(`Using database: ${firebaseConfig.databaseURL}`);
 
+// Initialize Firebase with environment-specific config
 export const app = initializeApp(firebaseConfig);

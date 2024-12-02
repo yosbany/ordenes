@@ -1,4 +1,4 @@
-import { getAuth, User } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, signOut as firebaseSignOut, User } from 'firebase/auth';
 import { app } from './config';
 
 export const auth = getAuth(app);
@@ -8,17 +8,21 @@ export interface AuthUser extends User {
   email: string | null;
 }
 
-// Mock auth for demo environment
-const mockSignIn = async (email: string, password: string) => {
-  const fakeUser = {
-    uid: 'demo-user',
-    email: email,
-    displayName: 'Demo User'
-  };
-  // @ts-ignore - We're mocking the user object
-  auth.currentUser = fakeUser;
-  return Promise.resolve({ user: fakeUser });
-};
+export async function signIn(email: string, password: string) {
+  try {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    return result.user as AuthUser;
+  } catch (error) {
+    console.error('Sign in error:', error);
+    throw error;
+  }
+}
 
-// Replace the real signIn with mock in demo environment
-auth.signInWithEmailAndPassword = mockSignIn;
+export async function signOut() {
+  try {
+    await firebaseSignOut(auth);
+  } catch (error) {
+    console.error('Sign out error:', error);
+    throw error;
+  }
+}

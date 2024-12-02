@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-import type { AuthUser } from '@/lib/firebase/auth';
+import { auth, signIn, signOut, AuthUser } from '@/lib/firebase/auth';
 import { toast } from 'react-hot-toast';
 
 interface AuthContextType {
@@ -26,20 +25,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsubscribe;
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const handleSignIn = async (email: string, password: string) => {
     try {
-      await auth.signInWithEmailAndPassword(email, password);
+      await signIn(email, password);
       toast.success('¡Bienvenido!');
     } catch (error) {
       console.error('Sign in error:', error);
-      toast.error('Error al iniciar sesión');
+      toast.error('Credenciales inválidas');
       throw error;
     }
   };
 
-  const signOut = async () => {
+  const handleSignOut = async () => {
     try {
-      await auth.signOut();
+      await signOut();
       toast.success('Sesión cerrada');
     } catch (error) {
       console.error('Sign out error:', error);
@@ -51,8 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     user,
     loading,
-    signIn,
-    signOut
+    signIn: handleSignIn,
+    signOut: handleSignOut
   };
 
   return (

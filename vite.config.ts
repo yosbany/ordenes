@@ -25,5 +25,7 @@ export default defineConfig({
         }
       }
     }
-  }
+  },
+  // Load .env.[mode] file based on current mode
+  envDir: process.cwd()
 });
