@@ -12,7 +12,7 @@ import { Orders } from './pages/Orders';
 
 function App() {
   return (
-    <Router basename="/ordenes-de-compra">
+    <Router>
       <AuthProvider>
         <Toaster position="top-right" />
         <Routes>

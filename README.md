@@ -3,7 +3,6 @@
 Sistema web para la gestión de órdenes de compra, desarrollado con React, TypeScript, y Firebase.
 
 ## Características
-   
 
 ### Gestión de Proveedores
 - Registro y mantenimiento de proveedores
@@ -12,7 +11,7 @@ Sistema web para la gestión de órdenes de compra, desarrollado con React, Type
 - Integración con WhatsApp para comunicación directa
 
 ### Gestión de Productos
-- Catálogo completo de productos por proveedor 
+- Catálogo completo de productos por proveedor
 - Sistema de ordenamiento por sectores
 - Control de stock mínimo y deseado
 - Gestión de empaques de compra y venta

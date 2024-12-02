@@ -10,4 +10,7 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
+console.log('Environment:', import.meta.env.MODE);
+console.log('Using database URL:', firebaseConfig.databaseURL);
+
 export const app = initializeApp(firebaseConfig);
