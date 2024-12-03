@@ -2716,5 +2716,5 @@ FIREBASE: `))}restoreState_(){this.tryAuth(),this.tryAppCheck();for(const e of t
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */function Xp(n){xu(tt),ze(new Pe("database",(e,{instanceIdentifier:t})=>{const i=e.getProvider("app").getImmediate(),s=e.getProvider("auth-internal"),r=e.getProvider("app-check-internal");return zp(i,s,r,t)},"PUBLIC").setMultipleInstances(!0)),_e(ir,sr,n),_e(ir,sr,"esm2017")}ne.prototype.simpleListen=function(n,e){this.sendRequest("q",{p:n},e)};ne.prototype.echo=function(n,e){this.sendRequest("echo",{d:n},e)};Xp();export{t_ as a,d_ as b,l_ as c,r_ as d,a_ as e,h_ as f,n_ as g,c_ as h,gc as i,ja as j,e_ as o,s_ as p,u_ as q,i_ as r,Zp as s,o_ as u};
-//# sourceMappingURL=firebase-ExXjQgEh.js.map
+ */function Xp(n){xu(tt),ze(new Pe("database",(e,{instanceIdentifier:t})=>{const i=e.getProvider("app").getImmediate(),s=e.getProvider("auth-internal"),r=e.getProvider("app-check-internal");return zp(i,s,r,t)},"PUBLIC").setMultipleInstances(!0)),_e(ir,sr,n),_e(ir,sr,"esm2017")}ne.prototype.simpleListen=function(n,e){this.sendRequest("q",{p:n},e)};ne.prototype.echo=function(n,e){this.sendRequest("echo",{d:n},e)};Xp();export{t_ as a,d_ as b,l_ as c,r_ as d,a_ as e,ja as f,n_ as g,h_ as h,gc as i,c_ as j,e_ as o,s_ as p,u_ as q,i_ as r,Zp as s,o_ as u};
+//# sourceMappingURL=firebase-CuCkz2wO.js.map
