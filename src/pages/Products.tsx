@@ -8,6 +8,7 @@ import { useProviders } from '@/hooks/useProviders';
 import { useProducts } from '@/hooks/useProducts';
 import { ProductCarousel } from '@/components/products/ProductCarousel';
 import { GlobalProductSearch } from '@/components/products/GlobalProductSearch';
+import { ProviderProductSearch } from '@/components/products/ProviderProductSearch';
 import { FullscreenProductForm } from '@/components/products/FullscreenProductForm';
 import { Product } from '@/types';
 import { getSectorFromOrder, getSequenceFromOrder, calculateNewOrder } from '@/lib/order/utils';
@@ -19,6 +20,7 @@ export function Products() {
   const { providers } = useProviders();
   const [selectedProviderId, setSelectedProviderId] = useState<string>('');
   const { products, loading, addProduct, updateProduct, deleteProduct } = useProducts(selectedProviderId);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,6 +29,18 @@ export function Products() {
   const handleSubmit = async (data: Omit<Product, 'id'>) => {
     setIsSubmitting(true);
     try {
+      // If editing a product from global search, use its providerId
+      const targetProviderId = editingProduct?.providerId || selectedProviderId;
+      
+      if (!targetProviderId) {
+        throw new Error('No provider selected');
+      }
+
+      // Get products for the target provider if different from current selection
+      const targetProducts = targetProviderId !== selectedProviderId 
+        ? await useProducts(targetProviderId).products
+        : products;
+
       if (editingProduct) {
         await updateProduct(editingProduct.id!, data);
         
@@ -36,7 +50,7 @@ export function Products() {
           const position = getSequenceFromOrder(data.order);
           
           const updatedProducts = reorderProducts(
-            products,
+            targetProducts,
             sector,
             position,
             editingProduct.id!
@@ -45,7 +59,7 @@ export function Products() {
           // Update all affected products
           await Promise.all(
             updatedProducts
-              .filter(p => p.order !== products.find(op => op.id === p.id)?.order)
+              .filter(p => p.order !== targetProducts.find(op => op.id === p.id)?.order)
               .map(p => updateProduct(p.id!, { order: p.order }))
           );
         }
@@ -54,7 +68,7 @@ export function Products() {
       } else {
         // For new products, calculate order at the end of the first sector
         const defaultSector = SECTORS[0].code;
-        const sectorProducts = products.filter(p => getSectorFromOrder(p.order) === defaultSector);
+        const sectorProducts = targetProducts.filter(p => getSectorFromOrder(p.order) === defaultSector);
         const newOrder = calculateNewOrder(defaultSector, sectorProducts.length + 1);
         await addProduct({ ...data, order: newOrder });
         toast.success('Producto creado exitosamente');
@@ -73,9 +87,14 @@ export function Products() {
       const sector = getSectorFromOrder(newOrder);
       const position = getSequenceFromOrder(newOrder);
       
+      // Get products for the product's provider if different from current selection
+      const targetProducts = product.providerId !== selectedProviderId 
+        ? await useProducts(product.providerId).products
+        : products;
+
       // Reorder all products in the sector
       const updatedProducts = reorderProducts(
-        products,
+        targetProducts,
         sector,
         position,
         product.id!
@@ -84,7 +103,7 @@ export function Products() {
       // Update all affected products
       await Promise.all(
         updatedProducts
-          .filter(p => p.order !== products.find(op => op.id === p.id)?.order)
+          .filter(p => p.order !== targetProducts.find(op => op.id === p.id)?.order)
           .map(p => updateProduct(p.id!, { order: p.order }))
       );
 
@@ -103,13 +122,18 @@ export function Products() {
     if (!productToDelete) return;
     
     try {
+      // Get products for the product's provider if different from current selection
+      const targetProducts = productToDelete.providerId !== selectedProviderId 
+        ? await useProducts(productToDelete.providerId).products
+        : products;
+
       // First reorder the remaining products
-      const updatedProducts = reorderAfterDelete(products, productToDelete);
+      const updatedProducts = reorderAfterDelete(targetProducts, productToDelete);
       
       // Update orders of affected products
       await Promise.all(
         updatedProducts
-          .filter(p => p.order !== products.find(op => op.id === p.id)?.order)
+          .filter(p => p.order !== targetProducts.find(op => op.id === p.id)?.order)
           .map(p => updateProduct(p.id!, { order: p.order }))
       );
 
@@ -153,7 +177,10 @@ export function Products() {
           <SearchableSelect
             options={providerOptions}
             value={selectedProviderId}
-            onChange={setSelectedProviderId}
+            onChange={(value) => {
+              setSelectedProviderId(value);
+              setFilteredProducts([]);
+            }}
             placeholder="Seleccionar Proveedor"
           />
         </div>
@@ -166,6 +193,17 @@ export function Products() {
         )}
       </div>
 
+      {/* Product Form */}
+      {isFormOpen && (
+        <FullscreenProductForm
+          providerId={editingProduct?.providerId || selectedProviderId}
+          initialData={editingProduct || undefined}
+          onSubmit={handleSubmit}
+          onCancel={handleCloseForm}
+          isLoading={isSubmitting}
+        />
+      )}
+
       {/* Main Content */}
       {selectedProviderId ? (
         loading ? (
@@ -173,26 +211,20 @@ export function Products() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
           </div>
         ) : (
-          <>
-            {isFormOpen && (
-              <FullscreenProductForm
-                providerId={selectedProviderId}
-                initialData={editingProduct || undefined}
-                onSubmit={handleSubmit}
-                onCancel={handleCloseForm}
-                isLoading={isSubmitting}
-              />
-            )}
-
-            {!isFormOpen && (
-              <ProductCarousel
+          !isFormOpen && (
+            <>
+              <ProviderProductSearch
                 products={products}
+                onFilter={setFilteredProducts}
+              />
+              <ProductCarousel
+                products={filteredProducts.length > 0 ? filteredProducts : products}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onOrderChange={handleOrderChange}
               />
-            )}
-          </>
+            </>
+          )
         )
       ) : (
         <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">

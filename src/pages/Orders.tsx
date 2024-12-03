@@ -8,8 +8,11 @@ import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { useProviders } from '@/hooks/useProviders';
 import { useOrders } from '@/hooks/useOrders';
 import { useProducts } from '@/hooks/useProducts';
+import { useGlobalOrders } from '@/hooks/useGlobalOrders';
+import { useGlobalProducts } from '@/hooks/useGlobalProducts';
 import { OrderList } from '@/components/orders/OrderList';
 import { OrderDetails } from '@/components/orders/OrderDetails';
+import { OrderListSearch } from '@/components/orders/OrderListSearch';
 import { FullscreenOrderEditor } from '@/components/orders/FullscreenOrderEditor';
 import { Order, Product } from '@/types';
 import { createOrder } from '@/lib/order/calculations';
@@ -27,6 +30,8 @@ export function Orders() {
   const [selectedProviderId, setSelectedProviderId] = useState<string>('');
   const { orders, loading, addOrder, updateOrder, deleteOrder } = useOrders(selectedProviderId);
   const { products, updateProduct } = useProducts(selectedProviderId);
+  const { orders: globalOrders, loading: globalOrdersLoading } = useGlobalOrders();
+  const { products: globalProducts, loading: globalProductsLoading } = useGlobalProducts();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [viewingOrder, setViewingOrder] = useState<ViewingOrderInfo | null>(null);
@@ -155,6 +160,11 @@ export function Orders() {
   };
 
   const handleSelectOrder = (order: Order, orderNumber: number) => {
+    // Set provider ID if not already set
+    if (!selectedProviderId) {
+      setSelectedProviderId(order.providerId);
+    }
+
     const initialProducts = new Map();
     order.items.forEach(item => {
       initialProducts.set(item.productId, item.quantity);
@@ -173,8 +183,18 @@ export function Orders() {
     label: provider.commercialName
   }));
 
+  const isLoading = loading || globalOrdersLoading || globalProductsLoading;
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Global Order Search */}
+      <OrderListSearch
+        orders={globalOrders}
+        products={globalProducts}
+        onOrderSelect={handleSelectOrder}
+      />
+
+      {/* Provider Selection and Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex-1 max-w-xs">
           <SearchableSelect
@@ -193,52 +213,44 @@ export function Orders() {
         )}
       </div>
 
-      {selectedProviderId ? (
-        loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-          </div>
-        ) : (
-          <>
-            {isFormOpen && selectedProvider && (
-              <FullscreenOrderEditor
-                products={products}
-                selectedProducts={selectedProducts}
-                onProductSelect={handleProductSelect}
-                onProductUpdate={updateProduct}
-                onConfirm={handleSubmit}
-                onCancel={handleCloseForm}
-                isSubmitting={isSubmitting}
-                provider={selectedProvider}
-              />
-            )}
-            {viewingOrder && selectedProvider && (
-              <OrderDetails
-                order={viewingOrder.order}
-                orderNumber={viewingOrder.orderNumber}
-                products={products}
-                provider={selectedProvider}
-                onClose={() => setViewingOrder(null)}
-              />
-            )}
-            {!isFormOpen && !viewingOrder && (
-              <OrderList
-                orders={orders}
-                products={products}
-                provider={selectedProvider}
-                onSelect={handleSelectOrder}
-                onDelete={handleDelete}
-                onViewDetails={handleViewDetails}
-              />
-            )}
-          </>
-        )
-      ) : (
-        <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-          <p className="text-gray-500 text-center px-4">
-            Seleccione un proveedor para ver sus órdenes
-          </p>
+      {isLoading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
         </div>
+      ) : (
+        <>
+          {isFormOpen && selectedProvider && (
+            <FullscreenOrderEditor
+              products={products}
+              selectedProducts={selectedProducts}
+              onProductSelect={handleProductSelect}
+              onProductUpdate={updateProduct}
+              onConfirm={handleSubmit}
+              onCancel={handleCloseForm}
+              isSubmitting={isSubmitting}
+              provider={selectedProvider}
+            />
+          )}
+          {viewingOrder && selectedProvider && (
+            <OrderDetails
+              order={viewingOrder.order}
+              orderNumber={viewingOrder.orderNumber}
+              products={globalProducts}
+              provider={selectedProvider}
+              onClose={() => setViewingOrder(null)}
+            />
+          )}
+          {!isFormOpen && !viewingOrder && selectedProviderId && (
+            <OrderList
+              orders={orders}
+              products={products}
+              provider={selectedProvider}
+              onSelect={handleSelectOrder}
+              onDelete={handleDelete}
+              onViewDetails={handleViewDetails}
+            />
+          )}
+        </>
       )}
 
       <Dialog

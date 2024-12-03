@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Product, Provider } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { ProductSelector } from './ProductSelector';
-import { ProductSearch } from './ProductSearch';
+import { OrderProductSearch } from './OrderProductSearch';
 import { formatPrice } from '@/lib/utils';
+import { useOrders } from '@/hooks/useOrders';
 
 interface FullscreenOrderEditorProps {
   products: Product[];
@@ -27,6 +28,7 @@ export function FullscreenOrderEditor({
   provider
 }: FullscreenOrderEditorProps) {
   const [allProducts, setAllProducts] = useState<Product[]>(products);
+  const { orders } = useOrders(provider.id);
 
   // Update allProducts when products change
   useEffect(() => {
@@ -61,7 +63,7 @@ export function FullscreenOrderEditor({
     <div className="fixed inset-0 bg-white z-50 flex flex-col">
       {/* Header */}
       <div className="border-b bg-white">
-        <div className="flex items-center justify-between px-3 h-14">
+        <div className="flex items-center justify-between px-2 h-14">
           <div className="flex-1 min-w-0">
             <h2 className="text-lg font-semibold truncate">
               {provider.legalName && provider.legalName !== provider.commercialName ? (
@@ -100,9 +102,10 @@ export function FullscreenOrderEditor({
       {/* Content */}
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto">
-          <div className="container mx-auto max-w-3xl px-3 py-4">
-            <ProductSearch
-              currentProducts={products}
+          <div className="container mx-auto max-w-3xl px-2 py-4">
+            <OrderProductSearch
+              products={products}
+              orders={orders}
               onProductSelect={handleExternalProductSelect}
             />
             <ProductSelector
