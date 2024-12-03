@@ -35,13 +35,26 @@ export function formatProductLines(
     return productA.order - productB.order;
   });
 
+  // For WhatsApp, find the longest quantity + packaging combination
+  let maxPrefixLength = 0;
+  if (isWhatsApp) {
+    maxPrefixLength = sortedItems.reduce((max, item) => {
+      const product = products.find(p => p.id === item.productId);
+      if (!product) return max;
+      const prefixLength = `${item.quantity} ${product.purchasePackaging}`.length;
+      return Math.max(max, prefixLength);
+    }, 0);
+  }
+
   return sortedItems.map(item => {
     const product = products.find(p => p.id === item.productId);
     if (!product) return { content: '' };
 
     if (isWhatsApp) {
-      // For WhatsApp: bullet point + quantity + packaging - product name
-      const prefix = `• *${item.quantity} ${product.purchasePackaging}* - `;
+      // For WhatsApp: bullet point + padded quantity + packaging - product name
+      const quantityPackaging = `${item.quantity} ${product.purchasePackaging}`;
+      const padding = ' '.repeat(maxPrefixLength - quantityPackaging.length);
+      const prefix = `• *${quantityPackaging}*${padding} - `;
       return {
         content: product.name,
         prefix
@@ -89,7 +102,7 @@ export function formatReport(
   const formattedLines = formatProductLines(products, order.items, isWhatsApp);
 
   if (isWhatsApp) {
-    // WhatsApp format with bullet points
+    // WhatsApp format with bullet points and aligned descriptions
     const alignedItems = formattedLines.map(line => 
       `${line.prefix || ''}${line.content}`
     );

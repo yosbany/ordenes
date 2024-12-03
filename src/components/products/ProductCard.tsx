@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Package, Archive, ArrowUpDown, Barcode } from 'lucide-react';
+import { Package, Archive, ArrowUpDown, Barcode, Tag } from 'lucide-react';
 import { Product } from '@/types';
 import { formatPrice } from '@/lib/utils';
 import { formatOrderNumber, getSectorFromOrder } from '@/lib/order/utils';
@@ -68,6 +68,21 @@ export function ProductCard({
                     {formatOrderNumber(product.order)}
                   </button>
                 </div>
+                {product.tags && product.tags.length > 0 && (
+                  <div className="col-span-2 flex items-start gap-1.5 mt-1">
+                    <Tag className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <div className="flex flex-wrap gap-1">
+                      {product.tags.map(tag => (
+                        <span
+                          key={tag}
+                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             <span className="text-lg font-bold text-blue-600 whitespace-nowrap">

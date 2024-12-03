@@ -121,13 +121,13 @@ export function OrderActions({ order, products, provider }: OrderActionsProps) {
 
   return (
     <>
-      <div className="flex space-x-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         {provider.phone && (
           <Button
             type="button"
             variant="outline"
             onClick={() => setIsWhatsAppDialogOpen(true)}
-            className="text-green-600 hover:text-green-700 hover:bg-green-50"
+            className="text-green-600 hover:text-green-700 hover:bg-green-50 w-full sm:w-auto"
             disabled={isProcessing}
           >
             <Share2 className="w-4 h-4 mr-2" />
@@ -139,6 +139,7 @@ export function OrderActions({ order, products, provider }: OrderActionsProps) {
           variant="outline"
           onClick={() => setIsPrintDialogOpen(true)}
           disabled={isProcessing}
+          className="w-full sm:w-auto"
         >
           <Printer className="w-4 h-4 mr-2" />
           Imprimir
@@ -158,17 +159,18 @@ export function OrderActions({ order, products, provider }: OrderActionsProps) {
             provider={provider}
             preview={true}
           />
-          <div className="flex justify-end space-x-2">
+          <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
             <Button
               variant="outline"
               onClick={() => setIsWhatsAppDialogOpen(false)}
               disabled={isProcessing}
+              className="w-full sm:w-auto"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleWhatsAppConfirm}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
               isLoading={isProcessing}
             >
               Enviar
@@ -190,17 +192,19 @@ export function OrderActions({ order, products, provider }: OrderActionsProps) {
             provider={provider}
             preview={false}
           />
-          <div className="flex justify-end space-x-2">
+          <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
             <Button
               variant="outline"
               onClick={() => setIsPrintDialogOpen(false)}
               disabled={isProcessing}
+              className="w-full sm:w-auto"
             >
               Cancelar
             </Button>
             <Button 
               onClick={handlePrintConfirm}
               isLoading={isProcessing}
+              className="w-full sm:w-auto"
             >
               Imprimir
             </Button>

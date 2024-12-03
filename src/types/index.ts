@@ -19,6 +19,7 @@ export interface Product {
   desiredStock: number;
   minPackageStock: number;
   providerId: string;
+  tags: string[];
 }
 
 export interface Order {

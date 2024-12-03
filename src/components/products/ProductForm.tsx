@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { TagInput } from '@/components/ui/TagInput';
+import { TagsInput } from '@/components/ui/TagsInput';
 import { ArrowUpDown } from 'lucide-react';
 import { Product } from '@/types';
 import { useProviders } from '@/hooks/useProviders';
 import { usePackaging } from '@/hooks/usePackaging';
+import { useTags } from '@/hooks/useTags';
 import { useProducts } from '@/hooks/useProducts';
 import { validateProductStock, showValidationError } from '@/lib/validation';
 import { ProductOrderModal } from './ProductOrderModal';
@@ -31,6 +33,7 @@ export function ProductForm({
 }: ProductFormProps) {
   const { providers } = useProviders();
   const { packagingSuggestions, addPackaging } = usePackaging();
+  const { tags: tagSuggestions, addTag } = useTags();
   const { products } = useProducts(initialProviderId);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   
@@ -48,6 +51,7 @@ export function ProductForm({
     desiredStock: initialData?.desiredStock || 0,
     minPackageStock: initialData?.minPackageStock || 0,
     providerId: initialData?.providerId || initialProviderId,
+    tags: initialData?.tags || []
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,6 +69,16 @@ export function ProductForm({
   const handleOrderChange = async (product: Product, newOrder: number) => {
     setFormData(prev => ({ ...prev, order: newOrder }));
     setIsOrderModalOpen(false);
+  };
+
+  const handleTagsChange = async (tags: string[]) => {
+    setFormData(prev => ({ ...prev, tags }));
+    
+    // Add any new tags to the suggestions
+    const newTags = tags.filter(tag => !tagSuggestions.includes(tag));
+    for (const tag of newTags) {
+      await addTag(tag);
+    }
   };
 
   const sectorColor = getSectorColor(getSectorFromOrder(formData.order));
@@ -122,6 +136,13 @@ export function ProductForm({
           placeholder="Escriba y presione Enter"
         />
       </div>
+
+      <TagsInput
+        label="Etiquetas"
+        value={formData.tags}
+        onChange={handleTagsChange}
+        suggestions={tagSuggestions}
+      />
 
       {/* Order Display */}
       <div 

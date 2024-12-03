@@ -22,7 +22,7 @@ export function FullscreenProductForm({
     <div className="fixed inset-0 bg-white z-50 flex flex-col">
       {/* Header */}
       <div className="border-b bg-white">
-        <div className="flex items-center justify-between px-4 h-14">
+        <div className="flex items-center justify-between px-3 h-14">
           <h2 className="text-lg font-semibold">
             {initialData ? 'Editar' : 'Nuevo'} Producto
           </h2>
@@ -39,7 +39,7 @@ export function FullscreenProductForm({
       {/* Content */}
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto">
-          <div className="container mx-auto max-w-2xl px-4 py-6">
+          <div className="container mx-auto max-w-2xl px-3 py-4">
             <ProductForm
               providerId={providerId}
               initialData={initialData}

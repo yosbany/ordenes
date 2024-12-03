@@ -9,10 +9,16 @@ import { useProviders } from '@/hooks/useProviders';
 import { useOrders } from '@/hooks/useOrders';
 import { useProducts } from '@/hooks/useProducts';
 import { OrderList } from '@/components/orders/OrderList';
+import { OrderDetails } from '@/components/orders/OrderDetails';
 import { FullscreenOrderEditor } from '@/components/orders/FullscreenOrderEditor';
 import { Order, Product } from '@/types';
 import { createOrder } from '@/lib/order/calculations';
 import { validateOrder } from '@/lib/order/validation';
+
+interface ViewingOrderInfo {
+  order: Order;
+  orderNumber: number;
+}
 
 export function Orders() {
   const navigate = useNavigate();
@@ -23,6 +29,7 @@ export function Orders() {
   const { products, updateProduct } = useProducts(selectedProviderId);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [viewingOrder, setViewingOrder] = useState<ViewingOrderInfo | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<Map<string, number>>(new Map());
@@ -147,7 +154,7 @@ export function Orders() {
     }
   };
 
-  const handleSelectOrder = (order: Order) => {
+  const handleSelectOrder = (order: Order, orderNumber: number) => {
     const initialProducts = new Map();
     order.items.forEach(item => {
       initialProducts.set(item.productId, item.quantity);
@@ -155,6 +162,10 @@ export function Orders() {
     setSelectedProducts(initialProducts);
     setSelectedOrder(order);
     setIsFormOpen(true);
+  };
+
+  const handleViewDetails = (order: Order, orderNumber: number) => {
+    setViewingOrder({ order, orderNumber });
   };
 
   const providerOptions = providers.map(provider => ({
@@ -201,13 +212,23 @@ export function Orders() {
                 provider={selectedProvider}
               />
             )}
-            {!isFormOpen && (
+            {viewingOrder && selectedProvider && (
+              <OrderDetails
+                order={viewingOrder.order}
+                orderNumber={viewingOrder.orderNumber}
+                products={products}
+                provider={selectedProvider}
+                onClose={() => setViewingOrder(null)}
+              />
+            )}
+            {!isFormOpen && !viewingOrder && (
               <OrderList
                 orders={orders}
                 products={products}
                 provider={selectedProvider}
                 onSelect={handleSelectOrder}
                 onDelete={handleDelete}
+                onViewDetails={handleViewDetails}
               />
             )}
           </>

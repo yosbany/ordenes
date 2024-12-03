@@ -61,8 +61,8 @@ export function FullscreenOrderEditor({
     <div className="fixed inset-0 bg-white z-50 flex flex-col">
       {/* Header */}
       <div className="border-b bg-white">
-        <div className="flex items-center justify-between px-4 h-14">
-          <div className="flex items-center gap-4 min-w-0">
+        <div className="flex items-center justify-between px-3 h-14">
+          <div className="flex-1 min-w-0">
             <h2 className="text-lg font-semibold truncate">
               {provider.legalName && provider.legalName !== provider.commercialName ? (
                 <span className="text-gray-500">
@@ -72,12 +72,12 @@ export function FullscreenOrderEditor({
               <span>{provider.commercialName}</span>
             </h2>
             {selectedProducts.size > 0 && (
-              <div className="text-lg font-bold text-blue-600">
-                {formatPrice(total)}
+              <div className="text-sm text-gray-600">
+                Importe Total: <span className="font-medium text-blue-600">{formatPrice(total)}</span>
               </div>
             )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               onClick={onCancel}
@@ -100,7 +100,7 @@ export function FullscreenOrderEditor({
       {/* Content */}
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto">
-          <div className="container mx-auto max-w-3xl px-4 py-6">
+          <div className="container mx-auto max-w-3xl px-3 py-4">
             <ProductSearch
               currentProducts={products}
               onProductSelect={handleExternalProductSelect}

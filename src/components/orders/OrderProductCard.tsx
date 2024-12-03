@@ -94,11 +94,7 @@ export function OrderProductCard({
                 <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-3">
                   <div className="flex items-center">
                     <Package className="w-4 h-4 mr-1.5 flex-shrink-0" />
-                    <span>Compra: {product.purchasePackaging}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Package className="w-4 h-4 mr-1.5 flex-shrink-0" />
-                    <span>Venta: {product.salePackaging}</span>
+                    <span>{product.purchasePackaging}</span>
                   </div>
                   <div className="flex items-center">
                     <Archive className="w-4 h-4 mr-1.5 flex-shrink-0" />

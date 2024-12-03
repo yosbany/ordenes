@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useProviders } from '@/hooks/useProviders';
 import { Card } from '@/components/ui/Card';
-import { Package, Calendar, Users, BarChart2, TrendingUp, RepeatIcon } from 'lucide-react';
+import { Package, Calendar, Users, BarChart2, TrendingUp, Archive, ShoppingCart } from 'lucide-react';
 import { WeekDay } from '@/types';
 import { useTodayOrdersCount } from '@/hooks/useTodayOrdersCount';
 import { useAnalytics } from '@/hooks/useAnalytics';
@@ -27,7 +27,7 @@ export function Dashboard() {
   const today = new Date();
   const currentDayName = WEEKDAY_MAP[format(today, 'EEEE', { locale: es })];
   const { count: todayOrdersCount, loading: ordersLoading } = useTodayOrdersCount(providers);
-  const { weeklyOrders, topProducts, productFrequency, loading: analyticsLoading } = useAnalytics();
+  const { weeklyOrders, topProducts, loading: analyticsLoading } = useAnalytics();
   const [isTopProductsModalOpen, setIsTopProductsModalOpen] = useState(false);
   
   // Filter providers that have orders scheduled for today
@@ -41,27 +41,36 @@ export function Dashboard() {
   // Get most ordered product
   const topProduct = topProducts[0];
 
-  // Get most frequent product
-  const mostFrequentProduct = productFrequency[0];
+  // Calculate total orders
+  const totalOrders = weeklyOrders.reduce((sum, week) => sum + week.count, 0);
+
+  // Calculate total products
+  const totalProducts = topProducts.reduce((sum, product) => sum + product.totalQuantity, 0);
 
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {/* Date Card */}
         <Card>
           <Card.Header className="!p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Proveedores</p>
-                <h3 className="text-2xl font-bold mt-1">{providers.length}</h3>
+                <div className="text-2xl font-bold capitalize">
+                  {format(today, 'EEEE', { locale: es })}
+                </div>
+                <div className="text-sm text-gray-600 mt-1">
+                  {format(today, 'dd/MM/yyyy')}
+                </div>
               </div>
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Users className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <Calendar className="w-5 h-5 text-orange-600" />
               </div>
             </div>
           </Card.Header>
         </Card>
 
+        {/* Today's Orders Card */}
         <Card>
           <Card.Header className="!p-4">
             <div className="flex items-center justify-between">
@@ -82,24 +91,7 @@ export function Dashboard() {
           </Card.Header>
         </Card>
 
-        <Card>
-          <Card.Header className="!p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-2xl font-bold capitalize">
-                  {format(today, 'EEEE', { locale: es })}
-                </div>
-                <div className="text-sm text-gray-600 mt-1">
-                  {format(today, 'dd/MM/yyyy')}
-                </div>
-              </div>
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Calendar className="w-5 h-5 text-orange-600" />
-              </div>
-            </div>
-          </Card.Header>
-        </Card>
-
+        {/* Weekly Orders Card */}
         <AnalyticsCard
           title="Órdenes Semanales"
           icon={<BarChart2 className="w-5 h-5 text-blue-600" />}
@@ -108,6 +100,25 @@ export function Dashboard() {
           <h3 className="text-2xl font-bold mt-1">{totalWeeklyOrders}</h3>
         </AnalyticsCard>
 
+        {/* Total Products Card */}
+        <AnalyticsCard
+          title="Total Productos"
+          icon={<Archive className="w-5 h-5 text-indigo-600" />}
+          loading={analyticsLoading}
+        >
+          <h3 className="text-2xl font-bold mt-1">{totalProducts}</h3>
+        </AnalyticsCard>
+
+        {/* Total Orders Card */}
+        <AnalyticsCard
+          title="Total Órdenes"
+          icon={<ShoppingCart className="w-5 h-5 text-amber-600" />}
+          loading={analyticsLoading}
+        >
+          <h3 className="text-2xl font-bold mt-1">{totalOrders}</h3>
+        </AnalyticsCard>
+
+        {/* Most Bought Product Card */}
         <AnalyticsCard
           title="Producto Más Comprado"
           icon={<TrendingUp className="w-5 h-5 text-green-600" />}
@@ -120,22 +131,6 @@ export function Dashboard() {
               <h3 className="text-lg font-bold break-words">{topProduct.name}</h3>
               <p className="text-sm text-gray-500 mt-1">
                 {topProduct.totalQuantity} unidades en {topProduct.orderCount} órdenes
-              </p>
-            </div>
-          )}
-        </AnalyticsCard>
-
-        <AnalyticsCard
-          title="Producto Más Frecuente"
-          icon={<RepeatIcon className="w-5 h-5 text-indigo-600" />}
-          loading={analyticsLoading}
-          className="lg:col-span-2"
-        >
-          {mostFrequentProduct && (
-            <div className="mt-1">
-              <h3 className="text-lg font-bold break-words">{mostFrequentProduct.name}</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                Pedido {mostFrequentProduct.frequency} veces
               </p>
             </div>
           )}
