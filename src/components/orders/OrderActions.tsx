@@ -3,11 +3,12 @@ import { Share2, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Order, Product, Provider } from '@/types';
-import { formatOrderReport } from '@/lib/utils/formatting/orderReport';
 import { formatWhatsAppReport } from '@/lib/utils/formatting/whatsappReport';
 import { generateWhatsAppLink } from '@/lib/utils';
+import { generatePrintTemplate } from '@/lib/utils/formatting/printTemplate';
 import { useOrders } from '@/hooks/useOrders';
 import { OrderSummary } from './OrderSummary';
+import { toast } from 'react-hot-toast';
 
 interface OrderActionsProps {
   order: Order;
@@ -21,7 +22,6 @@ export function OrderActions({ order, products, provider }: OrderActionsProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const { updateOrder } = useOrders(provider?.id);
 
-  // If no provider is available, don't render anything
   if (!provider) {
     return null;
   }
@@ -58,70 +58,19 @@ export function OrderActions({ order, products, provider }: OrderActionsProps) {
         status: 'completed'
       });
       
-      const content = formatOrderReport(order, products, provider);
-      const printWindow = window.open('', '_blank');
+      const template = generatePrintTemplate(order, products);
+      const printWindow = window.open('', '_blank', 'width=300,height=600,scrollbars=yes');
+      
       if (!printWindow) {
         throw new Error('No se pudo crear la ventana de impresión');
       }
 
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="UTF-8">
-            <title>Orden - ${provider.commercialName}</title>
-            <style>
-              @page {
-                size: 80mm auto;
-                margin: 0;
-              }
-              @media print {
-                body {
-                  width: 80mm;
-                  margin: 0;
-                  padding: 8px;
-                  font-family: monospace;
-                  font-size: 12px;
-                  line-height: 1.2;
-                }
-                pre {
-                  margin: 0;
-                  white-space: pre-wrap;
-                  font-family: inherit;
-                  font-size: inherit;
-                }
-              }
-              body {
-                font-family: monospace;
-                font-size: 12px;
-                line-height: 1.2;
-                margin: 0;
-                padding: 8px;
-                width: 80mm;
-              }
-              pre {
-                margin: 0;
-                white-space: pre-wrap;
-                font-family: inherit;
-                font-size: inherit;
-              }
-            </style>
-          </head>
-          <body>
-            <pre>${content}</pre>
-            <script>
-              window.onload = function() {
-                window.print();
-                setTimeout(function() {
-                  window.close();
-                }, 500);
-              };
-            </script>
-          </body>
-        </html>
-      `);
-
+      printWindow.document.write(template);
       printWindow.document.close();
+      
+      // Focus the new window
+      printWindow.focus();
+
       setIsPrintDialogOpen(false);
     } catch (error) {
       console.error('Error printing order:', error);

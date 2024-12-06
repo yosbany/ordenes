@@ -139,7 +139,7 @@ export function ProductForm({
         />
 
         <TagInput
-          label="Empaque de Venta (opcional)"
+          label="Empaque de Venta"
           value={formData.salePackaging}
           onChange={async (packaging) => {
             updateField('salePackaging', packaging.toUpperCase());
