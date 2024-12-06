@@ -12,7 +12,211 @@ import{j as t,n as N,X as be,M as Rr,L as Ot,a as Ir,U as _t,P as Ae,S as ut,b a
                 ${i>=f||d?"bg-white/50 text-gray-400 cursor-not-allowed":"bg-white text-gray-700 hover:bg-white/80"}
               `,children:t.jsx(Yr,{className:"w-6 h-6"})})]})}),t.jsxs("div",{className:"grid grid-cols-2 gap-4",children:[t.jsxs("div",{className:`rounded-lg p-4 ${u?"border bg-white":"bg-gray-50 border-2 border-dashed"}`,children:[t.jsx("div",{className:"text-xs text-gray-500 mb-1",children:"Anterior"}),u?t.jsxs(t.Fragment,{children:[t.jsx("div",{className:"text-sm font-medium text-gray-900 mb-1",children:u.name}),t.jsx("div",{className:`text-xs ${v.text}`,children:Y(u.order)})]}):t.jsx("div",{className:"text-sm text-gray-400",children:"No hay producto anterior"})]}),t.jsxs("div",{className:`rounded-lg p-4 ${h?"border bg-white":"bg-gray-50 border-2 border-dashed"}`,children:[t.jsx("div",{className:"text-xs text-gray-500 mb-1",children:"Siguiente"}),h?t.jsxs(t.Fragment,{children:[t.jsx("div",{className:"text-sm font-medium text-gray-900 mb-1",children:h.name}),t.jsx("div",{className:`text-xs ${v.text}`,children:Y(h.order)})]}):t.jsx("div",{className:"text-sm text-gray-400",children:"No hay producto siguiente"})]})]}),t.jsxs("div",{className:"flex justify-end gap-2",children:[t.jsx(k,{type:"button",variant:"outline",onClick:r,disabled:d,children:"Cancelar"}),t.jsx(k,{onClick:b,disabled:d,isLoading:d,children:"Confirmar"})]})]})})}function Sr({providerId:e,initialData:r,onSubmit:s,onCancel:n,isLoading:a}){const{providers:o}=we(),{packagingSuggestions:i,addPackaging:c}=So(),{tags:l,addTag:d}=Co(),{products:m}=Ct(e),{suggestedSku:f,loading:u}=ko(),[h,g]=p.useState(!1),{formData:v,updateField:x,handleProviderChange:y,handleSubmit:b,isSubmitting:w,errors:j}=Eo({initialData:r,providerId:e,onSubmit:s}),T=async(C,P)=>{x("order",P),g(!1)},R=async C=>{x("tags",C);const P=C.filter(W=>!l.includes(W));for(const W of P)await d(W)},z=Qe(_(v.order));return t.jsxs("form",{onSubmit:b,className:"space-y-6",children:[t.jsx(A,{label:"Nombre del producto",value:v.name,onChange:C=>x("name",C.target.value.toUpperCase()),error:j.name,required:!0}),t.jsxs("div",{className:"space-y-2",children:[t.jsx(A,{label:"SKU",value:v.sku,onChange:C=>x("sku",C.target.value.toUpperCase()),error:j.sku,required:!0}),!r&&!u&&f&&t.jsxs("p",{className:"text-sm text-blue-600",children:["SKU sugerido: ",f]})]}),t.jsxs("div",{className:"grid grid-cols-1 md:grid-cols-2 gap-4",children:[t.jsxs("div",{className:"space-y-2",children:[t.jsx("label",{className:"block text-sm font-medium text-gray-700",children:"Proveedor"}),t.jsx("select",{value:v.providerId,onChange:C=>y(C.target.value),className:"w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500",children:o.map(C=>t.jsx("option",{value:C.id,children:C.commercialName},C.id))})]}),t.jsx(A,{label:"Código de proveedor",value:v.supplierCode,onChange:C=>x("supplierCode",C.target.value.toUpperCase()),placeholder:"Código asignado por el proveedor"})]}),t.jsxs("div",{className:"grid grid-cols-2 gap-4",children:[t.jsx(Ht,{label:"Empaque de Compra",value:v.purchasePackaging,onChange:async C=>{x("purchasePackaging",C.toUpperCase()),i.includes(C.toUpperCase())||await c(C)},onRemove:()=>x("purchasePackaging",""),suggestions:i,placeholder:"Escriba y presione Enter",error:j.purchasePackaging,required:!0}),t.jsx(Ht,{label:"Empaque de Venta",value:v.salePackaging,onChange:async C=>{x("salePackaging",C.toUpperCase()),i.includes(C.toUpperCase())||await c(C)},onRemove:()=>x("salePackaging",""),suggestions:i,placeholder:"Escriba y presione Enter",error:j.salePackaging})]}),t.jsx(Po,{label:"Etiquetas",value:v.tags,onChange:R,suggestions:l}),t.jsx("div",{className:`rounded-lg p-4 border cursor-pointer transition-colors ${z.bg} ${z.border} hover:opacity-90`,onClick:()=>g(!0),children:t.jsxs("div",{className:"flex items-center justify-between",children:[t.jsxs("div",{children:[t.jsx("label",{className:`text-sm font-medium ${z.text}`,children:"Orden del Producto"}),t.jsx("div",{className:`text-lg font-bold mt-1 ${z.text}`,children:Ye(v.order)})]}),t.jsx(ft,{className:`w-5 h-5 ${z.text}`})]})}),t.jsx(A,{label:"Precio",value:v.price,onChange:C=>x("price",parseFloat(C.target.value)||0),error:j.price,min:0,required:!0,isCurrency:!0}),t.jsxs("div",{className:"grid grid-cols-2 gap-4",children:[t.jsx(A,{label:"Stock mínimo",type:"number",value:v.minPackageStock,onChange:C=>x("minPackageStock",parseInt(C.target.value)||0),error:j.minPackageStock,min:0,required:!0}),t.jsx(A,{label:"Stock deseado",type:"number",value:v.desiredStock,onChange:C=>x("desiredStock",parseInt(C.target.value)||0),error:j.desiredStock,min:0,required:!0})]}),t.jsxs("div",{className:"flex justify-end space-x-4",children:[t.jsx(k,{type:"button",variant:"outline",onClick:n,children:"Cancelar"}),t.jsxs(k,{type:"submit",isLoading:a||w,children:[r?"Actualizar":"Crear"," Producto"]})]}),r&&t.jsx(To,{isOpen:h,onClose:()=>g(!1),product:r,products:m,onOrderChange:T})]})}function Cr({providerId:e,initialData:r,onSubmit:s,onCancel:n,isLoading:a}){return t.jsxs("div",{className:"fixed inset-0 bg-white z-50 flex flex-col",children:[t.jsx("div",{className:"border-b bg-white",children:t.jsxs("div",{className:"flex items-center justify-between px-3 h-14",children:[t.jsxs("h2",{className:"text-lg font-semibold",children:[r?"Editar":"Nuevo"," Producto"]}),t.jsx("button",{onClick:n,disabled:a,className:"p-2 hover:bg-gray-100 rounded-full transition-colors",children:t.jsx(be,{className:"w-5 h-5"})})]})}),t.jsx("div",{className:"flex-1 overflow-hidden",children:t.jsx("div",{className:"h-full overflow-y-auto",children:t.jsx("div",{className:"container mx-auto max-w-2xl px-3 py-4",children:t.jsx(Sr,{providerId:e,initialData:r,onSubmit:s,onCancel:n,isLoading:a})})})})]})}function Ro({product:e,onEdit:r,onDelete:s,providerId:n}){const[a,o]=Xe.useState(!1),[i,c]=Xe.useState(!1),l=async d=>{c(!0);try{await r(e),o(!1)}finally{c(!1)}};return t.jsxs(t.Fragment,{children:[t.jsx("div",{className:"bg-gradient-to-br from-gray-50 to-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-4",children:t.jsxs("div",{className:"space-y-4",children:[t.jsx("h3",{className:"text-lg font-semibold text-gray-900 truncate",children:e.name}),t.jsxs("div",{className:"grid grid-cols-2 gap-3 text-sm text-gray-600",children:[t.jsxs("div",{className:"flex items-center",children:[t.jsx(Ae,{className:"w-4 h-4 mr-1.5 flex-shrink-0 text-gray-500"}),t.jsx("span",{className:"truncate",children:e.purchasePackaging})]}),t.jsxs("div",{className:"flex items-center",children:[t.jsx(mt,{className:"w-4 h-4 mr-1.5 flex-shrink-0 text-gray-500"}),t.jsxs("span",{children:["Stock: ",e.minPackageStock," - ",e.desiredStock]})]})]}),t.jsxs("div",{className:"flex items-center text-sm text-gray-500",children:[t.jsx(ft,{className:"w-4 h-4 mr-1.5 text-gray-400"}),t.jsxs("span",{children:["Orden: ",Ma(e.order)]})]}),t.jsxs("div",{className:"flex items-center justify-between gap-2 pt-2 border-t",children:[t.jsx("div",{className:"text-xl font-bold text-blue-600",children:ye(e.price)}),t.jsxs("div",{className:"flex gap-2",children:[t.jsxs(k,{variant:"outline",size:"sm",onClick:()=>o(!0),children:[t.jsx(ht,{className:"w-4 h-4 mr-2"}),"Editar"]}),t.jsxs(k,{variant:"outline",size:"sm",onClick:()=>s(e),className:"text-red-600 hover:text-red-700 hover:bg-red-50",children:[t.jsx(Kt,{className:"w-4 h-4 mr-2"}),"Eliminar"]})]})]})]})}),a&&t.jsx(Cr,{providerId:n,initialData:e,onSubmit:l,onCancel:()=>o(!1),isLoading:i})]})}function Io(e){const[r,s]=p.useState(!1);return p.useEffect(()=>{const n=window.matchMedia(e);s(n.matches);const a=o=>{s(o.matches)};return n.addEventListener("change",a),()=>n.removeEventListener("change",a)},[e]),r}function Do({products:e,onEdit:r,onDelete:s,onOrderChange:n,customRender:a}){const o=Io("(min-width: 1024px)"),i=[...e].sort((l,d)=>l.order-d.order),c=l=>a?a(l):t.jsx(Ro,{product:l,products:i,onEdit:r,onDelete:s,onOrderChange:n},l.id);return o?t.jsx("div",{className:"grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3",children:i.map(l=>t.jsx("div",{children:c(l)},l.id))}):t.jsx("div",{className:"space-y-3",children:i.map(l=>t.jsx("div",{children:c(l)},l.id))})}function Lo({onProductSelect:e}){const[r,s]=p.useState(""),[n,a]=p.useState([]),[o,i]=p.useState([]),[c,l]=p.useState({}),[d,m]=p.useState(!0);p.useEffect(()=>{(async()=>{try{const[h,g]=await Promise.all([U(E(O,"products")),U(E(O,"providers"))]);if(h.exists()){const v=h.val(),x=Object.entries(v).map(([y,b])=>({id:y,...b}));i(x)}if(g.exists()){const v=g.val();l(v)}}catch(h){console.error("Error fetching data:",h),N.error("Error al buscar productos")}finally{m(!1)}})()},[]),p.useEffect(()=>{if(!r.trim()){a([]);return}const u=r.toLowerCase(),h=o.filter(g=>{var v;return g.name.toLowerCase().includes(u)||Ye(g.order).toLowerCase().includes(u)||((v=g.tags)==null?void 0:v.some(x=>x.toLowerCase().includes(u)))}).map(g=>({...g,provider:c[g.providerId]})).sort((g,v)=>{var j,T;const x=g.name.toLowerCase().startsWith(u),y=v.name.toLowerCase().startsWith(u);if(x&&!y)return-1;if(!x&&y)return 1;const b=(j=g.tags)==null?void 0:j.some(R=>R.toLowerCase().startsWith(u)),w=(T=v.tags)==null?void 0:T.some(R=>R.toLowerCase().startsWith(u));return b&&!w?-1:!b&&w?1:g.name.localeCompare(v.name)}).slice(0,5);a(h)},[r,o,c]);const f=u=>{e(u),s(""),a([])};return t.jsxs("div",{className:"relative mb-6",children:[t.jsxs("div",{className:"relative",children:[t.jsx(A,{placeholder:"Buscar productos en todos los proveedores...",value:r,onChange:u=>s(u.target.value),className:"pl-10 bg-blue-50 border-blue-200 focus:border-blue-400 focus:ring-blue-400 placeholder-blue-400"}),t.jsx(Oe,{className:"absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400"})]}),n.length>0&&t.jsx("div",{className:"absolute z-10 w-full mt-1 bg-white border border-blue-200 rounded-lg shadow-lg max-h-60 overflow-auto",children:n.map(u=>{var h;return t.jsx("button",{onClick:()=>f(u),className:"w-full px-4 py-2 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none",children:t.jsxs("div",{className:"flex items-center justify-between",children:[t.jsxs("div",{className:"min-w-0",children:[t.jsx("div",{className:"font-medium text-gray-900",children:u.name}),t.jsxs("div",{className:"flex items-center gap-2 text-sm text-gray-500",children:[t.jsx(Jt,{className:"w-3 h-3"}),t.jsx("span",{className:"truncate",children:(h=u.provider)==null?void 0:h.commercialName})]}),u.tags&&u.tags.length>0&&t.jsxs("div",{className:"flex items-center gap-1 mt-1",children:[t.jsx(Gr,{className:"w-3 h-3 text-blue-400"}),t.jsx("div",{className:"flex flex-wrap gap-1",children:u.tags.map(g=>t.jsx("span",{className:"inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-blue-100 text-blue-600",children:g},g))})]})]}),t.jsx("div",{className:"text-blue-600 font-medium",children:ye(u.price)})]})},u.id)})}),d&&r&&t.jsx("div",{className:"absolute z-10 w-full mt-1 bg-white border border-blue-200 rounded-lg shadow-lg p-4 text-center text-gray-500",children:"Buscando productos..."})]})}function Fo({products:e,onFilter:r}){const[s,n]=p.useState("");return p.useEffect(()=>{if(!s.trim()){r(e);return}const a=s.toLowerCase(),o=e.filter(i=>{var c;return i.name.toLowerCase().includes(a)||Ye(i.order).toLowerCase().includes(a)||i.sku.toLowerCase().includes(a)||((c=i.tags)==null?void 0:c.some(l=>l.toLowerCase().includes(a)))});r(o)},[s,e,r]),t.jsx("div",{className:"relative",children:t.jsxs("div",{className:"relative",children:[t.jsx(A,{placeholder:"Filtrar productos del proveedor...",value:s,onChange:a=>n(a.target.value),className:"pl-10 bg-amber-50 border-amber-200 focus:border-amber-400 focus:ring-amber-400 placeholder-amber-400"}),t.jsx(Oe,{className:"absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400"})]})})}function $o(){const{providers:e}=we(),[r,s]=p.useState(""),{products:n,loading:a,addProduct:o,deleteProduct:i}=Ct(r),{updateProduct:c,isProcessing:l}=No(),[d,m]=p.useState([]),[f,u]=p.useState(!1),[h,g]=p.useState(null),[v,x]=p.useState(!1),[y,b]=p.useState(null),w=async I=>{x(!0);try{if(h)await c(h,I);else{const M=J[0].code,ie=n.filter(H=>_(H.order)===M),ee=$e(M,ie.length+1);await o({...I,order:ee}),N.success("Producto creado exitosamente")}z()}catch(M){console.error("Error saving product:",M),N.error("Error al guardar el producto")}finally{x(!1)}},j=async(I,M)=>{try{await c(I,{order:M})}catch(ie){console.error("Error updating order:",ie),N.error("Error al actualizar el orden")}},T=async I=>{b(I)},R=async()=>{if(y)try{await i(y.id),N.success("Producto eliminado exitosamente"),b(null)}catch{N.error("Ocurrió un error al eliminar el producto")}},z=()=>{u(!1),g(null)},C=I=>{g(I),u(!0)},P=I=>{g(I),u(!0)},W=e.map(I=>({value:I.id,label:I.commercialName}));return t.jsxs("div",{className:"space-y-4",children:[t.jsx(Lo,{onProductSelect:P}),t.jsxs("div",{className:"flex flex-col sm:flex-row sm:items-center gap-3",children:[t.jsx("div",{className:"flex-1 max-w-xs",children:t.jsx(Nr,{options:W,value:r,onChange:I=>{s(I),m([])},placeholder:"Seleccionar Proveedor"})}),r&&t.jsxs(k,{onClick:()=>u(!0),children:[t.jsx(ze,{className:"w-4 h-4 mr-2"}),"Nuevo Producto"]})]}),f&&t.jsx(Cr,{providerId:(h==null?void 0:h.providerId)||r,initialData:h||void 0,onSubmit:w,onCancel:z,isLoading:v||l}),r?a?t.jsx("div",{className:"flex items-center justify-center h-64",children:t.jsx("div",{className:"animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"})}):!f&&t.jsxs(t.Fragment,{children:[t.jsx(Fo,{products:n,onFilter:m}),t.jsx(Do,{products:d.length>0?d:n,onEdit:C,onDelete:T,onOrderChange:j})]}):t.jsx("div",{className:"flex items-center justify-center h-64 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300",children:t.jsx("p",{className:"text-gray-500 text-center px-4",children:"Seleccione un proveedor para ver sus productos"})}),t.jsx(oe,{isOpen:!!y,onClose:()=>b(null),title:"Eliminar producto",children:t.jsxs("div",{className:"space-y-4",children:[t.jsxs("p",{className:"text-amber-600",children:['¿Está seguro que desea eliminar el producto "',y==null?void 0:y.name,'"?']}),t.jsxs("div",{className:"flex justify-end space-x-2",children:[t.jsx(k,{variant:"outline",onClick:()=>b(null),children:"Cancelar"}),t.jsx(k,{onClick:R,children:"Eliminar"})]})]})})]})}function kt(e){const[r,s]=p.useState([]),[n,a]=p.useState(!0);return p.useEffect(()=>{let l;return(async()=>{if(!e){s([]),a(!1);return}try{const m=await Fe.getByProvider(e);m&&s(m),l=Fe.subscribeToProviderOrders(e,f=>{console.log("Orders updated:",f),s(f)})}catch(m){console.error("Error setting up orders subscription:",m),N.error("Error al cargar las órdenes")}finally{a(!1)}})(),()=>{l&&l()}},[e]),{orders:r,loading:n,addOrder:async l=>{try{return await Fe.create(l)}catch(d){throw console.error("Error creating order:",d),N.error("Error al crear la orden"),d}},updateOrder:async(l,d)=>{try{await Fe.update(l,d)}catch(m){throw console.error("Error updating order:",m),N.error("Error al actualizar la orden"),m}},deleteOrder:async l=>{try{await Fe.delete(l)}catch(d){throw console.error("Error deleting order:",d),N.error("Error al eliminar la orden"),d}}}}function Wo(){const[e,r]=p.useState([]),[s,n]=p.useState(!0);return p.useEffect(()=>{const a=E(O,"orders"),o=ne(a,i=>{if(!i.exists()){r([]),n(!1);return}const l=Object.entries(i.val()).map(([d,m])=>({id:d,...m})).sort((d,m)=>new Date(m.date).getTime()-new Date(d.date).getTime());r(l),n(!1)});return()=>o()},[]),{orders:e,loading:s}}function Ao(e){return[`Pedido Fecha: ${K(Ze(e),"dd/MM/yyyy HH:mm",{locale:ae})}`,Ee.name,Ee.owner,""]}function zo(e,r,s){return`${`${e} ${r}`.padEnd(15)}${s}`}function qo(e,r){return r.sort((s,n)=>{const a=e.find(i=>i.id===s.productId),o=e.find(i=>i.id===n.productId);return!a||!o?0:a.order-o.order}).map(s=>{const n=e.find(a=>a.id===s.productId);return n?zo(s.quantity,n.purchasePackaging,n.name):null}).filter(s=>s!==null)}function kr(e,r,s=!1){if(s){const o=[`Pedido Fecha: ${K(Ze(e.date),"dd/MM/yyyy HH:mm",{locale:ae})}`,Ee.name,Ee.owner,""],i=e.items.sort((c,l)=>{const d=r.find(f=>f.id===c.productId),m=r.find(f=>f.id===l.productId);return!d||!m?0:d.order-m.order}).map(c=>{const l=r.find(d=>d.id===c.productId);return l?`• *${c.quantity} ${l.purchasePackaging}* - ${l.name}`:null}).filter(Boolean);return[...o,...i].join(`
 `)}const n=Ao(e.date),a=qo(r,e.items);return[...n,...a,""].join(`
-`)}function Uo(e,r,s){return kr(e,r,!0)}function Yo(e,r){const s=K(Ze(e.date),"dd/MM/yyyy HH:mm",{locale:ae}),a=e.items.sort((o,i)=>{const c=r.find(d=>d.id===o.productId),l=r.find(d=>d.id===i.productId);return!c||!l?0:c.order-l.order}).map(o=>{const i=r.find(c=>c.id===o.productId);return i?`
+`)}function Uo(e,r,s){return kr(e,r,!0)}const Yo=`
+  /* Reset */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  /* Base styles */
+  body {
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    width: 80mm;
+    margin: 0 auto;
+    padding: 0;
+    background: white;
+  }
+
+  .content {
+    padding: 3mm;
+  }
+
+  .header {
+    text-align: left;
+    margin-bottom: 3mm;
+    border-bottom: 1px dashed #000;
+    padding-bottom: 3mm;
+  }
+
+  .header div {
+    margin-bottom: 1mm;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  tr {
+    border-bottom: 1px dotted #ccc;
+  }
+
+  tr:last-child {
+    border-bottom: none;
+  }
+
+  td {
+    padding: 2mm 0;
+  }
+
+  td.quantity {
+    white-space: nowrap;
+    padding-right: 3mm;
+    width: 1%;
+    font-weight: bold;
+  }
+
+  td.name {
+    word-break: break-word;
+  }
+
+  /* Print Controls */
+  .controls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+  }
+
+  .print-button {
+    padding: 10px 20px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+  }
+
+  .print-button:hover {
+    background: #1d4ed8;
+  }
+
+  .print-button:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+  }
+
+  .error-message {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 12px 24px;
+    border-radius: 6px;
+    border: 1px solid #fecaca;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+    text-align: center;
+    max-width: 90%;
+  }
+
+  /* Print Media Styles */
+  @media print {
+    @page {
+      size: 80mm auto;
+      margin: 0;
+    }
+
+    body {
+      width: 80mm;
+      margin: 0;
+    }
+
+    .controls,
+    .error-message {
+      display: none !important;
+    }
+
+    tr {
+      page-break-inside: avoid;
+    }
+  }
+`,Go=`
+  let isPrinting = false;
+  let retryCount = 0;
+  const MAX_RETRIES = 3;
+
+  function showError(message) {
+    const existingError = document.querySelector('.error-message');
+    if (existingError) {
+      existingError.remove();
+    }
+
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    document.body.appendChild(errorDiv);
+
+    const printButton = document.getElementById('print-button');
+    if (printButton) {
+      printButton.disabled = false;
+    }
+  }
+
+  function handlePrint() {
+    if (isPrinting) return;
+
+    try {
+      const printButton = document.getElementById('print-button');
+      printButton.disabled = true;
+      isPrinting = true;
+
+      window.print();
+
+      window.onafterprint = () => {
+        isPrinting = false;
+        setTimeout(() => {
+          window.close();
+        }, 100);
+      };
+
+      setTimeout(() => {
+        if (!window.closed && isPrinting) {
+          isPrinting = false;
+          printButton.disabled = false;
+          
+          if (retryCount < MAX_RETRIES) {
+            retryCount++;
+            showError('La impresión está tardando más de lo esperado. Intente nuevamente.');
+          } else {
+            showError('No se pudo completar la impresión. Por favor, cierre esta ventana e intente nuevamente.');
+          }
+        }
+      }, 2000);
+
+    } catch (error) {
+      console.error('Print error:', error);
+      isPrinting = false;
+      showError('Error al imprimir. Por favor, intente nuevamente.');
+    }
+  }
+
+  window.onload = () => {
+    try {
+      setTimeout(handlePrint, 500);
+    } catch (error) {
+      console.error('Print error:', error);
+      showError('Error al iniciar la impresión. Por favor, use el botón Imprimir.');
+    }
+  };
+
+  window.onerror = (message, source, lineno, colno, error) => {
+    console.error('Print error:', { message, source, lineno, colno, error });
+    showError('Ocurrió un error inesperado. Por favor, intente nuevamente.');
+    return false;
+  };
+`;function Ho(e,r){const s=K(Ze(e.date),"dd/MM/yyyy HH:mm",{locale:ae}),a=e.items.sort((o,i)=>{const c=r.find(d=>d.id===o.productId),l=r.find(d=>d.id===i.productId);return!c||!l?0:c.order-l.order}).map(o=>{const i=r.find(c=>c.id===o.productId);return i?`
         <tr>
           <td class="quantity">${o.quantity} ${i.purchasePackaging}</td>
           <td class="name">${i.name}</td>
@@ -22,258 +226,39 @@ import{j as t,n as N,X as be,M as Rr,L as Ot,a as Ir,U as _t,P as Ae,S as ut,b a
     <html>
       <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Orden de Compra</title>
-        <style>
-          /* Reset */
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-          }
-
-          /* Base styles - visible in both screen and print */
-          body {
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.4;
-            width: 210mm; /* A4 width */
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 20mm;
-            background: white;
-          }
-
-          .header {
-            text-align: center;
-            margin-bottom: 10mm;
-            padding-bottom: 5mm;
-            border-bottom: 1px solid #e5e7eb;
-          }
-
-          .header div {
-            margin-bottom: 2mm;
-          }
-
-          .header .title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 4mm;
-          }
-
-          .header .date {
-            font-size: 16px;
-            color: #4b5563;
-          }
-
-          .header .business {
-            font-size: 18px;
-            margin-top: 4mm;
-          }
-
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 5mm;
-          }
-
-          tr {
-            border-bottom: 1px solid #e5e7eb;
-          }
-
-          tr:last-child {
-            border-bottom: none;
-          }
-
-          td {
-            padding: 3mm 2mm;
-          }
-
-          td.quantity {
-            white-space: nowrap;
-            padding-right: 5mm;
-            width: 20%;
-            font-weight: bold;
-          }
-
-          td.name {
-            word-break: break-word;
-          }
-
-          .error-message {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #fee2e2;
-            color: #991b1b;
-            padding: 12px 24px;
-            border-radius: 6px;
-            border: 1px solid #fecaca;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 1000;
-            text-align: center;
-            max-width: 90%;
-          }
-
-          #print-button {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: background-color 0.2s;
-          }
-
-          #print-button:hover {
-            background: #1d4ed8;
-          }
-
-          #print-button:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
-          }
-
-          /* Print-specific styles */
-          @media print {
-            @page {
-              size: A4;
-              margin: 20mm;
-            }
-
-            body {
-              width: 100%;
-              margin: 0;
-              padding: 0;
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
-            }
-
-            #print-button,
-            .error-message {
-              display: none;
-            }
-
-            tr {
-              page-break-inside: avoid;
-            }
-          }
-        </style>
+        <style>${Yo}</style>
       </head>
       <body>
-        <div class="header">
-          <div class="title">Orden de Compra</div>
-          <div class="date">Fecha: ${s}</div>
-          <div class="business">
+        <div class="content">
+          <div class="header">
+            <div>Pedido Fecha: ${s}</div>
             <div>${Ee.name}</div>
             <div>${Ee.owner}</div>
           </div>
+
+          <table>
+            <tbody>
+              ${a}
+            </tbody>
+          </table>
         </div>
 
-        <table>
-          <tbody>
-            ${a}
-          </tbody>
-        </table>
+        <div class="controls">
+          <button id="print-button" class="print-button" onclick="handlePrint()">
+            Imprimir
+          </button>
+        </div>
 
-        <button id="print-button" onclick="handlePrint()">
-          Imprimir
-        </button>
-
-        <script>
-          let isPrinting = false;
-          let retryCount = 0;
-          const MAX_RETRIES = 3;
-
-          function showError(message) {
-            // Remove any existing error messages
-            const existingError = document.querySelector('.error-message');
-            if (existingError) {
-              existingError.remove();
-            }
-
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-message';
-            errorDiv.textContent = message;
-            document.body.appendChild(errorDiv);
-
-            // Enable print button
-            const printButton = document.getElementById('print-button');
-            if (printButton) {
-              printButton.disabled = false;
-            }
-          }
-
-          function handlePrint() {
-            if (isPrinting) return;
-
-            try {
-              const printButton = document.getElementById('print-button');
-              printButton.disabled = true;
-              isPrinting = true;
-
-              window.print();
-
-              // Handle print completion
-              window.onafterprint = () => {
-                isPrinting = false;
-                setTimeout(() => {
-                  window.close();
-                }, 100);
-              };
-
-              // Fallback if onafterprint is not supported
-              setTimeout(() => {
-                if (!window.closed && isPrinting) {
-                  isPrinting = false;
-                  printButton.disabled = false;
-                  
-                  if (retryCount < MAX_RETRIES) {
-                    retryCount++;
-                    showError('La impresión está tardando más de lo esperado. Intente nuevamente.');
-                  } else {
-                    showError('No se pudo completar la impresión. Por favor, cierre esta ventana e intente nuevamente.');
-                  }
-                }
-              }, 2000);
-
-            } catch (error) {
-              console.error('Print error:', error);
-              isPrinting = false;
-              showError('Error al imprimir. Por favor, intente nuevamente.');
-            }
-          }
-
-          // Auto-print on load
-          window.onload = () => {
-            try {
-              // Short delay to ensure content is rendered
-              setTimeout(handlePrint, 500);
-            } catch (error) {
-              console.error('Print error:', error);
-              showError('Error al iniciar la impresión. Por favor, use el botón Imprimir.');
-            }
-          };
-
-          // Global error handler
-          window.onerror = (message, source, lineno, colno, error) => {
-            console.error('Print error:', { message, source, lineno, colno, error });
-            showError('Ocurrió un error inesperado. Por favor, intente nuevamente.');
-            return false;
-          };
-        <\/script>
+        <script>${Go}<\/script>
       </body>
     </html>
-  `}function dt({order:e,products:r,provider:s,preview:n=!0}){[...e.items].sort((o,i)=>{const c=r.find(d=>d.id===o.productId),l=r.find(d=>d.id===i.productId);return!c||!l?0:c.order-l.order});const a=kr(e,r,n);return t.jsx("div",{className:"font-mono text-sm bg-gray-50 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap",children:a})}function Er({order:e,products:r,provider:s}){const[n,a]=p.useState(!1),[o,i]=p.useState(!1),[c,l]=p.useState(!1),{updateOrder:d}=kt(s==null?void 0:s.id);if(!s)return null;const m=async()=>{if(!s.phone){N.error("Este proveedor no tiene número de teléfono registrado");return}l(!0);try{await d(e.id,{...e,status:"completed"});const u=Uo(e,r,s),h=mr(s.phone,u);window.open(h,"_blank"),a(!1)}catch(u){console.error("Error updating order status:",u),N.error("Error al actualizar el estado de la orden")}finally{l(!1)}},f=async()=>{l(!0);try{await d(e.id,{...e,status:"completed"});const u=Yo(e,r),h=window.open("","_blank","width=300,height=600,scrollbars=yes");if(!h)throw new Error("No se pudo crear la ventana de impresión");h.document.write(u),h.document.close(),h.focus(),i(!1)}catch(u){console.error("Error printing order:",u),N.error("Error al imprimir la orden")}finally{l(!1)}};return t.jsxs(t.Fragment,{children:[t.jsxs("div",{className:"flex flex-col sm:flex-row gap-2",children:[s.phone&&t.jsxs(k,{type:"button",variant:"outline",onClick:()=>a(!0),className:"text-green-600 hover:text-green-700 hover:bg-green-50 w-full sm:w-auto",disabled:c,children:[t.jsx(Hr,{className:"w-4 h-4 mr-2"}),"WhatsApp"]}),t.jsxs(k,{type:"button",variant:"outline",onClick:()=>i(!0),disabled:c,className:"w-full sm:w-auto",children:[t.jsx(Br,{className:"w-4 h-4 mr-2"}),"Imprimir"]})]}),t.jsx(oe,{isOpen:n,onClose:()=>a(!1),title:"Confirmar envío por WhatsApp",children:t.jsxs("div",{className:"space-y-4",children:[t.jsx("p",{children:"¿Desea enviar el siguiente pedido por WhatsApp?"}),t.jsx(dt,{order:e,products:r,provider:s,preview:!0}),t.jsxs("div",{className:"flex flex-col sm:flex-row gap-2 sm:justify-end",children:[t.jsx(k,{variant:"outline",onClick:()=>a(!1),disabled:c,className:"w-full sm:w-auto",children:"Cancelar"}),t.jsx(k,{onClick:m,className:"bg-green-600 hover:bg-green-700 w-full sm:w-auto",isLoading:c,children:"Enviar"})]})]})}),t.jsx(oe,{isOpen:o,onClose:()=>i(!1),title:"Confirmar impresión",children:t.jsxs("div",{className:"space-y-4",children:[t.jsx("p",{children:"¿Desea imprimir el siguiente pedido?"}),t.jsx(dt,{order:e,products:r,provider:s,preview:!1}),t.jsxs("div",{className:"flex flex-col sm:flex-row gap-2 sm:justify-end",children:[t.jsx(k,{variant:"outline",onClick:()=>i(!1),disabled:c,className:"w-full sm:w-auto",children:"Cancelar"}),t.jsx(k,{onClick:f,isLoading:c,className:"w-full sm:w-auto",children:"Imprimir"})]})]})})]})}function Vt({orders:e,products:r,provider:s,onSelect:n}){const{providers:a}=we(),o=[...e].sort((i,c)=>new Date(c.date).getTime()-new Date(i.date).getTime());return t.jsx("div",{className:"space-y-4",children:o.map((i,c)=>{const l=i.items.reduce((f,u)=>f+u.quantity,0),d=o.length-c,m=a.find(f=>f.id===i.providerId);return t.jsxs("div",{className:"bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow",children:[t.jsxs("div",{className:"cursor-pointer space-y-3",onClick:()=>n(i,d),children:[t.jsx("div",{className:"flex items-center justify-between",children:t.jsxs("div",{className:"flex items-center space-x-2",children:[i.status==="completed"?t.jsx(Qt,{className:"w-5 h-5 text-green-500"}):t.jsx(Vr,{className:"w-5 h-5 text-yellow-500"}),t.jsxs("div",{children:[t.jsxs("h3",{className:"text-lg font-semibold",children:["Orden #",d," - ",K(new Date(i.date),"d 'de' MMMM, yyyy",{locale:ae})]}),m&&t.jsxs("p",{className:"text-sm text-gray-600",children:[m.commercialName,m.legalName&&m.legalName!==m.commercialName&&t.jsxs("span",{className:"text-gray-400",children:[" • ",m.legalName]})]})]})]})}),t.jsxs("div",{className:"flex items-center justify-between text-gray-600",children:[t.jsxs("span",{children:[l," ",l===1?"producto":"productos"]}),t.jsx("span",{className:"font-medium text-blue-600",children:ye(i.total)})]})]}),t.jsx("div",{className:"flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 pt-4 border-t",children:t.jsx(Er,{order:i,products:r,provider:m})})]},i.id)})})}function Go({order:e,orderNumber:r,products:s,provider:n,onClose:a}){const o=K(Ze(e.date),"d 'de' MMMM, yyyy HH:mm",{locale:ae}),i=e.items.reduce((c,l)=>c+l.quantity,0);return t.jsxs("div",{className:"fixed inset-0 bg-gray-50 z-50 flex flex-col",children:[t.jsx("div",{className:"bg-white border-b print:hidden sticky top-0 z-10",children:t.jsxs("div",{className:"flex items-center justify-between px-3 h-14",children:[t.jsxs("div",{className:"flex items-center gap-3",children:[t.jsx(k,{variant:"ghost",size:"sm",onClick:a,className:"md:hidden",children:t.jsx(_r,{className:"w-5 h-5"})}),t.jsxs("div",{children:[t.jsxs("div",{className:"flex items-center gap-2",children:[t.jsxs("h2",{className:"text-lg font-semibold",children:["Orden #",r]}),t.jsx("span",{className:`
+  `}function dt({order:e,products:r,provider:s,preview:n=!0}){[...e.items].sort((o,i)=>{const c=r.find(d=>d.id===o.productId),l=r.find(d=>d.id===i.productId);return!c||!l?0:c.order-l.order});const a=kr(e,r,n);return t.jsx("div",{className:"font-mono text-sm bg-gray-50 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap",children:a})}function Er({order:e,products:r,provider:s}){const[n,a]=p.useState(!1),[o,i]=p.useState(!1),[c,l]=p.useState(!1),{updateOrder:d}=kt(s==null?void 0:s.id);if(!s)return null;const m=async()=>{if(!s.phone){N.error("Este proveedor no tiene número de teléfono registrado");return}l(!0);try{await d(e.id,{...e,status:"completed"});const u=Uo(e,r,s),h=mr(s.phone,u);window.open(h,"_blank"),a(!1)}catch(u){console.error("Error updating order status:",u),N.error("Error al actualizar el estado de la orden")}finally{l(!1)}},f=async()=>{l(!0);try{await d(e.id,{...e,status:"completed"});const u=Ho(e,r),h=window.open("","_blank","width=300,height=600,scrollbars=yes");if(!h)throw new Error("No se pudo crear la ventana de impresión");h.document.write(u),h.document.close(),h.focus(),i(!1)}catch(u){console.error("Error printing order:",u),N.error("Error al imprimir la orden")}finally{l(!1)}};return t.jsxs(t.Fragment,{children:[t.jsxs("div",{className:"flex flex-col sm:flex-row gap-2",children:[s.phone&&t.jsxs(k,{type:"button",variant:"outline",onClick:()=>a(!0),className:"text-green-600 hover:text-green-700 hover:bg-green-50 w-full sm:w-auto",disabled:c,children:[t.jsx(Hr,{className:"w-4 h-4 mr-2"}),"WhatsApp"]}),t.jsxs(k,{type:"button",variant:"outline",onClick:()=>i(!0),disabled:c,className:"w-full sm:w-auto",children:[t.jsx(Br,{className:"w-4 h-4 mr-2"}),"Imprimir"]})]}),t.jsx(oe,{isOpen:n,onClose:()=>a(!1),title:"Confirmar envío por WhatsApp",children:t.jsxs("div",{className:"space-y-4",children:[t.jsx("p",{children:"¿Desea enviar el siguiente pedido por WhatsApp?"}),t.jsx(dt,{order:e,products:r,provider:s,preview:!0}),t.jsxs("div",{className:"flex flex-col sm:flex-row gap-2 sm:justify-end",children:[t.jsx(k,{variant:"outline",onClick:()=>a(!1),disabled:c,className:"w-full sm:w-auto",children:"Cancelar"}),t.jsx(k,{onClick:m,className:"bg-green-600 hover:bg-green-700 w-full sm:w-auto",isLoading:c,children:"Enviar"})]})]})}),t.jsx(oe,{isOpen:o,onClose:()=>i(!1),title:"Confirmar impresión",children:t.jsxs("div",{className:"space-y-4",children:[t.jsx("p",{children:"¿Desea imprimir el siguiente pedido?"}),t.jsx(dt,{order:e,products:r,provider:s,preview:!1}),t.jsxs("div",{className:"flex flex-col sm:flex-row gap-2 sm:justify-end",children:[t.jsx(k,{variant:"outline",onClick:()=>i(!1),disabled:c,className:"w-full sm:w-auto",children:"Cancelar"}),t.jsx(k,{onClick:f,isLoading:c,className:"w-full sm:w-auto",children:"Imprimir"})]})]})})]})}function Vt({orders:e,products:r,provider:s,onSelect:n}){const{providers:a}=we(),o=[...e].sort((i,c)=>new Date(c.date).getTime()-new Date(i.date).getTime());return t.jsx("div",{className:"space-y-4",children:o.map((i,c)=>{const l=i.items.reduce((f,u)=>f+u.quantity,0),d=o.length-c,m=a.find(f=>f.id===i.providerId);return t.jsxs("div",{className:"bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow",children:[t.jsxs("div",{className:"cursor-pointer space-y-3",onClick:()=>n(i,d),children:[t.jsx("div",{className:"flex items-center justify-between",children:t.jsxs("div",{className:"flex items-center space-x-2",children:[i.status==="completed"?t.jsx(Qt,{className:"w-5 h-5 text-green-500"}):t.jsx(Vr,{className:"w-5 h-5 text-yellow-500"}),t.jsxs("div",{children:[t.jsxs("h3",{className:"text-lg font-semibold",children:["Orden #",d," - ",K(new Date(i.date),"d 'de' MMMM, yyyy",{locale:ae})]}),m&&t.jsxs("p",{className:"text-sm text-gray-600",children:[m.commercialName,m.legalName&&m.legalName!==m.commercialName&&t.jsxs("span",{className:"text-gray-400",children:[" • ",m.legalName]})]})]})]})}),t.jsxs("div",{className:"flex items-center justify-between text-gray-600",children:[t.jsxs("span",{children:[l," ",l===1?"producto":"productos"]}),t.jsx("span",{className:"font-medium text-blue-600",children:ye(i.total)})]})]}),t.jsx("div",{className:"flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 pt-4 border-t",children:t.jsx(Er,{order:i,products:r,provider:m})})]},i.id)})})}function Bo({order:e,orderNumber:r,products:s,provider:n,onClose:a}){const o=K(Ze(e.date),"d 'de' MMMM, yyyy HH:mm",{locale:ae}),i=e.items.reduce((c,l)=>c+l.quantity,0);return t.jsxs("div",{className:"fixed inset-0 bg-gray-50 z-50 flex flex-col",children:[t.jsx("div",{className:"bg-white border-b print:hidden sticky top-0 z-10",children:t.jsxs("div",{className:"flex items-center justify-between px-3 h-14",children:[t.jsxs("div",{className:"flex items-center gap-3",children:[t.jsx(k,{variant:"ghost",size:"sm",onClick:a,className:"md:hidden",children:t.jsx(_r,{className:"w-5 h-5"})}),t.jsxs("div",{children:[t.jsxs("div",{className:"flex items-center gap-2",children:[t.jsxs("h2",{className:"text-lg font-semibold",children:["Orden #",r]}),t.jsx("span",{className:`
                   px-2 py-0.5 text-xs font-medium rounded-full
                   ${e.status==="completed"?"bg-green-100 text-green-700":"bg-amber-100 text-amber-700"}
-                `,children:e.status==="completed"?"Completada":"Pendiente"})]}),t.jsx("p",{className:"text-sm text-gray-500",children:o})]})]}),t.jsx("button",{onClick:a,className:"hidden md:flex p-2 hover:bg-gray-100 rounded-full transition-colors",children:t.jsx(be,{className:"w-5 h-5"})})]})}),t.jsx("div",{className:"flex-1 overflow-y-auto",children:t.jsxs("div",{className:"container mx-auto max-w-4xl px-3 py-4",children:[t.jsxs("div",{className:"hidden print:block mb-8",children:[t.jsx("h1",{className:"text-2xl font-bold text-center mb-2",children:"Orden de Compra"}),t.jsxs("div",{className:"text-center text-gray-600 mb-4",children:["#",r]})]}),t.jsxs("div",{className:"grid gap-4",children:[t.jsxs("div",{className:"grid gap-4 sm:grid-cols-3 print:grid-cols-3",children:[t.jsxs("div",{className:"bg-white p-4 rounded-lg border shadow-sm print:border-gray-300",children:[t.jsxs("div",{className:"flex items-center gap-3 mb-2",children:[t.jsx("div",{className:"p-2 bg-blue-50 rounded-lg",children:t.jsx(Xt,{className:"w-5 h-5 text-blue-600"})}),t.jsx("h3",{className:"font-medium",children:"Fecha"})]}),t.jsx("p",{className:"text-gray-600",children:o})]}),t.jsxs("div",{className:"bg-white p-4 rounded-lg border shadow-sm print:border-gray-300",children:[t.jsxs("div",{className:"flex items-center gap-3 mb-2",children:[t.jsx("div",{className:"p-2 bg-purple-50 rounded-lg",children:t.jsx(Jt,{className:"w-5 h-5 text-purple-600"})}),t.jsx("h3",{className:"font-medium",children:"Proveedor"})]}),t.jsx("p",{className:"font-medium",children:n.commercialName}),n.legalName&&n.legalName!==n.commercialName&&t.jsx("p",{className:"text-sm text-gray-500",children:n.legalName})]}),t.jsxs("div",{className:"bg-white p-4 rounded-lg border shadow-sm print:border-gray-300",children:[t.jsxs("div",{className:"flex items-center gap-3 mb-2",children:[t.jsx("div",{className:"p-2 bg-green-50 rounded-lg",children:t.jsx(Ae,{className:"w-5 h-5 text-green-600"})}),t.jsx("h3",{className:"font-medium",children:"Resumen"})]}),t.jsxs("div",{className:"space-y-1",children:[t.jsxs("p",{className:"text-gray-600",children:[i," productos"]}),t.jsx("p",{className:"font-medium text-lg text-blue-600",children:ye(e.total)})]})]})]}),t.jsxs("div",{className:"bg-white p-4 rounded-lg border shadow-sm print:border-gray-300",children:[t.jsxs("div",{className:"flex items-center gap-3 mb-4 print:mb-2",children:[t.jsx("div",{className:"p-2 bg-amber-50 rounded-lg",children:t.jsx(Qr,{className:"w-5 h-5 text-amber-600"})}),t.jsx("h3",{className:"font-medium",children:"Detalles del Pedido"})]}),t.jsx(dt,{order:e,products:s,provider:n,preview:!1})]}),t.jsx("div",{className:"print:hidden",children:t.jsxs("div",{className:"bg-white p-4 rounded-lg border shadow-sm",children:[t.jsx("h3",{className:"font-medium mb-4",children:"Acciones"}),t.jsx(Er,{order:e,products:s,provider:n})]})})]})]})})]})}function Ho({orders:e,products:r,onOrderSelect:s}){const[n,a]=p.useState(""),[o,i]=p.useState([]);return p.useEffect(()=>{if(!n.trim()){i([]);return}const c=n.toLowerCase(),l=[...e].sort((m,f)=>new Date(f.date).getTime()-new Date(m.date).getTime()),d=l.map((m,f)=>{const u=m.items.map(h=>{var x;const g=r.find(y=>y.id===h.productId);return g&&(g.name.toLowerCase().includes(c)||g.sku.toLowerCase().includes(c)||((x=g.tags)==null?void 0:x.some(y=>y.toLowerCase().includes(c))))?{product:g,quantity:h.quantity}:null}).filter(h=>h!==null);return u.length===0?null:{...m,orderNumber:l.length-f,matchingProducts:u}}).filter(m=>m!==null).slice(0,5);i(d)},[n,e,r]),t.jsxs("div",{className:"relative mb-6",children:[t.jsxs("div",{className:"relative",children:[t.jsx(A,{placeholder:"Buscar productos en órdenes...",value:n,onChange:c=>a(c.target.value),className:"pl-10 bg-amber-50 border-amber-200 focus:border-amber-400 focus:ring-amber-400 placeholder-amber-400"}),t.jsx(Oe,{className:"absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400"})]}),o.length>0&&t.jsx("div",{className:"absolute z-10 w-full mt-1 bg-white border border-amber-200 rounded-lg shadow-lg max-h-[400px] overflow-auto",children:o.map(c=>t.jsx("button",{onClick:()=>s(c,c.orderNumber),className:"w-full px-4 py-3 text-left hover:bg-amber-50 border-b border-amber-100 last:border-b-0",children:t.jsxs("div",{className:"flex items-start justify-between gap-4",children:[t.jsxs("div",{className:"flex-1 min-w-0",children:[t.jsxs("div",{className:"flex items-center gap-2 mb-2",children:[t.jsxs("span",{className:"font-medium text-amber-700",children:["Orden #",c.orderNumber]}),t.jsx("span",{className:"text-gray-400",children:"•"}),t.jsx("span",{className:"text-sm text-gray-600",children:K(new Date(c.date),"d 'de' MMMM, yyyy",{locale:ae})})]}),t.jsx("div",{className:"space-y-1",children:c.matchingProducts.map(({product:l,quantity:d})=>t.jsxs("div",{className:"flex items-center justify-between text-sm",children:[t.jsx("span",{className:"text-gray-900",children:l.name}),t.jsxs("span",{className:"text-gray-600 whitespace-nowrap ml-2",children:[d," ",l.purchasePackaging]})]},l.id))})]}),t.jsx("div",{className:"text-amber-600 font-medium whitespace-nowrap",children:ye(c.total)})]})},c.id))}),n&&o.length===0&&t.jsx("div",{className:"absolute z-10 w-full mt-1 bg-white border border-amber-200 rounded-lg shadow-lg p-4 text-center text-gray-500",children:"No se encontraron productos en las órdenes"})]})}function nt(e){return new Intl.NumberFormat("es-UY",{style:"decimal",minimumFractionDigits:2,maximumFractionDigits:2}).format(e)}function Bo({providerId:e,product:r,onSubmit:s,onCancel:n,isSubmitting:a}){return t.jsxs("div",{className:"fixed inset-0 bg-white z-50 flex flex-col",children:[t.jsx("div",{className:"border-b bg-white",children:t.jsxs("div",{className:"flex items-center justify-between px-3 h-16",children:[t.jsx("h2",{className:"text-lg font-semibold",children:"Editar Producto"}),t.jsx("button",{onClick:n,className:"p-2 hover:bg-gray-100 rounded-full transition-colors",children:t.jsx(be,{className:"w-5 h-5"})})]})}),t.jsx("div",{className:"flex-1 overflow-hidden",children:t.jsx("div",{className:"h-full overflow-y-auto",children:t.jsx("div",{className:"container mx-auto max-w-2xl px-3 py-4",children:t.jsx(Sr,{providerId:e,initialData:r,onSubmit:s,onCancel:n,isLoading:a})})})})]})}function Vo({product:e,products:r,isSelected:s,quantity:n,onQuantityChange:a,onProductUpdate:o,onReview:i,isReviewed:c}){const[l,d]=p.useState(!1),[m,f]=p.useState(!1),[u,h]=p.useState(!1),[g,v]=p.useState(n.toString()),x=p.useRef(null),y=p.useRef(null);p.useEffect(()=>{v(n.toString())},[n]),p.useEffect(()=>{const P=W=>{x.current&&!x.current.contains(W.target)&&h(!1)};return document.addEventListener("mousedown",P),()=>document.removeEventListener("mousedown",P)},[]),p.useEffect(()=>{u&&y.current&&(y.current.focus(),y.current.select())},[u]);const b=async P=>{if(o){f(!0);try{await o(e,P),d(!1)}finally{f(!1)}}},w=P=>{P.target instanceof HTMLButtonElement||P.target instanceof HTMLInputElement||P.target.closest("button")||P.target.closest("input")||P.target.closest(".quantity-controls")||(c||i(),s||a(e.desiredStock))},j=P=>{P.stopPropagation(),h(!0)},T=P=>{P>=0&&(a(P),c||i())},R=P=>{P.stopPropagation(),n>0&&T(n-1)},z=P=>{P.stopPropagation(),T(n+1)},C=P=>{const W=P.target.value;v(W);const I=parseInt(W);!isNaN(I)&&I>=0&&T(I)};return t.jsxs(t.Fragment,{children:[t.jsx($,{isSelected:s,children:t.jsx($.Header,{className:"!p-3",children:t.jsxs("div",{className:"relative",onClick:w,children:[c&&t.jsx("div",{className:"absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-1",children:t.jsx(Mt,{className:"w-4 h-4"})}),t.jsxs("div",{className:"flex items-start gap-3",children:[t.jsx("div",{className:`
+                `,children:e.status==="completed"?"Completada":"Pendiente"})]}),t.jsx("p",{className:"text-sm text-gray-500",children:o})]})]}),t.jsx("button",{onClick:a,className:"hidden md:flex p-2 hover:bg-gray-100 rounded-full transition-colors",children:t.jsx(be,{className:"w-5 h-5"})})]})}),t.jsx("div",{className:"flex-1 overflow-y-auto",children:t.jsxs("div",{className:"container mx-auto max-w-4xl px-3 py-4",children:[t.jsxs("div",{className:"hidden print:block mb-8",children:[t.jsx("h1",{className:"text-2xl font-bold text-center mb-2",children:"Orden de Compra"}),t.jsxs("div",{className:"text-center text-gray-600 mb-4",children:["#",r]})]}),t.jsxs("div",{className:"grid gap-4",children:[t.jsxs("div",{className:"grid gap-4 sm:grid-cols-3 print:grid-cols-3",children:[t.jsxs("div",{className:"bg-white p-4 rounded-lg border shadow-sm print:border-gray-300",children:[t.jsxs("div",{className:"flex items-center gap-3 mb-2",children:[t.jsx("div",{className:"p-2 bg-blue-50 rounded-lg",children:t.jsx(Xt,{className:"w-5 h-5 text-blue-600"})}),t.jsx("h3",{className:"font-medium",children:"Fecha"})]}),t.jsx("p",{className:"text-gray-600",children:o})]}),t.jsxs("div",{className:"bg-white p-4 rounded-lg border shadow-sm print:border-gray-300",children:[t.jsxs("div",{className:"flex items-center gap-3 mb-2",children:[t.jsx("div",{className:"p-2 bg-purple-50 rounded-lg",children:t.jsx(Jt,{className:"w-5 h-5 text-purple-600"})}),t.jsx("h3",{className:"font-medium",children:"Proveedor"})]}),t.jsx("p",{className:"font-medium",children:n.commercialName}),n.legalName&&n.legalName!==n.commercialName&&t.jsx("p",{className:"text-sm text-gray-500",children:n.legalName})]}),t.jsxs("div",{className:"bg-white p-4 rounded-lg border shadow-sm print:border-gray-300",children:[t.jsxs("div",{className:"flex items-center gap-3 mb-2",children:[t.jsx("div",{className:"p-2 bg-green-50 rounded-lg",children:t.jsx(Ae,{className:"w-5 h-5 text-green-600"})}),t.jsx("h3",{className:"font-medium",children:"Resumen"})]}),t.jsxs("div",{className:"space-y-1",children:[t.jsxs("p",{className:"text-gray-600",children:[i," productos"]}),t.jsx("p",{className:"font-medium text-lg text-blue-600",children:ye(e.total)})]})]})]}),t.jsxs("div",{className:"bg-white p-4 rounded-lg border shadow-sm print:border-gray-300",children:[t.jsxs("div",{className:"flex items-center gap-3 mb-4 print:mb-2",children:[t.jsx("div",{className:"p-2 bg-amber-50 rounded-lg",children:t.jsx(Qr,{className:"w-5 h-5 text-amber-600"})}),t.jsx("h3",{className:"font-medium",children:"Detalles del Pedido"})]}),t.jsx(dt,{order:e,products:s,provider:n,preview:!1})]}),t.jsx("div",{className:"print:hidden",children:t.jsxs("div",{className:"bg-white p-4 rounded-lg border shadow-sm",children:[t.jsx("h3",{className:"font-medium mb-4",children:"Acciones"}),t.jsx(Er,{order:e,products:s,provider:n})]})})]})]})})]})}function Vo({orders:e,products:r,onOrderSelect:s}){const[n,a]=p.useState(""),[o,i]=p.useState([]);return p.useEffect(()=>{if(!n.trim()){i([]);return}const c=n.toLowerCase(),l=[...e].sort((m,f)=>new Date(f.date).getTime()-new Date(m.date).getTime()),d=l.map((m,f)=>{const u=m.items.map(h=>{var x;const g=r.find(y=>y.id===h.productId);return g&&(g.name.toLowerCase().includes(c)||g.sku.toLowerCase().includes(c)||((x=g.tags)==null?void 0:x.some(y=>y.toLowerCase().includes(c))))?{product:g,quantity:h.quantity}:null}).filter(h=>h!==null);return u.length===0?null:{...m,orderNumber:l.length-f,matchingProducts:u}}).filter(m=>m!==null).slice(0,5);i(d)},[n,e,r]),t.jsxs("div",{className:"relative mb-6",children:[t.jsxs("div",{className:"relative",children:[t.jsx(A,{placeholder:"Buscar productos en órdenes...",value:n,onChange:c=>a(c.target.value),className:"pl-10 bg-amber-50 border-amber-200 focus:border-amber-400 focus:ring-amber-400 placeholder-amber-400"}),t.jsx(Oe,{className:"absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400"})]}),o.length>0&&t.jsx("div",{className:"absolute z-10 w-full mt-1 bg-white border border-amber-200 rounded-lg shadow-lg max-h-[400px] overflow-auto",children:o.map(c=>t.jsx("button",{onClick:()=>s(c,c.orderNumber),className:"w-full px-4 py-3 text-left hover:bg-amber-50 border-b border-amber-100 last:border-b-0",children:t.jsxs("div",{className:"flex items-start justify-between gap-4",children:[t.jsxs("div",{className:"flex-1 min-w-0",children:[t.jsxs("div",{className:"flex items-center gap-2 mb-2",children:[t.jsxs("span",{className:"font-medium text-amber-700",children:["Orden #",c.orderNumber]}),t.jsx("span",{className:"text-gray-400",children:"•"}),t.jsx("span",{className:"text-sm text-gray-600",children:K(new Date(c.date),"d 'de' MMMM, yyyy",{locale:ae})})]}),t.jsx("div",{className:"space-y-1",children:c.matchingProducts.map(({product:l,quantity:d})=>t.jsxs("div",{className:"flex items-center justify-between text-sm",children:[t.jsx("span",{className:"text-gray-900",children:l.name}),t.jsxs("span",{className:"text-gray-600 whitespace-nowrap ml-2",children:[d," ",l.purchasePackaging]})]},l.id))})]}),t.jsx("div",{className:"text-amber-600 font-medium whitespace-nowrap",children:ye(c.total)})]})},c.id))}),n&&o.length===0&&t.jsx("div",{className:"absolute z-10 w-full mt-1 bg-white border border-amber-200 rounded-lg shadow-lg p-4 text-center text-gray-500",children:"No se encontraron productos en las órdenes"})]})}function nt(e){return new Intl.NumberFormat("es-UY",{style:"decimal",minimumFractionDigits:2,maximumFractionDigits:2}).format(e)}function _o({providerId:e,product:r,onSubmit:s,onCancel:n,isSubmitting:a}){return t.jsxs("div",{className:"fixed inset-0 bg-white z-50 flex flex-col",children:[t.jsx("div",{className:"border-b bg-white",children:t.jsxs("div",{className:"flex items-center justify-between px-3 h-16",children:[t.jsx("h2",{className:"text-lg font-semibold",children:"Editar Producto"}),t.jsx("button",{onClick:n,className:"p-2 hover:bg-gray-100 rounded-full transition-colors",children:t.jsx(be,{className:"w-5 h-5"})})]})}),t.jsx("div",{className:"flex-1 overflow-hidden",children:t.jsx("div",{className:"h-full overflow-y-auto",children:t.jsx("div",{className:"container mx-auto max-w-2xl px-3 py-4",children:t.jsx(Sr,{providerId:e,initialData:r,onSubmit:s,onCancel:n,isLoading:a})})})})]})}function Qo({product:e,products:r,isSelected:s,quantity:n,onQuantityChange:a,onProductUpdate:o,onReview:i,isReviewed:c}){const[l,d]=p.useState(!1),[m,f]=p.useState(!1),[u,h]=p.useState(!1),[g,v]=p.useState(n.toString()),x=p.useRef(null),y=p.useRef(null);p.useEffect(()=>{v(n.toString())},[n]),p.useEffect(()=>{const P=W=>{x.current&&!x.current.contains(W.target)&&h(!1)};return document.addEventListener("mousedown",P),()=>document.removeEventListener("mousedown",P)},[]),p.useEffect(()=>{u&&y.current&&(y.current.focus(),y.current.select())},[u]);const b=async P=>{if(o){f(!0);try{await o(e,P),d(!1)}finally{f(!1)}}},w=P=>{P.target instanceof HTMLButtonElement||P.target instanceof HTMLInputElement||P.target.closest("button")||P.target.closest("input")||P.target.closest(".quantity-controls")||(c||i(),s||a(e.desiredStock))},j=P=>{P.stopPropagation(),h(!0)},T=P=>{P>=0&&(a(P),c||i())},R=P=>{P.stopPropagation(),n>0&&T(n-1)},z=P=>{P.stopPropagation(),T(n+1)},C=P=>{const W=P.target.value;v(W);const I=parseInt(W);!isNaN(I)&&I>=0&&T(I)};return t.jsxs(t.Fragment,{children:[t.jsx($,{isSelected:s,children:t.jsx($.Header,{className:"!p-3",children:t.jsxs("div",{className:"relative",onClick:w,children:[c&&t.jsx("div",{className:"absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-1",children:t.jsx(Mt,{className:"w-4 h-4"})}),t.jsxs("div",{className:"flex items-start gap-3",children:[t.jsx("div",{className:`
                   flex-shrink-0 w-5 h-5 rounded border cursor-pointer transition-colors mt-1
                   ${s?"bg-blue-500 border-blue-500":"border-gray-300 hover:border-blue-500"}
-                `,onClick:P=>{P.stopPropagation(),T(s?0:e.desiredStock)},children:s&&t.jsx(Mt,{className:"w-full h-full text-white p-0.5"})}),t.jsxs("div",{className:"flex-1 min-w-0",children:[t.jsxs("div",{className:"flex items-center gap-2 mb-2",children:[t.jsx("h3",{className:"font-semibold text-gray-900",children:e.name}),t.jsx(k,{variant:"ghost",size:"sm",onClick:P=>{P.stopPropagation(),d(!0)},className:"p-1 hover:bg-gray-100 rounded-full",children:t.jsx(ht,{className:"w-4 h-4 text-gray-500"})})]}),t.jsxs("div",{className:"grid grid-cols-2 gap-2 text-sm text-gray-600 mb-3",children:[t.jsxs("div",{className:"flex items-center",children:[t.jsx(mt,{className:"w-4 h-4 mr-1.5 flex-shrink-0"}),t.jsxs("span",{children:["Stock: ",e.minPackageStock," - ",e.desiredStock]})]}),t.jsxs("div",{className:"flex items-center text-gray-500",children:[t.jsx(ft,{className:"w-4 h-4 mr-1.5 flex-shrink-0"}),t.jsxs("span",{children:["Orden: ",Ye(e.order)]})]})]}),s&&t.jsxs("div",{className:"flex items-end justify-between gap-4",children:[t.jsx("div",{className:"flex-1",children:t.jsx("div",{ref:x,className:"quantity-controls",children:u?t.jsxs("div",{className:"flex items-center gap-2",children:[t.jsx(k,{type:"button",variant:"outline",size:"sm",onClick:R,disabled:n<=0,className:"w-12 h-12 rounded-full",children:t.jsx(Xr,{className:"w-5 h-5"})}),t.jsx(A,{ref:y,type:"number",min:"0",value:g,onChange:C,onClick:P=>P.stopPropagation(),placeholder:e.desiredStock.toString(),className:"text-center text-lg h-12"}),t.jsx(k,{type:"button",variant:"outline",size:"sm",onClick:z,className:"w-12 h-12 rounded-full",children:t.jsx(ze,{className:"w-5 h-5"})})]}):t.jsx("button",{onClick:j,className:"w-full h-12 px-4 text-left bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors",children:t.jsxs("span",{className:"text-lg font-medium",children:[n," ",e.purchasePackaging]})})})}),t.jsxs("div",{className:"text-right",children:[t.jsxs("div",{className:"text-lg font-bold text-blue-600",children:["$",nt(e.price)]}),t.jsxs("div",{className:"text-sm text-gray-500",children:["Total: $",nt(e.price*n)]})]})]}),!s&&t.jsxs("div",{className:"text-lg font-bold text-blue-600",children:["$",nt(e.price)]})]})]})]})})}),l&&t.jsx(Bo,{providerId:e.providerId,product:e,onSubmit:b,onCancel:()=>d(!1),isSubmitting:m})]})}function _o({value:e,onChange:r}){return t.jsxs("div",{className:"relative mb-6",children:[t.jsx(A,{placeholder:"Filtrar productos por nombre, SKU, código o etiquetas...",value:e,onChange:s=>r(s.target.value),className:"pl-10"}),t.jsx(Oe,{className:"absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"})]})}function Qo({products:e,selectedProducts:r,onProductSelect:s,onProductUpdate:n}){const[a,o]=p.useState(new Set),[i,c]=p.useState(""),l=[...e].sort((h,g)=>h.order-g.order),d=i.trim()?l.filter(h=>{var v,x;const g=i.toLowerCase();return h.name.toLowerCase().includes(g)||h.sku.toLowerCase().includes(g)||((v=h.supplierCode)==null?void 0:v.toLowerCase().includes(g))||((x=h.tags)==null?void 0:x.some(y=>y.toLowerCase().includes(g)))}):l,m=(h,g)=>{g>=0&&(s(h,g),u(h))},f=async(h,g)=>{n&&(await n(h.id,g),u(h.id))},u=h=>{o(g=>new Set(g).add(h))};return t.jsxs("div",{className:"space-y-3",children:[t.jsx(_o,{value:i,onChange:c}),d.map(h=>t.jsx(Vo,{product:h,products:e,isSelected:r.has(h.id),quantity:r.get(h.id)||0,onQuantityChange:g=>m(h.id,g),onProductUpdate:f,onReview:()=>u(h.id),isReviewed:a.has(h.id)},h.id)),d.length===0&&t.jsx("div",{className:"text-center py-8 text-gray-500",children:"No se encontraron productos que coincidan con la búsqueda"})]})}function Xo({products:e,selectedProducts:r,onProductSelect:s,onProductUpdate:n,onConfirm:a,onCancel:o,isSubmitting:i,provider:c}){const[l,d]=p.useState(e);kt(c.id),p.useEffect(()=>{d(f=>{const u=new Set(e.map(g=>g.id)),h=f.filter(g=>!u.has(g.id));return[...e,...h]})},[e]);const m=Array.from(r.entries()).reduce((f,[u,h])=>{const g=l.find(v=>v.id===u);return f+((g==null?void 0:g.price)||0)*h},0);return t.jsxs("div",{className:"fixed inset-0 bg-white z-50 flex flex-col",children:[t.jsx("div",{className:"border-b bg-white",children:t.jsxs("div",{className:"flex items-center justify-between px-2 h-14",children:[t.jsxs("div",{className:"flex-1 min-w-0",children:[t.jsxs("h2",{className:"text-lg font-semibold truncate",children:[c.legalName&&c.legalName!==c.commercialName?t.jsxs("span",{className:"text-gray-500",children:[c.legalName," ",t.jsx("span",{className:"mx-1",children:"•"})]}):null,t.jsx("span",{children:c.commercialName})]}),r.size>0&&t.jsxs("div",{className:"text-sm text-gray-600",children:["Importe Total: ",t.jsx("span",{className:"font-medium text-blue-600",children:ye(m)})]})]}),t.jsxs("div",{className:"flex items-center gap-2",children:[t.jsx(k,{variant:"outline",onClick:o,disabled:i,size:"sm",children:"Cancelar"}),t.jsx(k,{onClick:a,isLoading:i,size:"sm",children:"Guardar"})]})]})}),t.jsx("div",{className:"flex-1 overflow-hidden",children:t.jsx("div",{className:"h-full overflow-y-auto",children:t.jsx("div",{className:"container mx-auto max-w-3xl px-2 py-4",children:t.jsx(Qo,{products:l,selectedProducts:r,onProductSelect:s,onProductUpdate:n})})})})]})}function Ko(e){return Number(e.reduce((r,s)=>r+Number((s.price*s.quantity).toFixed(2)),0).toFixed(2))}function Jo(e,r){const s=Number(Number(e.price).toFixed(2)),n=Number((s*r).toFixed(2));return{productId:e.id,quantity:Number(r),price:s,subtotal:n}}function Zo(e,r,s){if(!e||!s||s.length===0)throw new Error("Invalid order data");const n=Array.from(r.entries()).map(([o,i])=>{const c=s.find(l=>l.id===o);if(!c)throw new Error(`Product ${o} not found`);return Jo(c,i)}).sort((o,i)=>{const c=s.find(d=>d.id===o.productId),l=s.find(d=>d.id===i.productId);return!c||!l?0:c.order-l.order}),a=Ko(n);return{providerId:e,date:it(),status:"pending",items:n,total:a}}function ei(e,r){try{if(!e.providerId)return"El proveedor es requerido";if(!e.items||e.items.length===0)return"Debe agregar al menos un producto";const s=new Set;for(const a of e.items){if(!a.productId)return"Producto inválido";if(s.has(a.productId))return"No puede haber productos duplicados";if(s.add(a.productId),a.quantity<=0)return"La cantidad debe ser mayor a 0";const o=r.find(c=>c.id===a.productId);if(!o)return"Producto no encontrado";if(Math.abs(a.price-o.price)>.01)return`El precio del producto ${o.name} no coincide`;const i=Number((a.price*a.quantity).toFixed(2));if(Math.abs(a.subtotal-i)>.01)return`El subtotal del producto ${o.name} no coincide`}const n=Number(e.items.reduce((a,o)=>a+Number((o.price*o.quantity).toFixed(2)),0).toFixed(2));return Math.abs(e.total-n)>.01?"El total no coincide":null}catch(s){return console.error("Error validating order:",s),"Error al validar la orden"}}function ti(){const e=tr(),[r,s]=Zr(),{providers:n}=we(),[a,o]=p.useState(""),{orders:i,loading:c,addOrder:l,updateOrder:d,deleteOrder:m}=kt(a),{products:f,updateProduct:u}=Ct(a),{orders:h,loading:g}=Wo(),{products:v,loading:x}=jr(),[y,b]=p.useState(!1),[w,j]=p.useState(null),[T,R]=p.useState(null),[z,C]=p.useState(!1),[P,W]=p.useState(null),[I,M]=p.useState(new Map),[ie,ee]=p.useState(!1),H=n.find(L=>L.id===a),he=h.sort((L,V)=>new Date(V.date).getTime()-new Date(L.date).getTime()).slice(0,5);p.useEffect(()=>{const L=r.get("provider"),V=r.get("new")==="true";if(L){if(o(L),V)b(!0),ee(!0);else{const te=new Date,Be=new Date(te.setHours(0,0,0,0)),Tr=new Date(te.setHours(23,59,59,999)),tt=i.find(Ve=>{const Re=new Date(Ve.date);return Re>=Be&&Re<=Tr});if(tt){const Ve=new Map;tt.items.forEach(Re=>{Ve.set(Re.productId,Re.quantity)}),M(Ve),j(tt),b(!0),ee(!0)}}s({})}},[r,s,i]);const Ge=(L,V)=>{const te=new Map(I);V>0?te.set(L,V):te.delete(L),M(te)},Te=async()=>{if(!a||!f||!H){N.error("Seleccione un proveedor");return}if(I.size===0){N.error("Debe agregar al menos un producto");return}C(!0);try{const L=Zo(a,I,f),V=ei(L,f);if(V){N.error(V);return}w?(await d(w.id,L),N.success("Orden actualizada exitosamente")):(await l(L),N.success("Orden creada exitosamente")),B()}catch(L){console.error("Error saving order:",L),N.error("Ocurrió un error al guardar la orden")}finally{C(!1)}},ce=L=>{W(L)},He=async()=>{if(P)try{await m(P.id),N.success("Orden eliminada exitosamente"),W(null)}catch{N.error("Ocurrió un error al eliminar la orden")}},B=()=>{b(!1),j(null),M(new Map),ie&&e("/")},et=(L,V)=>{a||o(L.providerId);const te=new Map;L.items.forEach(Be=>{te.set(Be.productId,Be.quantity)}),M(te),j(L),b(!0)},Et=(L,V)=>{R({order:L,orderNumber:V})},Or=n.map(L=>({value:L.id,label:L.commercialName})),Mr=c||g||x;return t.jsxs("div",{className:"space-y-6",children:[t.jsx(Ho,{orders:h,products:v,onOrderSelect:et}),t.jsxs("div",{className:"flex flex-col sm:flex-row sm:items-center gap-3",children:[t.jsx("div",{className:"flex-1 max-w-xs",children:t.jsx(Nr,{options:Or,value:a,onChange:o,placeholder:"Seleccionar Proveedor"})}),a&&t.jsxs(k,{onClick:()=>b(!0),children:[t.jsx(ze,{className:"w-4 h-4 mr-2"}),"Nueva Orden"]})]}),Mr?t.jsx("div",{className:"flex items-center justify-center h-64",children:t.jsx("div",{className:"animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"})}):t.jsxs(t.Fragment,{children:[!a&&he.length>0&&t.jsxs("div",{className:"space-y-4",children:[t.jsx("h2",{className:"text-lg font-semibold text-gray-900",children:"Últimas Órdenes"}),t.jsx(Vt,{orders:he,products:v,provider:H,onSelect:et,onDelete:ce,onViewDetails:Et})]}),y&&H&&t.jsx(Xo,{products:f,selectedProducts:I,onProductSelect:Ge,onProductUpdate:u,onConfirm:Te,onCancel:B,isSubmitting:z,provider:H}),T&&H&&t.jsx(Go,{order:T.order,orderNumber:T.orderNumber,products:v,provider:H,onClose:()=>R(null)}),!y&&!T&&a&&t.jsx(Vt,{orders:i,products:f,provider:H,onSelect:et,onDelete:ce,onViewDetails:Et})]}),t.jsx(oe,{isOpen:!!P,onClose:()=>W(null),title:"Eliminar orden",children:t.jsxs("div",{className:"space-y-4",children:[t.jsx("p",{className:"text-amber-600",children:"¿Está seguro que desea eliminar esta orden?"}),t.jsxs("div",{className:"flex justify-end space-x-2",children:[t.jsx(k,{variant:"outline",onClick:()=>W(null),children:"Cancelar"}),t.jsx(k,{onClick:He,children:"Eliminar"})]})]})})]})}function ri(){return t.jsx(es,{children:t.jsxs(us,{children:[t.jsx(Kr,{position:"top-right"}),t.jsxs(ts,{children:[t.jsx(fe,{path:"/login",element:t.jsx(Ia,{})}),t.jsx(fe,{element:t.jsx(ms,{}),children:t.jsxs(fe,{element:t.jsx(Ra,{}),children:[t.jsx(fe,{path:"/",element:t.jsx(go,{})}),t.jsx(fe,{path:"/providers",element:t.jsx(xo,{})}),t.jsx(fe,{path:"/products",element:t.jsx($o,{})}),t.jsx(fe,{path:"/orders",element:t.jsx(ti,{})})]})})]})]})})}rr(document.getElementById("root")).render(t.jsx(p.StrictMode,{children:t.jsx(ri,{})}));
-//# sourceMappingURL=index-BHHon17r.js.map
+                `,onClick:P=>{P.stopPropagation(),T(s?0:e.desiredStock)},children:s&&t.jsx(Mt,{className:"w-full h-full text-white p-0.5"})}),t.jsxs("div",{className:"flex-1 min-w-0",children:[t.jsxs("div",{className:"flex items-center gap-2 mb-2",children:[t.jsx("h3",{className:"font-semibold text-gray-900",children:e.name}),t.jsx(k,{variant:"ghost",size:"sm",onClick:P=>{P.stopPropagation(),d(!0)},className:"p-1 hover:bg-gray-100 rounded-full",children:t.jsx(ht,{className:"w-4 h-4 text-gray-500"})})]}),t.jsxs("div",{className:"grid grid-cols-2 gap-2 text-sm text-gray-600 mb-3",children:[t.jsxs("div",{className:"flex items-center",children:[t.jsx(mt,{className:"w-4 h-4 mr-1.5 flex-shrink-0"}),t.jsxs("span",{children:["Stock: ",e.minPackageStock," - ",e.desiredStock]})]}),t.jsxs("div",{className:"flex items-center text-gray-500",children:[t.jsx(ft,{className:"w-4 h-4 mr-1.5 flex-shrink-0"}),t.jsxs("span",{children:["Orden: ",Ye(e.order)]})]})]}),s&&t.jsxs("div",{className:"flex items-end justify-between gap-4",children:[t.jsx("div",{className:"flex-1",children:t.jsx("div",{ref:x,className:"quantity-controls",children:u?t.jsxs("div",{className:"flex items-center gap-2",children:[t.jsx(k,{type:"button",variant:"outline",size:"sm",onClick:R,disabled:n<=0,className:"w-12 h-12 rounded-full",children:t.jsx(Xr,{className:"w-5 h-5"})}),t.jsx(A,{ref:y,type:"number",min:"0",value:g,onChange:C,onClick:P=>P.stopPropagation(),placeholder:e.desiredStock.toString(),className:"text-center text-lg h-12"}),t.jsx(k,{type:"button",variant:"outline",size:"sm",onClick:z,className:"w-12 h-12 rounded-full",children:t.jsx(ze,{className:"w-5 h-5"})})]}):t.jsx("button",{onClick:j,className:"w-full h-12 px-4 text-left bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors",children:t.jsxs("span",{className:"text-lg font-medium",children:[n," ",e.purchasePackaging]})})})}),t.jsxs("div",{className:"text-right",children:[t.jsxs("div",{className:"text-lg font-bold text-blue-600",children:["$",nt(e.price)]}),t.jsxs("div",{className:"text-sm text-gray-500",children:["Total: $",nt(e.price*n)]})]})]}),!s&&t.jsxs("div",{className:"text-lg font-bold text-blue-600",children:["$",nt(e.price)]})]})]})]})})}),l&&t.jsx(_o,{providerId:e.providerId,product:e,onSubmit:b,onCancel:()=>d(!1),isSubmitting:m})]})}function Xo({value:e,onChange:r}){return t.jsxs("div",{className:"relative mb-6",children:[t.jsx(A,{placeholder:"Filtrar productos por nombre, SKU, código o etiquetas...",value:e,onChange:s=>r(s.target.value),className:"pl-10"}),t.jsx(Oe,{className:"absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"})]})}function Ko({products:e,selectedProducts:r,onProductSelect:s,onProductUpdate:n}){const[a,o]=p.useState(new Set),[i,c]=p.useState(""),l=[...e].sort((h,g)=>h.order-g.order),d=i.trim()?l.filter(h=>{var v,x;const g=i.toLowerCase();return h.name.toLowerCase().includes(g)||h.sku.toLowerCase().includes(g)||((v=h.supplierCode)==null?void 0:v.toLowerCase().includes(g))||((x=h.tags)==null?void 0:x.some(y=>y.toLowerCase().includes(g)))}):l,m=(h,g)=>{g>=0&&(s(h,g),u(h))},f=async(h,g)=>{n&&(await n(h.id,g),u(h.id))},u=h=>{o(g=>new Set(g).add(h))};return t.jsxs("div",{className:"space-y-3",children:[t.jsx(Xo,{value:i,onChange:c}),d.map(h=>t.jsx(Qo,{product:h,products:e,isSelected:r.has(h.id),quantity:r.get(h.id)||0,onQuantityChange:g=>m(h.id,g),onProductUpdate:f,onReview:()=>u(h.id),isReviewed:a.has(h.id)},h.id)),d.length===0&&t.jsx("div",{className:"text-center py-8 text-gray-500",children:"No se encontraron productos que coincidan con la búsqueda"})]})}function Jo({products:e,selectedProducts:r,onProductSelect:s,onProductUpdate:n,onConfirm:a,onCancel:o,isSubmitting:i,provider:c}){const[l,d]=p.useState(e);kt(c.id),p.useEffect(()=>{d(f=>{const u=new Set(e.map(g=>g.id)),h=f.filter(g=>!u.has(g.id));return[...e,...h]})},[e]);const m=Array.from(r.entries()).reduce((f,[u,h])=>{const g=l.find(v=>v.id===u);return f+((g==null?void 0:g.price)||0)*h},0);return t.jsxs("div",{className:"fixed inset-0 bg-white z-50 flex flex-col",children:[t.jsx("div",{className:"border-b bg-white",children:t.jsxs("div",{className:"flex items-center justify-between px-2 h-14",children:[t.jsxs("div",{className:"flex-1 min-w-0",children:[t.jsxs("h2",{className:"text-lg font-semibold truncate",children:[c.legalName&&c.legalName!==c.commercialName?t.jsxs("span",{className:"text-gray-500",children:[c.legalName," ",t.jsx("span",{className:"mx-1",children:"•"})]}):null,t.jsx("span",{children:c.commercialName})]}),r.size>0&&t.jsxs("div",{className:"text-sm text-gray-600",children:["Importe Total: ",t.jsx("span",{className:"font-medium text-blue-600",children:ye(m)})]})]}),t.jsxs("div",{className:"flex items-center gap-2",children:[t.jsx(k,{variant:"outline",onClick:o,disabled:i,size:"sm",children:"Cancelar"}),t.jsx(k,{onClick:a,isLoading:i,size:"sm",children:"Guardar"})]})]})}),t.jsx("div",{className:"flex-1 overflow-hidden",children:t.jsx("div",{className:"h-full overflow-y-auto",children:t.jsx("div",{className:"container mx-auto max-w-3xl px-2 py-4",children:t.jsx(Ko,{products:l,selectedProducts:r,onProductSelect:s,onProductUpdate:n})})})})]})}function Zo(e){return Number(e.reduce((r,s)=>r+Number((s.price*s.quantity).toFixed(2)),0).toFixed(2))}function ei(e,r){const s=Number(Number(e.price).toFixed(2)),n=Number((s*r).toFixed(2));return{productId:e.id,quantity:Number(r),price:s,subtotal:n}}function ti(e,r,s){if(!e||!s||s.length===0)throw new Error("Invalid order data");const n=Array.from(r.entries()).map(([o,i])=>{const c=s.find(l=>l.id===o);if(!c)throw new Error(`Product ${o} not found`);return ei(c,i)}).sort((o,i)=>{const c=s.find(d=>d.id===o.productId),l=s.find(d=>d.id===i.productId);return!c||!l?0:c.order-l.order}),a=Zo(n);return{providerId:e,date:it(),status:"pending",items:n,total:a}}function ri(e,r){try{if(!e.providerId)return"El proveedor es requerido";if(!e.items||e.items.length===0)return"Debe agregar al menos un producto";const s=new Set;for(const a of e.items){if(!a.productId)return"Producto inválido";if(s.has(a.productId))return"No puede haber productos duplicados";if(s.add(a.productId),a.quantity<=0)return"La cantidad debe ser mayor a 0";const o=r.find(c=>c.id===a.productId);if(!o)return"Producto no encontrado";if(Math.abs(a.price-o.price)>.01)return`El precio del producto ${o.name} no coincide`;const i=Number((a.price*a.quantity).toFixed(2));if(Math.abs(a.subtotal-i)>.01)return`El subtotal del producto ${o.name} no coincide`}const n=Number(e.items.reduce((a,o)=>a+Number((o.price*o.quantity).toFixed(2)),0).toFixed(2));return Math.abs(e.total-n)>.01?"El total no coincide":null}catch(s){return console.error("Error validating order:",s),"Error al validar la orden"}}function si(){const e=tr(),[r,s]=Zr(),{providers:n}=we(),[a,o]=p.useState(""),{orders:i,loading:c,addOrder:l,updateOrder:d,deleteOrder:m}=kt(a),{products:f,updateProduct:u}=Ct(a),{orders:h,loading:g}=Wo(),{products:v,loading:x}=jr(),[y,b]=p.useState(!1),[w,j]=p.useState(null),[T,R]=p.useState(null),[z,C]=p.useState(!1),[P,W]=p.useState(null),[I,M]=p.useState(new Map),[ie,ee]=p.useState(!1),H=n.find(L=>L.id===a),he=h.sort((L,V)=>new Date(V.date).getTime()-new Date(L.date).getTime()).slice(0,5);p.useEffect(()=>{const L=r.get("provider"),V=r.get("new")==="true";if(L){if(o(L),V)b(!0),ee(!0);else{const te=new Date,Be=new Date(te.setHours(0,0,0,0)),Tr=new Date(te.setHours(23,59,59,999)),tt=i.find(Ve=>{const Re=new Date(Ve.date);return Re>=Be&&Re<=Tr});if(tt){const Ve=new Map;tt.items.forEach(Re=>{Ve.set(Re.productId,Re.quantity)}),M(Ve),j(tt),b(!0),ee(!0)}}s({})}},[r,s,i]);const Ge=(L,V)=>{const te=new Map(I);V>0?te.set(L,V):te.delete(L),M(te)},Te=async()=>{if(!a||!f||!H){N.error("Seleccione un proveedor");return}if(I.size===0){N.error("Debe agregar al menos un producto");return}C(!0);try{const L=ti(a,I,f),V=ri(L,f);if(V){N.error(V);return}w?(await d(w.id,L),N.success("Orden actualizada exitosamente")):(await l(L),N.success("Orden creada exitosamente")),B()}catch(L){console.error("Error saving order:",L),N.error("Ocurrió un error al guardar la orden")}finally{C(!1)}},ce=L=>{W(L)},He=async()=>{if(P)try{await m(P.id),N.success("Orden eliminada exitosamente"),W(null)}catch{N.error("Ocurrió un error al eliminar la orden")}},B=()=>{b(!1),j(null),M(new Map),ie&&e("/")},et=(L,V)=>{a||o(L.providerId);const te=new Map;L.items.forEach(Be=>{te.set(Be.productId,Be.quantity)}),M(te),j(L),b(!0)},Et=(L,V)=>{R({order:L,orderNumber:V})},Or=n.map(L=>({value:L.id,label:L.commercialName})),Mr=c||g||x;return t.jsxs("div",{className:"space-y-6",children:[t.jsx(Vo,{orders:h,products:v,onOrderSelect:et}),t.jsxs("div",{className:"flex flex-col sm:flex-row sm:items-center gap-3",children:[t.jsx("div",{className:"flex-1 max-w-xs",children:t.jsx(Nr,{options:Or,value:a,onChange:o,placeholder:"Seleccionar Proveedor"})}),a&&t.jsxs(k,{onClick:()=>b(!0),children:[t.jsx(ze,{className:"w-4 h-4 mr-2"}),"Nueva Orden"]})]}),Mr?t.jsx("div",{className:"flex items-center justify-center h-64",children:t.jsx("div",{className:"animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"})}):t.jsxs(t.Fragment,{children:[!a&&he.length>0&&t.jsxs("div",{className:"space-y-4",children:[t.jsx("h2",{className:"text-lg font-semibold text-gray-900",children:"Últimas Órdenes"}),t.jsx(Vt,{orders:he,products:v,provider:H,onSelect:et,onDelete:ce,onViewDetails:Et})]}),y&&H&&t.jsx(Jo,{products:f,selectedProducts:I,onProductSelect:Ge,onProductUpdate:u,onConfirm:Te,onCancel:B,isSubmitting:z,provider:H}),T&&H&&t.jsx(Bo,{order:T.order,orderNumber:T.orderNumber,products:v,provider:H,onClose:()=>R(null)}),!y&&!T&&a&&t.jsx(Vt,{orders:i,products:f,provider:H,onSelect:et,onDelete:ce,onViewDetails:Et})]}),t.jsx(oe,{isOpen:!!P,onClose:()=>W(null),title:"Eliminar orden",children:t.jsxs("div",{className:"space-y-4",children:[t.jsx("p",{className:"text-amber-600",children:"¿Está seguro que desea eliminar esta orden?"}),t.jsxs("div",{className:"flex justify-end space-x-2",children:[t.jsx(k,{variant:"outline",onClick:()=>W(null),children:"Cancelar"}),t.jsx(k,{onClick:He,children:"Eliminar"})]})]})})]})}function ni(){return t.jsx(es,{children:t.jsxs(us,{children:[t.jsx(Kr,{position:"top-right"}),t.jsxs(ts,{children:[t.jsx(fe,{path:"/login",element:t.jsx(Ia,{})}),t.jsx(fe,{element:t.jsx(ms,{}),children:t.jsxs(fe,{element:t.jsx(Ra,{}),children:[t.jsx(fe,{path:"/",element:t.jsx(go,{})}),t.jsx(fe,{path:"/providers",element:t.jsx(xo,{})}),t.jsx(fe,{path:"/products",element:t.jsx($o,{})}),t.jsx(fe,{path:"/orders",element:t.jsx(si,{})})]})})]})]})})}rr(document.getElementById("root")).render(t.jsx(p.StrictMode,{children:t.jsx(ni,{})}));
+//# sourceMappingURL=index-BA3iaSOx.js.map
