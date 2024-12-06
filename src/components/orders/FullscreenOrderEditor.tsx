@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Product, Provider } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { ProductSelector } from './ProductSelector';
-import { OrderProductSearch } from './OrderProductSearch';
 import { formatPrice } from '@/lib/utils';
 import { useOrders } from '@/hooks/useOrders';
 
@@ -45,19 +44,6 @@ export function FullscreenOrderEditor({
     const product = allProducts.find(p => p.id === productId);
     return sum + (product?.price || 0) * quantity;
   }, 0);
-
-  const handleExternalProductSelect = (selectedProduct: Product) => {
-    // Add external product to allProducts if not already present
-    setAllProducts(prev => {
-      if (!prev.find(p => p.id === selectedProduct.id)) {
-        return [...prev, selectedProduct];
-      }
-      return prev;
-    });
-
-    // Add to selected products with quantity 1
-    onProductSelect(selectedProduct.id!, 1);
-  };
 
   return (
     <div className="fixed inset-0 bg-white z-50 flex flex-col">
@@ -103,11 +89,6 @@ export function FullscreenOrderEditor({
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto">
           <div className="container mx-auto max-w-3xl px-2 py-4">
-            <OrderProductSearch
-              products={products}
-              orders={orders}
-              onProductSelect={handleExternalProductSelect}
-            />
             <ProductSelector
               products={allProducts}
               selectedProducts={selectedProducts}

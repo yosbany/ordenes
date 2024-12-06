@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Package, Archive, Check, Pencil, Plus, Minus } from 'lucide-react';
+import { Archive, Check, Pencil, Plus, Minus, ArrowUpDown } from 'lucide-react';
 import { Product } from '@/types';
 import { formatPrice } from '@/lib/utils/formatting/currency';
 import { formatOrderNumber } from '@/lib/order/utils';
@@ -89,11 +89,9 @@ export function OrderProductCard({
       onReview();
     }
 
-    // Add product or increase quantity
+    // Add product if not already selected
     if (!isSelected) {
       onQuantityChange(product.desiredStock);
-    } else {
-      onQuantityChange(quantity + 1);
     }
   };
 
@@ -186,80 +184,84 @@ export function OrderProductCard({
                 {/* Product Details */}
                 <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-3">
                   <div className="flex items-center">
-                    <Package className="w-4 h-4 mr-1.5 flex-shrink-0" />
-                    <span>{product.purchasePackaging}</span>
-                  </div>
-                  <div className="flex items-center">
                     <Archive className="w-4 h-4 mr-1.5 flex-shrink-0" />
                     <span>Stock: {product.minPackageStock} - {product.desiredStock}</span>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    Orden: {formatOrderNumber(product.order)}
+                  <div className="flex items-center text-gray-500">
+                    <ArrowUpDown className="w-4 h-4 mr-1.5 flex-shrink-0" />
+                    <span>Orden: {formatOrderNumber(product.order)}</span>
                   </div>
                 </div>
 
                 {/* Quantity Controls */}
-                <div className="flex items-end justify-between gap-4">
-                  <div className="flex-1">
-                    <div ref={quantityControlsRef} className="quantity-controls">
-                      {showQuantityInput ? (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={handleDecrement}
-                            disabled={quantity <= 0}
-                            className="w-12 h-12 rounded-full"
+                {isSelected && (
+                  <div className="flex items-end justify-between gap-4">
+                    <div className="flex-1">
+                      <div ref={quantityControlsRef} className="quantity-controls">
+                        {showQuantityInput ? (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleDecrement}
+                              disabled={quantity <= 0}
+                              className="w-12 h-12 rounded-full"
+                            >
+                              <Minus className="w-5 h-5" />
+                            </Button>
+                            
+                            <Input
+                              ref={inputRef}
+                              type="number"
+                              min="0"
+                              value={inputValue}
+                              onChange={handleInputChange}
+                              onClick={(e) => e.stopPropagation()}
+                              placeholder={product.desiredStock.toString()}
+                              className="text-center text-lg h-12"
+                            />
+                            
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleIncrement}
+                              className="w-12 h-12 rounded-full"
+                            >
+                              <Plus className="w-5 h-5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={handleQuantityClick}
+                            className="w-full h-12 px-4 text-left bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
                           >
-                            <Minus className="w-5 h-5" />
-                          </Button>
-                          
-                          <Input
-                            ref={inputRef}
-                            type="number"
-                            min="0"
-                            value={inputValue}
-                            onChange={handleInputChange}
-                            onClick={(e) => e.stopPropagation()}
-                            placeholder={product.desiredStock.toString()}
-                            className="text-center text-lg h-12"
-                          />
-                          
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={handleIncrement}
-                            className="w-12 h-12 rounded-full"
-                          >
-                            <Plus className="w-5 h-5" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={handleQuantityClick}
-                          className="w-full h-12 px-4 text-left bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                          <span className="text-lg font-medium">
-                            {quantity} {product.purchasePackaging}
-                          </span>
-                        </button>
-                      )}
+                            <span className="text-lg font-medium">
+                              {quantity} {product.purchasePackaging}
+                            </span>
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-blue-600">
-                      ${formatPrice(product.price)}
-                    </div>
-                    {isSelected && (
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-blue-600">
+                        ${formatPrice(product.price)}
+                      </div>
                       <div className="text-sm text-gray-500">
                         Total: ${formatPrice(product.price * quantity)}
                       </div>
-                    )}
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Price (when not selected) */}
+                {!isSelected && (
+                  <div className="text-lg font-bold text-blue-600">
+                    ${formatPrice(product.price)}
+                  </div>
+                )}
               </div>
             </div>
           </div>
