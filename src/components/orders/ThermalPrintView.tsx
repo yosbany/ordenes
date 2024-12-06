@@ -1,7 +1,6 @@
 import React from 'react';
 import { Order, Product, Provider } from '@/types';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { formatReport } from '@/lib/utils/formatting/reportUtils';
 
 interface ThermalPrintViewProps {
   order: Order;
@@ -10,66 +9,35 @@ interface ThermalPrintViewProps {
 }
 
 export function ThermalPrintView({ order, products, provider }: ThermalPrintViewProps) {
-  // Calculate total products
-  const totalProducts = order.items.reduce((sum, item) => sum + item.quantity, 0);
+  const content = formatReport(order, products, false);
 
   return (
-    <div className="font-mono text-sm w-[302px] p-4" style={{ width: '80mm' }}>
+    <div className="font-mono text-sm" style={{ width: '80mm', margin: '0 auto' }}>
       <style>
         {`
           @media print {
-            body {
-              width: 80mm;
-              margin: 0;
-              padding: 0;
-            }
             @page {
               size: 80mm auto;
               margin: 0;
             }
+            body {
+              width: 80mm;
+              margin: 0;
+              padding: 8px;
+              font-family: monospace;
+              font-size: 12px;
+              line-height: 1.2;
+            }
+            pre {
+              margin: 0;
+              white-space: pre-wrap;
+              font-family: inherit;
+              font-size: inherit;
+            }
           }
         `}
       </style>
-      
-      {/* Header */}
-      <div className="text-center border-b pb-2 mb-2">
-        <div className="font-bold">{provider.commercialName}</div>
-        {provider.legalName && provider.legalName !== provider.commercialName && (
-          <div className="text-xs">{provider.legalName}</div>
-        )}
-        <div className="text-xs mt-1">
-          {format(new Date(order.date), "dd/MM/yyyy HH:mm", { locale: es })}
-        </div>
-      </div>
-
-      {/* Items */}
-      <div className="space-y-1 border-b pb-2 mb-2">
-        {order.items
-          .sort((a, b) => {
-            const productA = products.find(p => p.id === a.productId);
-            const productB = products.find(p => p.id === b.productId);
-            if (!productA || !productB) return 0;
-            return productA.order - productB.order;
-          })
-          .map(item => {
-            const product = products.find(p => p.id === item.productId);
-            if (!product) return null;
-
-            return (
-              <div key={item.productId} className="flex justify-between">
-                <div className="flex-1">{product.name}</div>
-                <div className="ml-4 text-right">
-                  {item.quantity} {product.purchasePackaging}
-                </div>
-              </div>
-            );
-          })}
-      </div>
-
-      {/* Total Products */}
-      <div className="text-right font-bold">
-        Total productos: {totalProducts}
-      </div>
+      <pre className="whitespace-pre-wrap">{content}</pre>
     </div>
   );
 }

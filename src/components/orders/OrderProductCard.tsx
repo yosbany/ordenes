@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Package, Archive, ArrowUpDown, Check, Pencil } from 'lucide-react';
 import { Product } from '@/types';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice } from '@/lib/utils/formatting/currency';
 import { formatOrderNumber, getSectorFromOrder } from '@/lib/order/utils';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -52,34 +52,11 @@ export function OrderProductCard({
     }
   };
 
-  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Check if click was on the quantity controls or other interactive elements
-    const isQuantityControl = (e.target as HTMLElement).closest('.quantity-controls');
-    const isOrderButton = (e.target as HTMLElement).closest('.order-button');
-    const isEditButton = (e.target as HTMLElement).closest('.edit-button');
-
-    if (isQuantityControl || isOrderButton || isEditButton) {
-      return;
-    }
-
-    // If not already selected, select with desired stock
-    if (!isSelected) {
-      onQuantityChange(product.desiredStock);
-      onReview();
-    } else {
-      // If already selected, increment by 1
-      onQuantityChange(quantity + 1);
-    }
-  };
-
   return (
     <>
       <Card isSelected={isSelected}>
         <Card.Header className="!p-3">
-          <div 
-            className="relative cursor-pointer"
-            onClick={handleCardClick}
-          >
+          <div className="relative">
             {/* Review Indicator */}
             {isReviewed && (
               <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-1">
@@ -88,28 +65,39 @@ export function OrderProductCard({
             )}
 
             <div className="flex items-start gap-3">
-              {/* Selection Indicator */}
-              <div className="flex-shrink-0 mt-1">
+              {/* Checkbox */}
+              <div
+                className={`
+                  flex-shrink-0 w-5 h-5 rounded border cursor-pointer transition-colors mt-1
+                  ${isSelected 
+                    ? 'bg-blue-500 border-blue-500' 
+                    : 'border-gray-300 hover:border-blue-500'
+                  }
+                `}
+                onClick={() => onQuantityChange(isSelected ? 0 : product.desiredStock)}
+              >
                 {isSelected && (
-                  <div className="w-5 h-5 bg-blue-500 rounded flex items-center justify-center">
-                    <Check className="w-4 h-4 text-white" />
-                  </div>
+                  <Check className="w-full h-full text-white p-0.5" />
                 )}
               </div>
 
               <div className="flex-1 min-w-0">
+                {/* Product Name */}
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-semibold text-gray-900">{product.name}</h3>
+                  <h3 className="font-semibold text-gray-900">
+                    {product.name}
+                  </h3>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsEditing(true)}
-                    className="p-1 hover:bg-gray-100 rounded-full edit-button"
+                    className="p-1 hover:bg-gray-100 rounded-full"
                   >
                     <Pencil className="w-4 h-4 text-gray-500" />
                   </Button>
                 </div>
 
+                {/* Product Details */}
                 <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-3">
                   <div className="flex items-center">
                     <Package className="w-4 h-4 mr-1.5 flex-shrink-0" />
@@ -122,7 +110,7 @@ export function OrderProductCard({
                   <button
                     onClick={() => setIsOrderModalOpen(true)}
                     className={`
-                      inline-flex items-center px-2 py-1 rounded-md text-sm transition-colors order-button
+                      inline-flex items-center px-2 py-1 rounded-md text-sm transition-colors
                       ${sectorColor.bg} ${sectorColor.border} ${sectorColor.text}
                       hover:opacity-90
                     `}
@@ -133,7 +121,7 @@ export function OrderProductCard({
                 </div>
 
                 {/* Quantity Controls */}
-                <div className="flex items-end justify-between gap-4 quantity-controls">
+                <div className="flex items-end justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <Button
@@ -175,11 +163,11 @@ export function OrderProductCard({
 
                   <div className="text-right">
                     <div className="text-lg font-bold text-blue-600">
-                      {formatPrice(product.price)}
+                      ${formatPrice(product.price)}
                     </div>
                     {isSelected && (
                       <div className="text-sm text-gray-500">
-                        Total: {formatPrice(product.price * quantity)}
+                        Total: ${formatPrice(product.price * quantity)}
                       </div>
                     )}
                   </div>
@@ -196,7 +184,6 @@ export function OrderProductCard({
         onClose={() => setIsOrderModalOpen(false)}
         product={product}
         products={products}
-        onOrderChange={handleOrderChange}
       />
 
       {/* Product Edit Modal */}
