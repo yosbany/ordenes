@@ -4,31 +4,36 @@ import { Button } from '@/components/ui/Button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { SECTORS } from '@/config/constants';
 import { Product } from '@/types';
-import { getSectorFromOrder, getSequenceFromOrder, calculateNewOrder, formatOrderNumber, getSectorProducts } from '@/lib/order/utils';
+import { 
+  getSectorFromOrder, 
+  getSequenceFromOrder, 
+  calculateNewOrder,
+  formatOrderNumber 
+} from '@/lib/order/utils';
 import { getSectorColor } from '@/lib/sectorColors';
+import { useProductOrder } from '@/hooks/useProductOrder';
 
 interface ProductOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
   product: Product;
   products: Product[];
-  onOrderChange: (product: Product, newOrder: number) => Promise<void>;
 }
 
 export function ProductOrderModal({
   isOpen,
   onClose,
   product,
-  products,
-  onOrderChange
+  products
 }: ProductOrderModalProps) {
   const [selectedSector, setSelectedSector] = useState(getSectorFromOrder(product.order));
   const [selectedPosition, setSelectedPosition] = useState<number>(getSequenceFromOrder(product.order));
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { updateOrder, isProcessing } = useProductOrder();
 
   // Get products in selected sector
-  const sectorProducts = getSectorProducts(products, selectedSector)
-    .filter(p => p.id !== product.id); // Exclude current product
+  const sectorProducts = products
+    .filter(p => getSectorFromOrder(p.order) === selectedSector && p.id !== product.id)
+    .sort((a, b) => getSequenceFromOrder(a.order) - getSequenceFromOrder(b.order));
 
   // Calculate max position based on current products in sector
   const maxPosition = sectorProducts.length + 1;
@@ -48,7 +53,10 @@ export function ProductOrderModal({
     const newSector = e.target.value;
     setSelectedSector(newSector);
     // When changing sectors, set position to end of list
-    setSelectedPosition(getSectorProducts(products, newSector).length + 1);
+    const sectorProductCount = products.filter(p => 
+      getSectorFromOrder(p.order) === newSector && p.id !== product.id
+    ).length;
+    setSelectedPosition(sectorProductCount + 1);
   };
 
   const handleNavigate = (direction: 'prev' | 'next') => {
@@ -59,17 +67,14 @@ export function ProductOrderModal({
   };
 
   const handleSubmit = async () => {
-    if (isSubmitting) return;
+    if (isProcessing) return;
     
-    setIsSubmitting(true);
     try {
       const newOrder = calculateNewOrder(selectedSector, selectedPosition);
-      await onOrderChange(product, newOrder);
+      await updateOrder(product.id!, newOrder);
       onClose();
     } catch (error) {
       console.error('Error updating order:', error);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -97,7 +102,7 @@ export function ProductOrderModal({
             value={selectedSector}
             onChange={handleSectorChange}
             className="w-full rounded-md border border-gray-300 px-3 py-2"
-            disabled={isSubmitting}
+            disabled={isProcessing}
           >
             {SECTORS.map(sector => {
               const sectorColor = getSectorColor(sector.code);
@@ -120,10 +125,10 @@ export function ProductOrderModal({
             <button
               type="button"
               onClick={() => handleNavigate('prev')}
-              disabled={selectedPosition <= 1 || isSubmitting}
+              disabled={selectedPosition <= 1 || isProcessing}
               className={`
                 h-12 w-12 rounded-full flex items-center justify-center transition-colors
-                ${selectedPosition <= 1 || isSubmitting
+                ${selectedPosition <= 1 || isProcessing
                   ? 'bg-white/50 text-gray-400 cursor-not-allowed'
                   : 'bg-white text-gray-700 hover:bg-white/80'
                 }
@@ -148,10 +153,10 @@ export function ProductOrderModal({
             <button
               type="button"
               onClick={() => handleNavigate('next')}
-              disabled={selectedPosition >= maxPosition || isSubmitting}
+              disabled={selectedPosition >= maxPosition || isProcessing}
               className={`
                 h-12 w-12 rounded-full flex items-center justify-center transition-colors
-                ${selectedPosition >= maxPosition || isSubmitting
+                ${selectedPosition >= maxPosition || isProcessing
                   ? 'bg-white/50 text-gray-400 cursor-not-allowed'
                   : 'bg-white text-gray-700 hover:bg-white/80'
                 }
@@ -200,14 +205,14 @@ export function ProductOrderModal({
             type="button"
             variant="outline" 
             onClick={onClose}
-            disabled={isSubmitting}
+            disabled={isProcessing}
           >
             Cancelar
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting}
-            isLoading={isSubmitting}
+            disabled={isProcessing}
+            isLoading={isProcessing}
           >
             Confirmar
           </Button>

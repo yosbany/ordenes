@@ -71,8 +71,7 @@ export function CsvImportCard() {
         <Card.Header className="!p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Actualizar Precios</p>
-              <h3 className="text-lg font-bold mt-1">Importar CSV</h3>
+              <h3 className="text-lg font-bold mt-1">Actualizar Precios</h3>
             </div>
             <div className="p-2 bg-violet-100 rounded-lg">
               <FileUp className="w-5 h-5 text-violet-600" />

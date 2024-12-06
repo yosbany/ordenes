@@ -12,10 +12,10 @@ export function Card({ children, className, isSelected, onClick }: CardProps) {
   return (
     <div
       className={mergeClasses(
-        'bg-white rounded-lg transition-all duration-200 h-full',
+        'rounded-lg transition-all duration-200 h-full',
         isSelected 
           ? 'border-2 border-blue-500 shadow-sm ring-2 ring-blue-100 bg-blue-50'
-          : 'border border-gray-200 shadow-sm hover:border-gray-300 hover:shadow',
+          : 'border border-gray-200 shadow-sm hover:border-gray-300 hover:shadow bg-gradient-to-br from-slate-50 to-gray-50',
         onClick && 'cursor-pointer',
         className
       )}
@@ -44,7 +44,7 @@ Card.Content = function CardContent({ children, className }: { children: React.R
 
 Card.Footer = function CardFooter({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={mergeClasses('px-3 sm:px-4 py-2 sm:py-3 border-t bg-gray-50/50 rounded-b-lg', className)}>
+    <div className={mergeClasses('px-3 sm:px-4 py-2 sm:py-3 border-t bg-white/50 rounded-b-lg', className)}>
       {children}
     </div>
   );

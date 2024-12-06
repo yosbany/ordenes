@@ -44,7 +44,7 @@ export function validateProduct(data: Omit<Product, 'id'>): ValidationError | nu
     return { field: 'minPackageStock', message: 'El stock mínimo no puede ser mayor al stock deseado' };
   }
 
-  // Price validation
+  // Price validation - allow zero or positive numbers
   if (typeof data.price !== 'number' || isNaN(data.price)) {
     return { field: 'price', message: 'El precio debe ser un número válido' };
   }
@@ -59,4 +59,20 @@ export function validateProduct(data: Omit<Product, 'id'>): ValidationError | nu
   }
 
   return null;
+}
+
+export function formatProductData(data: Omit<Product, 'id'>): Omit<Product, 'id'> {
+  return {
+    name: data.name.trim().toUpperCase(),
+    sku: data.sku.trim().toUpperCase(),
+    supplierCode: data.supplierCode?.trim().toUpperCase() || '',
+    purchasePackaging: data.purchasePackaging.trim().toUpperCase(),
+    salePackaging: data.salePackaging?.trim().toUpperCase() || '',
+    price: Number(data.price),
+    minPackageStock: Number(data.minPackageStock),
+    desiredStock: Number(data.desiredStock),
+    order: Number(data.order),
+    providerId: data.providerId,
+    tags: data.tags || []
+  };
 }
