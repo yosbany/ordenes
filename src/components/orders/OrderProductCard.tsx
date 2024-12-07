@@ -183,10 +183,6 @@ export function OrderProductCard({
 
                 {/* Product Details */}
                 <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-3">
-                  <div className="flex items-center">
-                    <Archive className="w-4 h-4 mr-1.5 flex-shrink-0" />
-                    <span>Stock: {product.minPackageStock} - {product.desiredStock}</span>
-                  </div>
                   <div className="flex items-center text-gray-500">
                     <ArrowUpDown className="w-4 h-4 mr-1.5 flex-shrink-0" />
                     <span>Orden: {formatOrderNumber(product.order)}</span>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { TagInput } from '@/components/ui/TagInput';
@@ -36,7 +36,7 @@ export function ProductForm({
   const { tags: tagSuggestions, addTag } = useTags();
   const { products } = useProducts(initialProviderId);
   const { suggestedSku, loading: skuLoading } = useSkuSuggestion();
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [isOrderModalOpen, setIsOrderModalOpen] = React.useState(false);
 
   const {
     formData,
@@ -48,10 +48,21 @@ export function ProductForm({
   } = useProductForm({
     initialData,
     providerId: initialProviderId,
-    onSubmit
+    onSubmit: async (data) => {
+      try {
+        await onSubmit({
+          ...data,
+          providerId: data.providerId || initialProviderId,
+          id: initialData?.id // Preserve ID for updates
+        });
+      } catch (error) {
+        console.error('Error in form submission:', error);
+        throw error;
+      }
+    }
   });
 
-  const handleOrderChange = async (product: Product, newOrder: number) => {
+  const handleOrderChange = async (newOrder: number) => {
     updateField('order', newOrder);
     setIsOrderModalOpen(false);
   };

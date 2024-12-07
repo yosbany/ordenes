@@ -59,18 +59,16 @@ export function OrderActions({ order, products, provider }: OrderActionsProps) {
       });
       
       const template = generatePrintTemplate(order, products);
-      const printWindow = window.open('', '_blank', 'width=300,height=600,scrollbars=yes');
       
-      if (!printWindow) {
-        throw new Error('No se pudo crear la ventana de impresión');
+      // Create a new tab and write the template
+      const printTab = window.open('', '_blank');
+      if (!printTab) {
+        throw new Error('No se pudo crear la pestaña de impresión');
       }
 
-      printWindow.document.write(template);
-      printWindow.document.close();
+      printTab.document.write(template);
+      printTab.document.close();
       
-      // Focus the new window
-      printWindow.focus();
-
       setIsPrintDialogOpen(false);
     } catch (error) {
       console.error('Error printing order:', error);

@@ -28,7 +28,15 @@ export async function updateProductById(id: string, data: Partial<Product>): Pro
       throw new DatabaseError('Product not found');
     }
 
-    await update(productRef, data);
+    // Remove id from data before saving
+    const { id: _, ...updateData } = data;
+    
+    // Ensure supplierCode is included in the update, even if empty string
+    if (typeof updateData.supplierCode === 'undefined') {
+      updateData.supplierCode = '';
+    }
+
+    await update(productRef, updateData);
   } catch (error) {
     throw new DatabaseError('Failed to update product', { cause: error });
   }

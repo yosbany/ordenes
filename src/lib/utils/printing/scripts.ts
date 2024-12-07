@@ -3,6 +3,14 @@ export const printScripts = `
   let retryCount = 0;
   const MAX_RETRIES = 3;
 
+  function createPrintIcon() {
+    return \`
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+      </svg>
+    \`;
+  }
+
   function showError(message) {
     const existingError = document.querySelector('.error-message');
     if (existingError) {
@@ -18,6 +26,18 @@ export const printScripts = `
     if (printButton) {
       printButton.disabled = false;
     }
+
+    // Auto-hide error after 5 seconds
+    setTimeout(() => {
+      errorDiv.remove();
+    }, 5000);
+  }
+
+  function setupPrintButton() {
+    const printButton = document.getElementById('print-button');
+    if (printButton) {
+      printButton.innerHTML = createPrintIcon() + 'Imprimir';
+    }
   }
 
   function handlePrint() {
@@ -30,6 +50,7 @@ export const printScripts = `
 
       window.print();
 
+      // Handle print completion
       window.onafterprint = () => {
         isPrinting = false;
         setTimeout(() => {
@@ -37,6 +58,7 @@ export const printScripts = `
         }, 100);
       };
 
+      // Timeout handler for print dialog
       setTimeout(() => {
         if (!window.closed && isPrinting) {
           isPrinting = false;
@@ -60,7 +82,9 @@ export const printScripts = `
 
   window.onload = () => {
     try {
-      setTimeout(handlePrint, 500);
+      setupPrintButton();
+      // Delay initial print to ensure content is rendered
+      setTimeout(handlePrint, 800);
     } catch (error) {
       console.error('Print error:', error);
       showError('Error al iniciar la impresión. Por favor, use el botón Imprimir.');

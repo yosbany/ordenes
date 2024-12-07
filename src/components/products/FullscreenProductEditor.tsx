@@ -19,6 +19,18 @@ export function FullscreenProductEditor({
   onCancel,
   isSubmitting
 }: FullscreenProductEditorProps) {
+  const handleSubmit = async (data: Omit<Product, 'id'>) => {
+    try {
+      await onSubmit({
+        ...data,
+        id: product.id // Preserve the original product ID
+      });
+    } catch (error) {
+      console.error('Error in FullscreenProductEditor submit:', error);
+      throw error;
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-white z-50 flex flex-col">
       {/* Header */}
@@ -41,7 +53,7 @@ export function FullscreenProductEditor({
             <ProductForm
               providerId={providerId}
               initialData={product}
-              onSubmit={onSubmit}
+              onSubmit={handleSubmit}
               onCancel={onCancel}
               isLoading={isSubmitting}
             />

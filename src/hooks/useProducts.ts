@@ -76,7 +76,10 @@ export function useProducts(providerId?: string) {
       // Merge updates with current data
       const updatedProduct = {
         ...currentProduct,
-        ...updates
+        ...updates,
+        // Ensure supplierCode is included, even if empty string
+        supplierCode: updates.supplierCode ?? currentProduct.supplierCode ?? '',
+        id // Preserve ID
       };
 
       // Validate complete product data

@@ -84,9 +84,11 @@ export function useProductForm({ initialData, providerId, onSubmit }: UseProduct
       };
 
       await onSubmit(formattedData);
+      toast.success(initialData ? 'Producto actualizado exitosamente' : 'Producto creado exitosamente');
     } catch (error) {
       console.error('Error saving product:', error);
       toast.error(error instanceof Error ? error.message : 'Error al guardar el producto');
+      throw error;
     } finally {
       setIsSubmitting(false);
     }

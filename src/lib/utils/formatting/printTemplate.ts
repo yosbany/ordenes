@@ -57,7 +57,7 @@ export function generatePrintTemplate(order: Order, products: Product[]): string
         </div>
 
         <div class="controls">
-          <button id="print-button" class="print-button" onclick="handlePrint()">
+          <button id="print-button" class="print-button">
             Imprimir
           </button>
         </div>

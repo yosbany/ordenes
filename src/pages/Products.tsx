@@ -6,7 +6,6 @@ import { Dialog } from '@/components/ui/Dialog';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { useProviders } from '@/hooks/useProviders';
 import { useProducts } from '@/hooks/useProducts';
-import { useProductUpdate } from '@/hooks/useProductUpdate';
 import { ProductCarousel } from '@/components/products/ProductCarousel';
 import { GlobalProductSearch } from '@/components/products/GlobalProductSearch';
 import { ProviderProductSearch } from '@/components/products/ProviderProductSearch';
@@ -18,8 +17,7 @@ import { calculateNewOrder, getSectorFromOrder } from '@/lib/order/utils';
 export function Products() {
   const { providers } = useProviders();
   const [selectedProviderId, setSelectedProviderId] = useState<string>('');
-  const { products, loading, addProduct, deleteProduct } = useProducts(selectedProviderId);
-  const { updateProduct, isProcessing: isUpdating } = useProductUpdate();
+  const { products, loading, addProduct, updateProduct, deleteProduct } = useProducts(selectedProviderId);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -30,7 +28,11 @@ export function Products() {
     setIsSubmitting(true);
     try {
       if (editingProduct) {
-        await updateProduct(editingProduct, data);
+        await updateProduct(editingProduct.id!, {
+          ...data,
+          id: editingProduct.id // Preserve ID for updates
+        });
+        toast.success('Producto actualizado exitosamente');
       } else {
         // For new products, calculate order at the end of the first sector
         const defaultSector = SECTORS[0].code;
@@ -51,7 +53,12 @@ export function Products() {
 
   const handleOrderChange = async (product: Product, newOrder: number) => {
     try {
-      await updateProduct(product, { order: newOrder });
+      await updateProduct(product.id!, { 
+        ...product,
+        order: newOrder,
+        id: product.id // Preserve ID
+      });
+      toast.success('Orden actualizado exitosamente');
     } catch (error) {
       console.error('Error updating order:', error);
       toast.error('Error al actualizar el orden');
@@ -128,7 +135,7 @@ export function Products() {
           initialData={editingProduct || undefined}
           onSubmit={handleSubmit}
           onCancel={handleCloseForm}
-          isLoading={isSubmitting || isUpdating}
+          isLoading={isSubmitting}
         />
       )}
 
@@ -150,6 +157,7 @@ export function Products() {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onOrderChange={handleOrderChange}
+                providerId={selectedProviderId}
               />
             </>
           )

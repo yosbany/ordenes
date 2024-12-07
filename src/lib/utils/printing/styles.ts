@@ -8,35 +8,42 @@ export const thermalPrintStyles = `
 
   /* Base styles */
   body {
-    font-family: monospace;
-    font-size: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
     line-height: 1.5;
-    width: 80mm;
-    margin: 0 auto;
-    padding: 0;
-    background: white;
+    background: #f3f4f6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
+  /* Preview Container */
   .content {
-    padding: 3mm;
+    width: 80mm;
+    background: white;
+    margin: 20px auto;
+    padding: 10mm;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-radius: 4px;
   }
 
   .header {
-    text-align: left;
-    margin-bottom: 3mm;
+    text-align: center;
+    margin-bottom: 6mm;
     border-bottom: 1px dashed #000;
-    padding-bottom: 3mm;
+    padding-bottom: 4mm;
   }
 
   .header div {
-    margin-bottom: 1mm;
-    white-space: pre-wrap;
-    word-break: break-word;
+    margin-bottom: 2mm;
+    font-weight: bold;
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 4mm;
   }
 
   tr {
@@ -48,7 +55,8 @@ export const thermalPrintStyles = `
   }
 
   td {
-    padding: 2mm 0;
+    padding: 2mm 1mm;
+    font-size: 13px;
   }
 
   td.quantity {
@@ -69,26 +77,44 @@ export const thermalPrintStyles = `
     right: 20px;
     display: flex;
     gap: 10px;
+    z-index: 100;
   }
 
   .print-button {
-    padding: 10px 20px;
+    padding: 12px 24px;
     background: #2563eb;
     color: white;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
-    transition: background-color 0.2s;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .print-button:hover {
     background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .print-button:active {
+    transform: translateY(0);
   }
 
   .print-button:disabled {
     background: #9ca3af;
     cursor: not-allowed;
+    transform: none;
+  }
+
+  .print-button svg {
+    width: 16px;
+    height: 16px;
   }
 
   .error-message {
@@ -105,6 +131,7 @@ export const thermalPrintStyles = `
     z-index: 1000;
     text-align: center;
     max-width: 90%;
+    font-size: 14px;
   }
 
   /* Print Media Styles */
@@ -117,6 +144,17 @@ export const thermalPrintStyles = `
     body {
       width: 80mm;
       margin: 0;
+      padding: 0;
+      background: white;
+      min-height: auto;
+    }
+
+    .content {
+      width: 100%;
+      margin: 0;
+      padding: 4mm;
+      box-shadow: none;
+      border-radius: 0;
     }
 
     .controls,
@@ -126,6 +164,10 @@ export const thermalPrintStyles = `
 
     tr {
       page-break-inside: avoid;
+    }
+
+    td {
+      font-size: 12px;
     }
   }
 `;

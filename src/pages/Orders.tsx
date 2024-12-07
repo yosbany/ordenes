@@ -233,8 +233,6 @@ export function Orders() {
                 products={globalProducts}
                 provider={selectedProvider}
                 onSelect={handleSelectOrder}
-                onDelete={handleDelete}
-                onViewDetails={handleViewDetails}
               />
             </div>
           )}
