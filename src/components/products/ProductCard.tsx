@@ -1,5 +1,5 @@
 import React from 'react';
-import { Package, Archive, Pencil, Trash2, ArrowUpDown } from 'lucide-react';
+import { Package, Archive, Pencil, Trash2, ArrowUpDown, FileText } from 'lucide-react';
 import { Product } from '@/types';
 import { formatPrice, formatOrderNumber } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
@@ -50,12 +50,16 @@ export function ProductCard({
               <Archive className="w-4 h-4 mr-1.5 flex-shrink-0 text-gray-500" />
               <span>Stock: {product.minPackageStock} - {product.desiredStock}</span>
             </div>
-          </div>
-
-          {/* Order Number */}
-          <div className="flex items-center text-sm text-gray-500">
-            <ArrowUpDown className="w-4 h-4 mr-1.5 text-gray-400" />
-            <span>Orden: {formatOrderNumber(product.order)}</span>
+            <div className="flex items-center">
+              <FileText className="w-4 h-4 mr-1.5 flex-shrink-0 text-gray-500" />
+              <span className="truncate">
+                {product.supplierCode || 'Sin código'}
+              </span>
+            </div>
+            <div className="flex items-center">
+              <ArrowUpDown className="w-4 h-4 mr-1.5 text-gray-400" />
+              <span>{formatOrderNumber(product.order)}</span>
+            </div>
           </div>
 
           {/* Actions with Price */}

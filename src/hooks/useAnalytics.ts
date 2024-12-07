@@ -1,21 +1,19 @@
 import { useState, useEffect } from 'react';
-import { 
-  getWeeklyOrdersCount, 
-  getTopProducts, 
-  getProductFrequency,
-  getTotalProducts,
-  getTotalProviders,
-  WeeklyOrdersCount,
-  TopProduct,
-  ProductFrequency
-} from '@/lib/services/analytics';
+import { getAnalytics } from '@/lib/services/analytics';
+import type { WeeklyOrdersCount, ProductStats } from '@/lib/services/analytics';
 
 export function useAnalytics() {
-  const [weeklyOrders, setWeeklyOrders] = useState<WeeklyOrdersCount[]>([]);
-  const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
-  const [productFrequency, setProductFrequency] = useState<ProductFrequency[]>([]);
-  const [totalProducts, setTotalProducts] = useState<number>(0);
-  const [totalProviders, setTotalProviders] = useState<number>(0);
+  const [data, setData] = useState<{
+    weeklyOrders: WeeklyOrdersCount[];
+    topProducts: ProductStats[];
+    totalProducts: number;
+    totalProviders: number;
+  }>({
+    weeklyOrders: [],
+    topProducts: [],
+    totalProducts: 0,
+    totalProviders: 0
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,21 +23,11 @@ export function useAnalytics() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [weekly, top, frequency, products, providers] = await Promise.all([
-          getWeeklyOrdersCount(),
-          getTopProducts(),
-          getProductFrequency(),
-          getTotalProducts(),
-          getTotalProviders()
-        ]);
+        const analyticsData = await getAnalytics();
 
         if (!mounted) return;
 
-        setWeeklyOrders(weekly);
-        setTopProducts(top);
-        setProductFrequency(frequency);
-        setTotalProducts(products);
-        setTotalProviders(providers);
+        setData(analyticsData);
         setError(null);
       } catch (err) {
         console.error('Error fetching analytics:', err);
@@ -60,11 +48,7 @@ export function useAnalytics() {
   }, []);
 
   return {
-    weeklyOrders,
-    topProducts,
-    productFrequency,
-    totalProducts,
-    totalProviders,
+    ...data,
     loading,
     error
   };

@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, ArrowLeft, Calendar, Building2, FileText, Package } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, ArrowLeft, Calendar, Building2, FileText, Package, AlertTriangle } from 'lucide-react';
 import { Order, Product, Provider } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { OrderSummary } from './OrderSummary';
@@ -8,6 +8,9 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { formatPrice } from '@/lib/utils';
 import { fromTimestamp } from '@/lib/dateUtils';
+import { Dialog } from '@/components/ui/Dialog';
+import { useOrders } from '@/hooks/useOrders';
+import { toast } from 'react-hot-toast';
 
 interface OrderDetailsProps {
   order: Order;
@@ -15,11 +18,41 @@ interface OrderDetailsProps {
   products: Product[];
   provider: Provider;
   onClose: () => void;
+  onEdit?: () => void;
 }
 
-export function OrderDetails({ order, orderNumber, products, provider, onClose }: OrderDetailsProps) {
+export function OrderDetails({ 
+  order, 
+  orderNumber, 
+  products, 
+  provider, 
+  onClose,
+  onEdit 
+}: OrderDetailsProps) {
+  const [isReopenDialogOpen, setIsReopenDialogOpen] = useState(false);
+  const { updateOrder } = useOrders(provider.id);
+  const [isProcessing, setIsProcessing] = useState(false);
+  
   const orderDate = format(fromTimestamp(order.date), "d 'de' MMMM, yyyy HH:mm", { locale: es });
   const totalProducts = order.items.reduce((sum, item) => sum + item.quantity, 0);
+
+  const handleReopen = async () => {
+    setIsProcessing(true);
+    try {
+      await updateOrder(order.id!, {
+        ...order,
+        status: 'pending'
+      });
+      toast.success('Orden reabierta exitosamente');
+      onEdit?.();
+    } catch (error) {
+      console.error('Error reopening order:', error);
+      toast.error('Error al reabrir la orden');
+    } finally {
+      setIsProcessing(false);
+      setIsReopenDialogOpen(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-gray-50 z-50 flex flex-col">
@@ -137,19 +170,56 @@ export function OrderDetails({ order, orderNumber, products, provider, onClose }
             </div>
 
             {/* Actions */}
-            <div className="print:hidden">
-              <div className="bg-white p-4 rounded-lg border shadow-sm">
-                <h3 className="font-medium mb-4">Acciones</h3>
-                <OrderActions
-                  order={order}
-                  products={products}
-                  provider={provider}
-                />
+            {order.status === 'completed' ? (
+              <div className="print:hidden">
+                <div className="bg-white p-4 rounded-lg border shadow-sm">
+                  <OrderActions
+                    order={order}
+                    products={products}
+                    provider={provider}
+                    onReopen={() => setIsReopenDialogOpen(true)}
+                  />
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="print:hidden bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div className="flex items-center gap-3 text-amber-700">
+                  <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+                  <p>Esta orden está pendiente de completar</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Reopen Dialog */}
+      <Dialog
+        isOpen={isReopenDialogOpen}
+        onClose={() => setIsReopenDialogOpen(false)}
+        title="Reabrir orden"
+      >
+        <div className="space-y-4">
+          <p className="text-amber-600">
+            ¿Está seguro que desea reabrir esta orden para edición?
+          </p>
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsReopenDialogOpen(false)}
+              disabled={isProcessing}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleReopen}
+              isLoading={isProcessing}
+            >
+              Reabrir
+            </Button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   );
 }

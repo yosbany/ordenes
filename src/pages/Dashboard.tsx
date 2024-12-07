@@ -20,6 +20,7 @@ import { TopProductsModal } from '@/components/dashboard/TopProductsModal';
 import { ProviderOrderStatus } from '@/components/dashboard/ProviderOrderStatus';
 import { ProviderDeliveryStatus } from '@/components/dashboard/ProviderDeliveryStatus';
 import { CsvImportCard } from '@/components/dashboard/CsvImportCard';
+import { formatPrice } from '@/lib/utils';
 
 const WEEKDAY_MAP: Record<string, WeekDay> = {
   'lunes': 'monday',
@@ -47,7 +48,7 @@ export function Dashboard() {
   // Get weekly orders total
   const totalWeeklyOrders = weeklyOrders[0]?.count || 0;
 
-  // Get most ordered product
+  // Get top product by amount
   const topProduct = topProducts[0];
 
   // Calculate total orders
@@ -133,9 +134,9 @@ export function Dashboard() {
           <h3 className="text-2xl font-bold mt-1">{totalWeeklyOrders}</h3>
         </AnalyticsCard>
 
-        {/* Most Bought Product Card */}
+        {/* Most Valuable Product Card */}
         <AnalyticsCard
-          title="Producto Más Comprado"
+          title="Producto Más Valorado"
           icon={<TrendingUp className="w-5 h-5 text-green-600" />}
           loading={analyticsLoading}
           className="lg:col-span-2 cursor-pointer hover:shadow-md transition-shadow"
@@ -145,7 +146,7 @@ export function Dashboard() {
             <div className="mt-1">
               <h3 className="text-lg font-bold break-words">{topProduct.name}</h3>
               <p className="text-sm text-gray-500 mt-1">
-                {topProduct.totalQuantity} unidades en {topProduct.orderCount} órdenes
+                {formatPrice(topProduct.totalAmount)} • {topProduct.totalQuantity} unidades
               </p>
             </div>
           )}

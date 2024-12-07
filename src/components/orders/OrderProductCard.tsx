@@ -36,12 +36,10 @@ export function OrderProductCard({
   const quantityControlsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Update input value when quantity prop changes
   useEffect(() => {
     setInputValue(quantity.toString());
   }, [quantity]);
 
-  // Handle clicks outside quantity controls to close them
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (quantityControlsRef.current && !quantityControlsRef.current.contains(event.target as Node)) {
@@ -53,7 +51,6 @@ export function OrderProductCard({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Focus input when quantity controls are shown
   useEffect(() => {
     if (showQuantityInput && inputRef.current) {
       inputRef.current.focus();
@@ -73,7 +70,6 @@ export function OrderProductCard({
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Ignore clicks on buttons, inputs, and quantity controls
     if (
       e.target instanceof HTMLButtonElement ||
       e.target instanceof HTMLInputElement ||
@@ -84,12 +80,10 @@ export function OrderProductCard({
       return;
     }
 
-    // Mark as reviewed if not already
     if (!isReviewed) {
       onReview();
     }
 
-    // Add product if not already selected
     if (!isSelected) {
       onQuantityChange(product.desiredStock);
     }
@@ -183,9 +177,13 @@ export function OrderProductCard({
 
                 {/* Product Details */}
                 <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-3">
-                  <div className="flex items-center text-gray-500">
+                  <div className="flex items-center">
                     <ArrowUpDown className="w-4 h-4 mr-1.5 flex-shrink-0" />
                     <span>Orden: {formatOrderNumber(product.order)}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Archive className="w-4 h-4 mr-1.5 flex-shrink-0" />
+                    <span>Stock: {product.minPackageStock} - {product.desiredStock}</span>
                   </div>
                 </div>
 

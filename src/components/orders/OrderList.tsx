@@ -10,14 +10,14 @@ import { useProviders } from '@/hooks/useProviders';
 interface OrderListProps {
   orders: Order[];
   products: Product[];
-  provider: Provider | undefined;
+  provider?: Provider;
   onSelect: (order: Order, orderNumber: number) => void;
 }
 
 export function OrderList({ 
   orders, 
   products, 
-  provider, 
+  provider,
   onSelect
 }: OrderListProps) {
   const { providers } = useProviders();
@@ -32,15 +32,17 @@ export function OrderList({
       {sortedOrders.map((order, index) => {
         const totalProducts = order.items.reduce((sum, item) => sum + item.quantity, 0);
         const orderNumber = sortedOrders.length - index;
-        const orderProvider = providers.find(p => p.id === order.providerId);
+        const orderProvider = provider || providers.find(p => p.id === order.providerId);
         
+        if (!orderProvider) return null;
+
         return (
           <div
             key={order.id}
             className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow"
           >
             <div 
-              className="cursor-pointer space-y-3"
+              className="cursor-pointer"
               onClick={() => onSelect(order, orderNumber)}
             >
               {/* Order Header */}
@@ -57,20 +59,18 @@ export function OrderList({
                         locale: es,
                       })}
                     </h3>
-                    {orderProvider && (
-                      <p className="text-sm text-gray-600">
-                        {orderProvider.commercialName}
-                        {orderProvider.legalName && orderProvider.legalName !== orderProvider.commercialName && (
-                          <span className="text-gray-400"> • {orderProvider.legalName}</span>
-                        )}
-                      </p>
-                    )}
+                    <p className="text-sm text-gray-600">
+                      {orderProvider.commercialName}
+                      {orderProvider.legalName && orderProvider.legalName !== orderProvider.commercialName && (
+                        <span className="text-gray-400"> • {orderProvider.legalName}</span>
+                      )}
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Order Details */}
-              <div className="flex items-center justify-between text-gray-600">
+              <div className="flex items-center justify-between text-gray-600 mt-2">
                 <span>
                   {totalProducts} {totalProducts === 1 ? 'producto' : 'productos'}
                 </span>
@@ -81,7 +81,7 @@ export function OrderList({
             </div>
             
             {/* Order Actions */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 pt-4 border-t">
+            <div className="mt-4 pt-4 border-t">
               <OrderActions
                 order={order}
                 products={products}
@@ -91,6 +91,12 @@ export function OrderList({
           </div>
         );
       })}
+
+      {orders.length === 0 && (
+        <div className="text-center py-8 text-gray-500">
+          No hay órdenes para mostrar
+        </div>
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
-import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { ProviderSelector } from '@/components/ui/ProviderSelector';
 import { useProviders } from '@/hooks/useProviders';
 import { useProducts } from '@/hooks/useProducts';
 import { ProductCarousel } from '@/components/products/ProductCarousel';
@@ -30,11 +30,10 @@ export function Products() {
       if (editingProduct) {
         await updateProduct(editingProduct.id!, {
           ...data,
-          id: editingProduct.id // Preserve ID for updates
+          id: editingProduct.id
         });
         toast.success('Producto actualizado exitosamente');
       } else {
-        // For new products, calculate order at the end of the first sector
         const defaultSector = SECTORS[0].code;
         const sectorProducts = products.filter(p => getSectorFromOrder(p.order) === defaultSector);
         const newOrder = calculateNewOrder(defaultSector, sectorProducts.length + 1);
@@ -48,20 +47,6 @@ export function Products() {
       toast.error('Error al guardar el producto');
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleOrderChange = async (product: Product, newOrder: number) => {
-    try {
-      await updateProduct(product.id!, { 
-        ...product,
-        order: newOrder,
-        id: product.id // Preserve ID
-      });
-      toast.success('Orden actualizado exitosamente');
-    } catch (error) {
-      console.error('Error updating order:', error);
-      toast.error('Error al actualizar el orden');
     }
   };
 
@@ -91,39 +76,61 @@ export function Products() {
     setIsFormOpen(true);
   };
 
-  const handleGlobalProductSelect = (product: Product) => {
-    setEditingProduct(product);
-    setIsFormOpen(true);
+  const handleNewProduct = () => {
+    if (editingProduct) {
+      const dialog = Dialog({
+        isOpen: true,
+        onClose: () => {},
+        title: "Advertencia",
+        children: (
+          <div className="space-y-4">
+            <p className="text-amber-600">
+              Hay un producto en edición. ¿Desea cancelar los cambios y crear uno nuevo?
+            </p>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => dialog.close()}>
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => {
+                  setEditingProduct(null);
+                  setIsFormOpen(true);
+                  dialog.close();
+                }}
+              >
+                Continuar
+              </Button>
+            </div>
+          </div>
+        ),
+      });
+    } else {
+      setIsFormOpen(true);
+    }
   };
 
-  const providerOptions = providers.map(provider => ({
-    value: provider.id!,
-    label: provider.commercialName
-  }));
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Global Product Search */}
-      <GlobalProductSearch onProductSelect={handleGlobalProductSelect} />
+      <GlobalProductSearch onProductSelect={handleEdit} />
 
       {/* Provider Selection and New Product Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <div className="flex-1 max-w-xs">
-          <SearchableSelect
-            options={providerOptions}
-            value={selectedProviderId}
-            onChange={(value) => {
-              setSelectedProviderId(value);
-              setFilteredProducts([]);
-            }}
-            placeholder="Seleccionar Proveedor"
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <ProviderSelector
+            providers={providers}
+            selectedProviderId={selectedProviderId}
+            onChange={setSelectedProviderId}
           />
         </div>
 
         {selectedProviderId && (
-          <Button onClick={() => setIsFormOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Nuevo Producto
+          <Button
+            onClick={handleNewProduct}
+            className="bg-blue-500 hover:bg-blue-600 text-white h-[48px] px-6 rounded-lg shadow-sm hover:shadow transition-all w-full sm:w-auto"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            <span className="whitespace-nowrap">Nuevo Producto</span>
           </Button>
         )}
       </div>
@@ -156,7 +163,6 @@ export function Products() {
                 products={filteredProducts.length > 0 ? filteredProducts : products}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
-                onOrderChange={handleOrderChange}
                 providerId={selectedProviderId}
               />
             </>

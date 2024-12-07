@@ -8,11 +8,11 @@ import { formatPrice } from '@/lib/utils';
 import { formatOrderNumber } from '@/lib/order/utils';
 import { toast } from 'react-hot-toast';
 
-interface ProductSearchProps {
+interface GlobalProductSearchProps {
   onProductSelect: (product: Product) => void;
 }
 
-export function GlobalProductSearch({ onProductSelect }: ProductSearchProps) {
+export function GlobalProductSearch({ onProductSelect }: GlobalProductSearchProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<(Product & { provider?: Provider })[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -63,6 +63,7 @@ export function GlobalProductSearch({ onProductSelect }: ProductSearchProps) {
       .filter(product => 
         product.name.toLowerCase().includes(searchTermLower) ||
         formatOrderNumber(product.order).toLowerCase().includes(searchTermLower) ||
+        product.supplierCode?.toLowerCase().includes(searchTermLower) ||
         product.tags?.some(tag => tag.toLowerCase().includes(searchTermLower))
       )
       .map(product => ({
@@ -87,12 +88,6 @@ export function GlobalProductSearch({ onProductSelect }: ProductSearchProps) {
     setSearchResults(results);
   }, [searchTerm, allProducts, providers]);
 
-  const handleProductSelect = (product: Product) => {
-    onProductSelect(product);
-    setSearchTerm('');
-    setSearchResults([]);
-  };
-
   return (
     <div className="relative mb-6">
       <div className="relative">
@@ -110,7 +105,7 @@ export function GlobalProductSearch({ onProductSelect }: ProductSearchProps) {
           {searchResults.map((product) => (
             <button
               key={product.id}
-              onClick={() => handleProductSelect(product)}
+              onClick={() => onProductSelect(product)}
               className="w-full px-4 py-2 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none"
             >
               <div className="flex items-center justify-between">
@@ -122,6 +117,11 @@ export function GlobalProductSearch({ onProductSelect }: ProductSearchProps) {
                       {product.provider?.commercialName}
                     </span>
                   </div>
+                  {product.supplierCode && (
+                    <div className="text-sm text-gray-500 mt-1">
+                      Código: {product.supplierCode}
+                    </div>
+                  )}
                   {product.tags && product.tags.length > 0 && (
                     <div className="flex items-center gap-1 mt-1">
                       <Tag className="w-3 h-3 text-blue-400" />

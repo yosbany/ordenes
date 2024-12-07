@@ -3,8 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
-import { Dialog } from '@/components/ui/Dialog';
-import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { ProviderSelector } from '@/components/ui/ProviderSelector';
 import { useProviders } from '@/hooks/useProviders';
 import { useOrders } from '@/hooks/useOrders';
 import { useProducts } from '@/hooks/useProducts';
@@ -14,7 +13,7 @@ import { OrderList } from '@/components/orders/OrderList';
 import { OrderDetails } from '@/components/orders/OrderDetails';
 import { OrderListSearch } from '@/components/orders/OrderListSearch';
 import { FullscreenOrderEditor } from '@/components/orders/FullscreenOrderEditor';
-import { Order, Product } from '@/types';
+import { Order } from '@/types';
 import { createOrder } from '@/lib/order/calculations';
 import { validateOrder } from '@/lib/order/validation';
 
@@ -28,22 +27,21 @@ export function Orders() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { providers } = useProviders();
   const [selectedProviderId, setSelectedProviderId] = useState<string>('');
-  const { orders, loading, addOrder, updateOrder, deleteOrder } = useOrders(selectedProviderId);
+  const { orders, loading, addOrder, updateOrder } = useOrders(selectedProviderId);
   const { products, updateProduct } = useProducts(selectedProviderId);
-  const { orders: globalOrders, loading: globalOrdersLoading } = useGlobalOrders();
-  const { products: globalProducts, loading: globalProductsLoading } = useGlobalProducts();
+  const { orders: allOrders, loading: globalOrdersLoading } = useGlobalOrders();
+  const { products: allProducts, loading: globalProductsLoading } = useGlobalProducts();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [viewingOrder, setViewingOrder] = useState<ViewingOrderInfo | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<Map<string, number>>(new Map());
   const [shouldReturnToDashboard, setShouldReturnToDashboard] = useState(false);
 
   const selectedProvider = providers.find(p => p.id === selectedProviderId);
 
   // Get last 5 orders
-  const recentOrders = globalOrders
+  const recentOrders = allOrders
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 5);
 
@@ -137,22 +135,6 @@ export function Orders() {
     }
   };
 
-  const handleDelete = (order: Order) => {
-    setOrderToDelete(order);
-  };
-
-  const confirmDelete = async () => {
-    if (!orderToDelete) return;
-    
-    try {
-      await deleteOrder(orderToDelete.id!);
-      toast.success('Orden eliminada exitosamente');
-      setOrderToDelete(null);
-    } catch (error) {
-      toast.error('Ocurrió un error al eliminar la orden');
-    }
-  };
-
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setSelectedOrder(null);
@@ -165,55 +147,63 @@ export function Orders() {
   };
 
   const handleSelectOrder = (order: Order, orderNumber: number) => {
-    // Set provider ID if not already set
-    if (!selectedProviderId) {
+    if (order.status === 'completed') {
+      setViewingOrder({ order, orderNumber });
+    } else {
+      // Set provider ID if not already set
       setSelectedProviderId(order.providerId);
+
+      const initialProducts = new Map();
+      order.items.forEach(item => {
+        initialProducts.set(item.productId, item.quantity);
+      });
+      setSelectedProducts(initialProducts);
+      setSelectedOrder(order);
+      setIsFormOpen(true);
     }
+  };
+
+  const handleEditOrder = () => {
+    if (!viewingOrder) return;
 
     const initialProducts = new Map();
-    order.items.forEach(item => {
+    viewingOrder.order.items.forEach(item => {
       initialProducts.set(item.productId, item.quantity);
     });
     setSelectedProducts(initialProducts);
-    setSelectedOrder(order);
+    setSelectedOrder(viewingOrder.order);
+    setViewingOrder(null);
     setIsFormOpen(true);
   };
-
-  const handleViewDetails = (order: Order, orderNumber: number) => {
-    setViewingOrder({ order, orderNumber });
-  };
-
-  const providerOptions = providers.map(provider => ({
-    value: provider.id!,
-    label: provider.commercialName
-  }));
 
   const isLoading = loading || globalOrdersLoading || globalProductsLoading;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Global Order Search */}
       <OrderListSearch
-        orders={globalOrders}
-        products={globalProducts}
+        orders={allOrders}
+        products={allProducts}
         onOrderSelect={handleSelectOrder}
       />
 
       {/* Provider Selection and Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <div className="flex-1 max-w-xs">
-          <SearchableSelect
-            options={providerOptions}
-            value={selectedProviderId}
+      <div className="flex flex-col sm:flex-row items-end gap-4">
+        <div className="flex-1">
+          <ProviderSelector
+            providers={providers}
+            selectedProviderId={selectedProviderId}
             onChange={setSelectedProviderId}
-            placeholder="Seleccionar Proveedor"
           />
         </div>
 
         {selectedProviderId && (
-          <Button onClick={() => setIsFormOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Nueva Orden
+          <Button
+            onClick={() => setIsFormOpen(true)}
+            className="bg-blue-500 hover:bg-blue-600 text-white h-[48px] px-6 rounded-lg shadow-sm hover:shadow transition-all w-full sm:w-auto"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            <span className="whitespace-nowrap">Nueva Orden</span>
           </Button>
         )}
       </div>
@@ -230,8 +220,7 @@ export function Orders() {
               <h2 className="text-lg font-semibold text-gray-900">Últimas Órdenes</h2>
               <OrderList
                 orders={recentOrders}
-                products={globalProducts}
-                provider={selectedProvider}
+                products={allProducts}
                 onSelect={handleSelectOrder}
               />
             </div>
@@ -249,50 +238,28 @@ export function Orders() {
               provider={selectedProvider}
             />
           )}
+
           {viewingOrder && selectedProvider && (
             <OrderDetails
               order={viewingOrder.order}
               orderNumber={viewingOrder.orderNumber}
-              products={globalProducts}
+              products={allProducts}
               provider={selectedProvider}
               onClose={() => setViewingOrder(null)}
+              onEdit={handleEditOrder}
             />
           )}
+
           {!isFormOpen && !viewingOrder && selectedProviderId && (
             <OrderList
               orders={orders}
               products={products}
               provider={selectedProvider}
               onSelect={handleSelectOrder}
-              onDelete={handleDelete}
-              onViewDetails={handleViewDetails}
             />
           )}
         </>
       )}
-
-      <Dialog
-        isOpen={!!orderToDelete}
-        onClose={() => setOrderToDelete(null)}
-        title="Eliminar orden"
-      >
-        <div className="space-y-4">
-          <p className="text-amber-600">
-            ¿Está seguro que desea eliminar esta orden?
-          </p>
-          <div className="flex justify-end space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => setOrderToDelete(null)}
-            >
-              Cancelar
-            </Button>
-            <Button onClick={confirmDelete}>
-              Eliminar
-            </Button>
-          </div>
-        </div>
-      </Dialog>
     </div>
   );
 }

@@ -1,13 +1,13 @@
 import React from 'react';
 import { Dialog } from '@/components/ui/Dialog';
-import { TopProduct } from '@/lib/services/analytics';
+import { ProductStats } from '@/lib/services/analytics';
 import { formatPrice } from '@/lib/utils';
 import { Package, ShoppingCart } from 'lucide-react';
 
 interface TopProductsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  products: TopProduct[];
+  products: ProductStats[];
 }
 
 export function TopProductsModal({ isOpen, onClose, products }: TopProductsModalProps) {
@@ -15,7 +15,7 @@ export function TopProductsModal({ isOpen, onClose, products }: TopProductsModal
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      title="Top 10 Productos Más Comprados"
+      title="Top 10 Productos Más Valorados"
     >
       <div className="space-y-4">
         {products.map((product, index) => (
@@ -32,7 +32,10 @@ export function TopProductsModal({ isOpen, onClose, products }: TopProductsModal
                 {product.name}
               </h3>
               
-              <div className="mt-1 grid grid-cols-2 gap-2 text-sm text-gray-600">
+              <div className="mt-2 grid grid-cols-3 gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-1">
+                  <span className="font-medium text-blue-600">{formatPrice(product.totalAmount)}</span>
+                </div>
                 <div className="flex items-center gap-1">
                   <Package className="w-4 h-4" />
                   <span>{product.totalQuantity} unidades</span>

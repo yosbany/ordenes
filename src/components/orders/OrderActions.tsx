@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Share2, Printer } from 'lucide-react';
+import { Share2, Printer, Trash2, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Order, Product, Provider } from '@/types';
@@ -7,26 +7,21 @@ import { formatWhatsAppReport } from '@/lib/utils/formatting/whatsappReport';
 import { generateWhatsAppLink } from '@/lib/utils';
 import { generatePrintTemplate } from '@/lib/utils/formatting/printTemplate';
 import { useOrders } from '@/hooks/useOrders';
-import { OrderSummary } from './OrderSummary';
 import { toast } from 'react-hot-toast';
 
 interface OrderActionsProps {
   order: Order;
   products: Product[];
-  provider: Provider | undefined;
+  provider: Provider;
+  onReopen?: () => void;
 }
 
-export function OrderActions({ order, products, provider }: OrderActionsProps) {
-  const [isWhatsAppDialogOpen, setIsWhatsAppDialogOpen] = useState(false);
-  const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
+export function OrderActions({ order, products, provider, onReopen }: OrderActionsProps) {
+  const { updateOrder, deleteOrder } = useOrders(provider.id);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const { updateOrder } = useOrders(provider?.id);
 
-  if (!provider) {
-    return null;
-  }
-
-  const handleWhatsAppConfirm = async () => {
+  const handleWhatsApp = async () => {
     if (!provider.phone) {
       toast.error('Este proveedor no tiene número de teléfono registrado');
       return;
@@ -34,33 +29,42 @@ export function OrderActions({ order, products, provider }: OrderActionsProps) {
 
     setIsProcessing(true);
     try {
-      await updateOrder(order.id!, { 
-        ...order,
-        status: 'completed' 
-      });
+      // Mark order as completed if it's pending
+      if (order.status === 'pending') {
+        await updateOrder(order.id!, {
+          ...order,
+          status: 'completed'
+        });
+      }
+
       const message = formatWhatsAppReport(order, products, provider);
       const whatsappUrl = generateWhatsAppLink(provider.phone, message);
       window.open(whatsappUrl, '_blank');
-      setIsWhatsAppDialogOpen(false);
+      
+      if (order.status === 'pending') {
+        toast.success('Orden completada y enviada por WhatsApp');
+      }
     } catch (error) {
-      console.error('Error updating order status:', error);
-      toast.error('Error al actualizar el estado de la orden');
+      console.error('Error sending WhatsApp:', error);
+      toast.error('Error al enviar por WhatsApp');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handlePrintConfirm = async () => {
+  const handlePrint = async () => {
     setIsProcessing(true);
     try {
-      await updateOrder(order.id!, {
-        ...order,
-        status: 'completed'
-      });
-      
+      // Mark order as completed if it's pending
+      if (order.status === 'pending') {
+        await updateOrder(order.id!, {
+          ...order,
+          status: 'completed'
+        });
+      }
+
       const template = generatePrintTemplate(order, products);
       
-      // Create a new tab and write the template
       const printTab = window.open('', '_blank');
       if (!printTab) {
         throw new Error('No se pudo crear la pestaña de impresión');
@@ -68,8 +72,10 @@ export function OrderActions({ order, products, provider }: OrderActionsProps) {
 
       printTab.document.write(template);
       printTab.document.close();
-      
-      setIsPrintDialogOpen(false);
+
+      if (order.status === 'pending') {
+        toast.success('Orden completada e impresa');
+      }
     } catch (error) {
       console.error('Error printing order:', error);
       toast.error('Error al imprimir la orden');
@@ -78,94 +84,99 @@ export function OrderActions({ order, products, provider }: OrderActionsProps) {
     }
   };
 
+  const handleDelete = async () => {
+    setIsProcessing(true);
+    try {
+      await deleteOrder(order.id!);
+      toast.success('Orden eliminada exitosamente');
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      toast.error('Error al eliminar la orden');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <>
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="flex items-center justify-end gap-2">
         {provider.phone && (
           <Button
             type="button"
-            variant="outline"
-            onClick={() => setIsWhatsAppDialogOpen(true)}
-            className="text-green-600 hover:text-green-700 hover:bg-green-50 w-full sm:w-auto"
+            variant="ghost"
+            size="sm"
+            onClick={handleWhatsApp}
             disabled={isProcessing}
+            className="text-green-600 hover:text-green-700 hover:bg-green-50 w-11 h-11 p-0"
+            title="Enviar por WhatsApp"
           >
-            <Share2 className="w-4 h-4 mr-2" />
-            WhatsApp
+            <Share2 className="w-5 h-5" />
           </Button>
         )}
+        
         <Button
           type="button"
-          variant="outline"
-          onClick={() => setIsPrintDialogOpen(true)}
+          variant="ghost"
+          size="sm"
+          onClick={handlePrint}
           disabled={isProcessing}
-          className="w-full sm:w-auto"
+          className="text-gray-600 hover:text-gray-700 hover:bg-gray-50 w-11 h-11 p-0"
+          title="Imprimir"
         >
-          <Printer className="w-4 h-4 mr-2" />
-          Imprimir
+          <Printer className="w-5 h-5" />
+        </Button>
+
+        {order.status === 'completed' && onReopen && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onReopen}
+            disabled={isProcessing}
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 w-11 h-11 p-0"
+            title="Reabrir orden"
+          >
+            <Edit className="w-5 h-5" />
+          </Button>
+        )}
+
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsDeleteDialogOpen(true)}
+          disabled={isProcessing}
+          className="text-red-600 hover:text-red-700 hover:bg-red-50 w-11 h-11 p-0"
+          title="Eliminar orden"
+        >
+          <Trash2 className="w-5 h-5" />
         </Button>
       </div>
 
+      {/* Delete Confirmation Dialog */}
       <Dialog
-        isOpen={isWhatsAppDialogOpen}
-        onClose={() => setIsWhatsAppDialogOpen(false)}
-        title="Confirmar envío por WhatsApp"
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        title="Eliminar orden"
       >
         <div className="space-y-4">
-          <p>¿Desea enviar el siguiente pedido por WhatsApp?</p>
-          <OrderSummary
-            order={order}
-            products={products}
-            provider={provider}
-            preview={true}
-          />
-          <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
+          <p className="text-amber-600">
+            ¿Está seguro que desea eliminar esta orden?
+          </p>
+          <div className="flex justify-end space-x-2">
             <Button
               variant="outline"
-              onClick={() => setIsWhatsAppDialogOpen(false)}
+              onClick={() => setIsDeleteDialogOpen(false)}
               disabled={isProcessing}
-              className="w-full sm:w-auto"
             >
               Cancelar
             </Button>
             <Button
-              onClick={handleWhatsAppConfirm}
-              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
+              onClick={handleDelete}
               isLoading={isProcessing}
             >
-              Enviar
-            </Button>
-          </div>
-        </div>
-      </Dialog>
-
-      <Dialog
-        isOpen={isPrintDialogOpen}
-        onClose={() => setIsPrintDialogOpen(false)}
-        title="Confirmar impresión"
-      >
-        <div className="space-y-4">
-          <p>¿Desea imprimir el siguiente pedido?</p>
-          <OrderSummary
-            order={order}
-            products={products}
-            provider={provider}
-            preview={false}
-          />
-          <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
-            <Button
-              variant="outline"
-              onClick={() => setIsPrintDialogOpen(false)}
-              disabled={isProcessing}
-              className="w-full sm:w-auto"
-            >
-              Cancelar
-            </Button>
-            <Button 
-              onClick={handlePrintConfirm}
-              isLoading={isProcessing}
-              className="w-full sm:w-auto"
-            >
-              Imprimir
+              Eliminar
             </Button>
           </div>
         </div>

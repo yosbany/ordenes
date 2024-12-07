@@ -23,27 +23,27 @@ export const thermalPrintStyles = `
     width: 80mm;
     background: white;
     margin: 20px auto;
-    padding: 10mm;
+    padding: 2mm;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     border-radius: 4px;
   }
 
   .header {
     text-align: center;
-    margin-bottom: 6mm;
+    margin-bottom: 3mm;
     border-bottom: 1px dashed #000;
-    padding-bottom: 4mm;
+    padding-bottom: 2mm;
   }
 
   .header div {
-    margin-bottom: 2mm;
+    margin-bottom: 1mm;
     font-weight: bold;
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 4mm;
+    margin-top: 2mm;
   }
 
   tr {
@@ -55,13 +55,13 @@ export const thermalPrintStyles = `
   }
 
   td {
-    padding: 2mm 1mm;
-    font-size: 13px;
+    padding: 1mm;
+    font-size: 12px;
   }
 
   td.quantity {
     white-space: nowrap;
-    padding-right: 3mm;
+    padding-right: 2mm;
     width: 1%;
     font-weight: bold;
   }
@@ -152,7 +152,7 @@ export const thermalPrintStyles = `
     .content {
       width: 100%;
       margin: 0;
-      padding: 4mm;
+      padding: 1mm;
       box-shadow: none;
       border-radius: 0;
     }
@@ -167,6 +167,17 @@ export const thermalPrintStyles = `
     }
 
     td {
+      font-size: 11px;
+      padding: 0.5mm 1mm;
+    }
+
+    .header {
+      margin-bottom: 2mm;
+      padding-bottom: 1mm;
+    }
+
+    .header div {
+      margin-bottom: 0.5mm;
       font-size: 12px;
     }
   }
