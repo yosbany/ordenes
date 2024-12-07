@@ -42,25 +42,37 @@ export function ProductForm({
     formData,
     updateField,
     handleProviderChange,
-    handleSubmit,
+    handleSubmit: submitForm,
     isSubmitting,
-    errors
+    errors,
+    setFormData
   } = useProductForm({
     initialData,
     providerId: initialProviderId,
     onSubmit: async (data) => {
-      try {
-        await onSubmit({
-          ...data,
-          providerId: data.providerId || initialProviderId,
-          id: initialData?.id // Preserve ID for updates
-        });
-      } catch (error) {
-        console.error('Error in form submission:', error);
-        throw error;
-      }
+      if (isSubmitting || isLoading) return;
+      await onSubmit(data);
     }
   });
+
+  // Update form data when initialData changes
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name || '',
+        sku: initialData.sku || '',
+        supplierCode: initialData.supplierCode || '',
+        purchasePackaging: initialData.purchasePackaging || '',
+        salePackaging: initialData.salePackaging || '',
+        price: initialData.price || 0,
+        minPackageStock: initialData.minPackageStock || 0,
+        desiredStock: initialData.desiredStock || 0,
+        order: initialData.order || 0,
+        providerId: initialData.providerId || initialProviderId,
+        tags: initialData.tags || []
+      });
+    }
+  }, [initialData, initialProviderId, setFormData]);
 
   const handleOrderChange = async (newOrder: number) => {
     updateField('order', newOrder);
@@ -80,7 +92,7 @@ export function ProductForm({
   const sectorColor = getSectorColor(getSectorFromOrder(formData.order));
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={submitForm} className="space-y-6">
       {/* Product Name */}
       <Input
         label="Nombre del producto"
@@ -230,7 +242,11 @@ export function ProductForm({
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="submit" isLoading={isLoading || isSubmitting}>
+        <Button 
+          type="submit" 
+          isLoading={isLoading || isSubmitting}
+          disabled={isLoading || isSubmitting}
+        >
           {initialData ? 'Actualizar' : 'Crear'} Producto
         </Button>
       </div>
