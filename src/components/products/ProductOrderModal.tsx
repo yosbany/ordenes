@@ -18,31 +18,33 @@ interface ProductOrderModalProps {
   onClose: () => void;
   product: Product;
   products: Product[];
+  onOrderChange: (newOrder: number) => void;
 }
 
 export function ProductOrderModal({
   isOpen,
   onClose,
   product,
-  products
+  products,
+  onOrderChange
 }: ProductOrderModalProps) {
   const [selectedSector, setSelectedSector] = useState(getSectorFromOrder(product.order));
   const [selectedPosition, setSelectedPosition] = useState<number>(getSequenceFromOrder(product.order));
   const { updateOrder, isProcessing } = useProductOrder();
 
-  // Get products in selected sector
+  // Get all products in selected sector (including current product)
   const sectorProducts = products
-    .filter(p => getSectorFromOrder(p.order) === selectedSector && p.id !== product.id)
+    .filter(p => getSectorFromOrder(p.order) === selectedSector)
     .sort((a, b) => getSequenceFromOrder(a.order) - getSequenceFromOrder(b.order));
 
   // Calculate max position based on current products in sector
-  const maxPosition = sectorProducts.length + 1;
+  const maxPosition = sectorProducts.length;
 
   // Get adjacent products based on selected position
   const prevProduct = selectedPosition > 1 
     ? sectorProducts[selectedPosition - 2] 
     : null;
-  const nextProduct = selectedPosition <= sectorProducts.length 
+  const nextProduct = selectedPosition < maxPosition 
     ? sectorProducts[selectedPosition - 1]
     : null;
 
@@ -52,10 +54,12 @@ export function ProductOrderModal({
   const handleSectorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newSector = e.target.value;
     setSelectedSector(newSector);
+    
     // When changing sectors, set position to end of list
     const sectorProductCount = products.filter(p => 
-      getSectorFromOrder(p.order) === newSector && p.id !== product.id
+      getSectorFromOrder(p.order) === newSector
     ).length;
+    
     setSelectedPosition(sectorProductCount + 1);
   };
 
@@ -71,7 +75,7 @@ export function ProductOrderModal({
     
     try {
       const newOrder = calculateNewOrder(selectedSector, selectedPosition);
-      await updateOrder(product.id!, newOrder);
+      await onOrderChange(newOrder);
       onClose();
     } catch (error) {
       console.error('Error updating order:', error);

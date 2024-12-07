@@ -11,11 +11,11 @@ interface UseProductFormProps {
 
 export function useProductForm({ initialData, providerId, onSubmit }: UseProductFormProps) {
   const [formData, setFormData] = useState<Omit<Product, 'id'>>({
-    name: initialData?.name?.toUpperCase() || '',
+    name: initialData?.name || '',
     sku: initialData?.sku || '',
     supplierCode: initialData?.supplierCode || '',
-    purchasePackaging: initialData?.purchasePackaging?.toUpperCase() || '',
-    salePackaging: initialData?.salePackaging?.toUpperCase() || '',
+    purchasePackaging: initialData?.purchasePackaging || '',
+    salePackaging: initialData?.salePackaging || '',
     order: initialData?.order || 0,
     price: initialData?.price || 0,
     desiredStock: initialData?.desiredStock || 0,

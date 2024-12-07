@@ -9,7 +9,7 @@ export const thermalPrintStyles = `
   /* Base styles */
   body {
     font-family: 'Courier New', monospace;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.5;
     background: #f3f4f6;
     min-height: 100vh;
@@ -38,6 +38,7 @@ export const thermalPrintStyles = `
   .header div {
     margin-bottom: 1mm;
     font-weight: bold;
+    font-size: 18px;
   }
 
   table {
@@ -55,8 +56,8 @@ export const thermalPrintStyles = `
   }
 
   td {
-    padding: 1mm;
-    font-size: 12px;
+    padding: 1.5mm;
+    font-size: 14px;
   }
 
   td.quantity {
@@ -64,10 +65,12 @@ export const thermalPrintStyles = `
     padding-right: 2mm;
     width: 1%;
     font-weight: bold;
+    font-size: 16px;
   }
 
   td.name {
     word-break: break-word;
+    font-size: 16px;
   }
 
   /* Print Controls */
@@ -147,6 +150,7 @@ export const thermalPrintStyles = `
       padding: 0;
       background: white;
       min-height: auto;
+      font-size: 16px;
     }
 
     .content {
@@ -167,8 +171,16 @@ export const thermalPrintStyles = `
     }
 
     td {
-      font-size: 11px;
+      font-size: 14px;
       padding: 0.5mm 1mm;
+    }
+
+    td.quantity {
+      font-size: 16px;
+    }
+
+    td.name {
+      font-size: 16px;
     }
 
     .header {
@@ -178,7 +190,7 @@ export const thermalPrintStyles = `
 
     .header div {
       margin-bottom: 0.5mm;
-      font-size: 12px;
+      font-size: 18px;
     }
   }
 `;
