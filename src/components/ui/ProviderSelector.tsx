@@ -32,8 +32,7 @@ export function ProviderSelector({
 
   const filteredProviders = providers.filter(provider => 
     provider.commercialName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    provider.legalName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    provider.rut?.toLowerCase().includes(searchTerm.toLowerCase())
+    provider.legalName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleSelect = (providerId: string) => {
@@ -127,15 +126,6 @@ export function ProviderSelector({
         </div>
       </div>
 
-      {/* Provider Info */}
-      {selectedProvider && selectedProvider.rut && (
-        <div className="mt-1.5 px-1">
-          <span className="text-sm text-gray-500">
-            RUT: {selectedProvider.rut}
-          </span>
-        </div>
-      )}
-
       {/* Dropdown */}
       {isOpen && (
         <div className="absolute z-10 mt-2 w-full rounded-lg bg-white shadow-lg border border-gray-200">
@@ -183,11 +173,6 @@ export function ProviderSelector({
                      provider.legalName !== provider.commercialName && (
                       <div className="text-sm text-gray-500">
                         {provider.legalName}
-                      </div>
-                    )}
-                    {provider.rut && (
-                      <div className="text-xs text-gray-400 mt-0.5">
-                        RUT: {provider.rut}
                       </div>
                     )}
                   </div>

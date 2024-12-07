@@ -147,12 +147,14 @@ export function Orders() {
   };
 
   const handleSelectOrder = (order: Order, orderNumber: number) => {
+    // Set provider ID if not already set
+    if (!selectedProviderId) {
+      setSelectedProviderId(order.providerId);
+    }
+
     if (order.status === 'completed') {
       setViewingOrder({ order, orderNumber });
     } else {
-      // Set provider ID if not already set
-      setSelectedProviderId(order.providerId);
-
       const initialProducts = new Map();
       order.items.forEach(item => {
         initialProducts.set(item.productId, item.quantity);
@@ -188,7 +190,7 @@ export function Orders() {
       />
 
       {/* Provider Selection and Actions */}
-      <div className="flex flex-col sm:flex-row items-end gap-4">
+      <div className="flex items-center gap-4">
         <div className="flex-1">
           <ProviderSelector
             providers={providers}
@@ -198,13 +200,15 @@ export function Orders() {
         </div>
 
         {selectedProviderId && (
-          <Button
-            onClick={() => setIsFormOpen(true)}
-            className="bg-blue-500 hover:bg-blue-600 text-white h-[48px] px-6 rounded-lg shadow-sm hover:shadow transition-all w-full sm:w-auto"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            <span className="whitespace-nowrap">Nueva Orden</span>
-          </Button>
+          <div className="flex-shrink-0 self-end">
+            <Button
+              onClick={() => setIsFormOpen(true)}
+              className="bg-blue-500 hover:bg-blue-600 text-white h-[48px] px-6 rounded-lg shadow-sm hover:shadow transition-all"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              <span className="whitespace-nowrap">Nueva Orden</span>
+            </Button>
+          </div>
         )}
       </div>
 
