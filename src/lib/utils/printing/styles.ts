@@ -5,13 +5,12 @@ export const thermalPrintStyles = `
     padding: 0;
     box-sizing: border-box;
   }
-  
 
   /* Base styles */
   body {
     font-family: 'Courier New', monospace;
-    font-size: 16px;
-    line-height: 1.5;
+    font-size: 14px;
+    line-height: 1.2;
     background: #f3f4f6;
     min-height: 100vh;
     display: flex;
@@ -54,8 +53,9 @@ export const thermalPrintStyles = `
 
   td {
     padding: 0.2mm;
-    font-size: 16px;
+    font-size: 14px;
     vertical-align: top;
+    font-weight: bold;
   }
 
   td.quantity {
@@ -63,12 +63,13 @@ export const thermalPrintStyles = `
     padding-right: 2mm;
     width: 1%;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 14px;
   }
 
   td.name {
     word-break: break-word;
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: bold;
   }
 
   /* Print Controls */
@@ -148,7 +149,7 @@ export const thermalPrintStyles = `
       padding: 0;
       background: white;
       min-height: auto;
-      font-size: 18px;
+      font-size: 14px;
     }
 
     .content {
@@ -169,18 +170,20 @@ export const thermalPrintStyles = `
     }
 
     td {
-      font-size: 18px;
-      padding: 0.5mm 1mm;
+      font-size: 14px;
+      padding: 0.2mm 1mm;
       vertical-align: top;
+      font-weight: bold;
     }
 
     td.quantity {
-      font-size: 18px;
+      font-size: 14px;
       font-weight: bold;
     }
 
     td.name {
-      font-size: 18px;
+      font-size: 14px;
+      font-weight: bold;
     }
 
     .header {
