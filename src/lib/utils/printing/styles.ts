@@ -5,6 +5,7 @@ export const thermalPrintStyles = `
     padding: 0;
     box-sizing: border-box;
   }
+  
 
   /* Base styles */
   body {
@@ -52,8 +53,8 @@ export const thermalPrintStyles = `
   }
 
   td {
-    padding: 0.5mm;
-    font-size: 18px;
+    padding: 0.2mm;
+    font-size: 16px;
     vertical-align: top;
   }
 
@@ -62,12 +63,12 @@ export const thermalPrintStyles = `
     padding-right: 2mm;
     width: 1%;
     font-weight: bold;
-    font-size: 18px;
+    font-size: 16px;
   }
 
   td.name {
     word-break: break-word;
-    font-size: 18px;
+    font-size: 16px;
   }
 
   /* Print Controls */
