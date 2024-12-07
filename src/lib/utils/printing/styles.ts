@@ -38,7 +38,7 @@ export const thermalPrintStyles = `
   .header div {
     margin-bottom: 1mm;
     font-weight: bold;
-    font-size: 18px;
+    font-size: 20px;
   }
 
   table {
@@ -48,16 +48,13 @@ export const thermalPrintStyles = `
   }
 
   tr {
-    border-bottom: 1px dotted #ccc;
-  }
-
-  tr:last-child {
     border-bottom: none;
   }
 
   td {
-    padding: 1.5mm;
-    font-size: 14px;
+    padding: 0.5mm;
+    font-size: 18px;
+    vertical-align: top;
   }
 
   td.quantity {
@@ -65,12 +62,12 @@ export const thermalPrintStyles = `
     padding-right: 2mm;
     width: 1%;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 18px;
   }
 
   td.name {
     word-break: break-word;
-    font-size: 16px;
+    font-size: 18px;
   }
 
   /* Print Controls */
@@ -150,7 +147,7 @@ export const thermalPrintStyles = `
       padding: 0;
       background: white;
       min-height: auto;
-      font-size: 16px;
+      font-size: 18px;
     }
 
     .content {
@@ -171,16 +168,18 @@ export const thermalPrintStyles = `
     }
 
     td {
-      font-size: 14px;
+      font-size: 18px;
       padding: 0.5mm 1mm;
+      vertical-align: top;
     }
 
     td.quantity {
-      font-size: 16px;
+      font-size: 18px;
+      font-weight: bold;
     }
 
     td.name {
-      font-size: 16px;
+      font-size: 18px;
     }
 
     .header {
@@ -190,7 +189,7 @@ export const thermalPrintStyles = `
 
     .header div {
       margin-bottom: 0.5mm;
-      font-size: 18px;
+      font-size: 20px;
     }
   }
 `;
