@@ -26,7 +26,6 @@ export function useOrders(providerId?: string) {
 
         // Setup real-time subscription
         unsubscribe = orderService.subscribeToProviderOrders(providerId, (updatedOrders) => {
-          console.log('Orders updated:', updatedOrders);
           setOrders(updatedOrders);
         });
       } catch (error) {
@@ -48,11 +47,14 @@ export function useOrders(providerId?: string) {
 
   const addOrder = async (order: Omit<Order, 'id'>) => {
     try {
-      return await orderService.create(order);
+      const orderId = await orderService.create(order);
+      if (!orderId) {
+        throw new Error('Failed to create order');
+      }
+      return orderId;
     } catch (error) {
       console.error('Error creating order:', error);
-      toast.error('Error al crear la orden');
-      throw error;
+      throw new Error('Error al crear la orden');
     }
   };
 
@@ -61,8 +63,7 @@ export function useOrders(providerId?: string) {
       await orderService.update(id, order);
     } catch (error) {
       console.error('Error updating order:', error);
-      toast.error('Error al actualizar la orden');
-      throw error;
+      throw new Error('Error al actualizar la orden');
     }
   };
 
@@ -71,8 +72,7 @@ export function useOrders(providerId?: string) {
       await orderService.delete(id);
     } catch (error) {
       console.error('Error deleting order:', error);
-      toast.error('Error al eliminar la orden');
-      throw error;
+      throw new Error('Error al eliminar la orden');
     }
   };
 

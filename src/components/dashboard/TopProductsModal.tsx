@@ -38,7 +38,7 @@ export function TopProductsModal({ isOpen, onClose, products }: TopProductsModal
                 </div>
                 <div className="flex items-center gap-1">
                   <Package className="w-4 h-4" />
-                  <span>{product.totalQuantity} unidades</span>
+                  <span>{product.totalQuantity} {product.purchasePackaging}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <ShoppingCart className="w-4 h-4" />

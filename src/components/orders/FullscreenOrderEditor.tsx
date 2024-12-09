@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/Button';
 import { ProductSelector } from './ProductSelector';
 import { formatPrice } from '@/lib/utils';
 import { useOrders } from '@/hooks/useOrders';
+import { useOrderAutosave } from '@/hooks/useOrderAutosave';
+import { toast } from 'react-hot-toast';
 
 interface FullscreenOrderEditorProps {
   products: Product[];
@@ -27,7 +29,8 @@ export function FullscreenOrderEditor({
   provider
 }: FullscreenOrderEditorProps) {
   const [allProducts, setAllProducts] = useState<Product[]>(products);
-  const { orders } = useOrders(provider.id);
+  const { orders, addOrder, updateOrder } = useOrders(provider.id);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Update allProducts when products change
   useEffect(() => {
@@ -38,6 +41,42 @@ export function FullscreenOrderEditor({
       return [...products, ...externalProducts];
     });
   }, [products]);
+
+  // Enable autosave
+  useOrderAutosave({
+    providerId: provider.id,
+    selectedProducts,
+    products: allProducts,
+    onSave: async (orderData) => {
+      if (isSaving) return;
+      
+      setIsSaving(true);
+      try {
+        // Find today's order if it exists
+        const today = new Date();
+        const todayStart = new Date(today.setHours(0, 0, 0, 0));
+        const todayEnd = new Date(today.setHours(23, 59, 59, 999));
+        
+        const todayOrder = orders.find(order => {
+          const orderDate = new Date(order.date);
+          return orderDate >= todayStart && orderDate <= todayEnd;
+        });
+
+        if (todayOrder) {
+          // Update existing order
+          await updateOrder(todayOrder.id!, orderData);
+        } else {
+          // Create new order
+          await addOrder(orderData);
+        }
+      } catch (error) {
+        console.error('Error saving order:', error);
+        throw error; // Re-throw to trigger error handling in hook
+      } finally {
+        setIsSaving(false);
+      }
+    }
+  });
 
   // Calculate total
   const total = Array.from(selectedProducts.entries()).reduce((sum, [productId, quantity]) => {
@@ -69,14 +108,14 @@ export function FullscreenOrderEditor({
             <Button
               variant="outline"
               onClick={onCancel}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isSaving}
               size="sm"
             >
               Cancelar
             </Button>
             <Button
               onClick={onConfirm}
-              isLoading={isSubmitting}
+              isLoading={isSubmitting || isSaving}
               size="sm"
             >
               Guardar

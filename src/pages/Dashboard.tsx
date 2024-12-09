@@ -145,9 +145,14 @@ export function Dashboard() {
           {topProduct && (
             <div className="mt-1">
               <h3 className="text-lg font-bold break-words">{topProduct.name}</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                {formatPrice(topProduct.totalAmount)} • {topProduct.totalQuantity} unidades
-              </p>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-lg font-bold text-blue-600">
+                  {formatPrice(topProduct.totalAmount)}
+                </span>
+                <span className="text-sm text-gray-500">
+                  {topProduct.totalQuantity} {topProduct.purchasePackaging}
+                </span>
+              </div>
             </div>
           )}
         </AnalyticsCard>

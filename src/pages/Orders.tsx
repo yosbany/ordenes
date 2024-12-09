@@ -129,7 +129,7 @@ export function Orders() {
       handleCloseForm();
     } catch (error) {
       console.error('Error saving order:', error);
-      toast.error('Ocurrió un error al guardar la orden');
+      toast.error('Error al guardar la orden');
     } finally {
       setIsSubmitting(false);
     }
@@ -190,26 +190,28 @@ export function Orders() {
       />
 
       {/* Provider Selection and Actions */}
-      <div className="flex items-center gap-4">
-        <div className="flex-1">
-          <ProviderSelector
-            providers={providers}
-            selectedProviderId={selectedProviderId}
-            onChange={setSelectedProviderId}
-          />
-        </div>
-
-        {selectedProviderId && (
-          <div className="flex-shrink-0 self-end">
-            <Button
-              onClick={() => setIsFormOpen(true)}
-              className="bg-blue-500 hover:bg-blue-600 text-white h-[48px] px-6 rounded-lg shadow-sm hover:shadow transition-all"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              <span className="whitespace-nowrap">Nueva Orden</span>
-            </Button>
+      <div className="space-y-4 md:space-y-0">
+        <div className="flex flex-col md:flex-row md:items-end gap-4">
+          <div className="flex-1">
+            <ProviderSelector
+              providers={providers}
+              selectedProviderId={selectedProviderId}
+              onChange={setSelectedProviderId}
+            />
           </div>
-        )}
+
+          {selectedProviderId && (
+            <div className="flex-shrink-0 w-full md:w-auto">
+              <Button
+                onClick={() => setIsFormOpen(true)}
+                className="w-full md:w-auto bg-blue-500 hover:bg-blue-600 text-white h-[48px] px-6 rounded-lg shadow-sm hover:shadow transition-all"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                <span className="whitespace-nowrap">Nueva Orden</span>
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       {isLoading ? (
