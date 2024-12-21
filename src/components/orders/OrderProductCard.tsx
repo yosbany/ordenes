@@ -35,6 +35,7 @@ export function OrderProductCard({
   const [inputValue, setInputValue] = useState(quantity.toString());
   const quantityControlsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const clickTimeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     setInputValue(quantity.toString());
@@ -70,6 +71,7 @@ export function OrderProductCard({
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
+    // Ignore clicks on buttons and inputs
     if (
       e.target instanceof HTMLButtonElement ||
       e.target instanceof HTMLInputElement ||
@@ -80,12 +82,20 @@ export function OrderProductCard({
       return;
     }
 
-    if (!isReviewed) {
-      onReview();
-    }
-
-    if (!isSelected) {
-      onQuantityChange(product.desiredStock);
+    // Handle single/double click
+    if (clickTimeoutRef.current) {
+      // Double click - toggle product selection
+      clearTimeout(clickTimeoutRef.current);
+      clickTimeoutRef.current = undefined;
+      onQuantityChange(isSelected ? 0 : product.desiredStock);
+    } else {
+      // Single click - mark as reviewed
+      clickTimeoutRef.current = setTimeout(() => {
+        clickTimeoutRef.current = undefined;
+        if (!isReviewed) {
+          onReview();
+        }
+      }, 250);
     }
   };
 
