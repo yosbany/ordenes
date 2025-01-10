@@ -72,6 +72,26 @@ export const thermalPrintStyles = `
     font-weight: bold;
   }
 
+  /* Summary Section */
+  .summary {
+    margin-top: 3mm;
+    padding-top: 2mm;
+    border-top: 1px dashed #000;
+    text-align: right;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1mm;
+    font-weight: bold;
+    font-size: 14px;
+  }
+
+  .summary-label {
+    font-weight: normal;
+  }
+
   /* Print Controls */
   .controls {
     position: fixed;
@@ -119,23 +139,6 @@ export const thermalPrintStyles = `
     height: 16px;
   }
 
-  .error-message {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #fee2e2;
-    color: #991b1b;
-    padding: 12px 24px;
-    border-radius: 6px;
-    border: 1px solid #fecaca;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    z-index: 1000;
-    text-align: center;
-    max-width: 90%;
-    font-size: 14px;
-  }
-
   /* Print Media Styles */
   @media print {
     @page {
@@ -160,8 +163,7 @@ export const thermalPrintStyles = `
       border-radius: 0;
     }
 
-    .controls,
-    .error-message {
+    .controls {
       display: none !important;
     }
 
@@ -194,6 +196,11 @@ export const thermalPrintStyles = `
     .header div {
       margin-bottom: 0.5mm;
       font-size: 20px;
+    }
+
+    .summary {
+      margin-top: 2mm;
+      padding-top: 1mm;
     }
   }
 `;

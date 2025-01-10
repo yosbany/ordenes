@@ -10,6 +10,8 @@ interface ThermalPrintViewProps {
 
 export function ThermalPrintView({ order, products, provider }: ThermalPrintViewProps) {
   const content = formatReport(order, products, false);
+  const totalItems = order.items.length;
+  const totalUnits = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <div className="font-mono text-sm" style={{ width: '80mm', margin: '0 auto' }}>
@@ -38,6 +40,16 @@ export function ThermalPrintView({ order, products, provider }: ThermalPrintView
         `}
       </style>
       <pre className="whitespace-pre-wrap">{content}</pre>
+      <div className="summary">
+        <div className="summary-row">
+          <span className="summary-label">Total Items:</span>
+          <span>{totalItems}</span>
+        </div>
+        <div className="summary-row">
+          <span className="summary-label">Total Unidades:</span>
+          <span>{totalUnits}</span>
+        </div>
+      </div>
     </div>
   );
 }

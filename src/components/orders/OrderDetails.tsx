@@ -34,7 +34,8 @@ export function OrderDetails({
   const [isProcessing, setIsProcessing] = useState(false);
   
   const orderDate = format(fromTimestamp(order.date), "d 'de' MMMM, yyyy HH:mm", { locale: es });
-  const totalProducts = order.items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalProducts = order.items.length;
+  const totalUnits = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleReopen = async () => {
     setIsProcessing(true);
@@ -144,7 +145,10 @@ export function OrderDetails({
                 </div>
                 <div className="space-y-1">
                   <p className="text-gray-600">
-                    {totalProducts} productos
+                    {totalProducts} {totalProducts === 1 ? 'item' : 'items'}
+                  </p>
+                  <p className="text-gray-600">
+                    {totalUnits} {totalUnits === 1 ? 'unidad' : 'unidades'}
                   </p>
                   <p className="font-medium text-lg text-blue-600">
                     {formatPrice(order.total)}
