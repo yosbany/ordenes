@@ -8,21 +8,21 @@ export interface AuthUser extends User {
   email: string | null;
 }
 
-export async function signIn(email: string, password: string) {
+export async function signIn(email: string, password: string): Promise<AuthUser> {
   try {
     const result = await signInWithEmailAndPassword(auth, email, password);
     return result.user as AuthUser;
   } catch (error) {
-    console.error('Sign in error:', error);
-    throw error;
+    console.error('Authentication error:', error);
+    throw new Error('Error de autenticación: credenciales inválidas');
   }
 }
 
-export async function signOut() {
+export async function signOut(): Promise<void> {
   try {
     await firebaseSignOut(auth);
   } catch (error) {
     console.error('Sign out error:', error);
-    throw error;
+    throw new Error('Error al cerrar sesión');
   }
 }

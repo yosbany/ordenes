@@ -1,0 +1,12 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "products": {
+      ".indexOn": ["providerId"],
+      "$productId": {
+        ".validate": "newData.hasChildren(['name', 'sku', 'purchasePackaging', 'order', 'price', 'desiredStock', 'minPackageStock', 'providerId'])"
+      }
+    }
+  }
+}

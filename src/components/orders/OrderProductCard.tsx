@@ -63,8 +63,16 @@ export function OrderProductCard({
     if (!onProductUpdate) return;
     setIsSubmitting(true);
     try {
-      await onProductUpdate(product, data);
+      // Preserve the original ID and providerId
+      const updatedData = {
+        ...data,
+        id: product.id,
+        providerId: product.providerId
+      };
+      await onProductUpdate(product, updatedData);
       setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating product:', error);
     } finally {
       setIsSubmitting(false);
     }

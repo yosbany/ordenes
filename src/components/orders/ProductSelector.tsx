@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Product } from '@/types';
 import { OrderProductCard } from './OrderProductCard';
 import { ProductFilter } from './ProductFilter';
+import { Button } from '@/components/ui/Button';
+import { Filter } from 'lucide-react';
 
 interface ProductSelectorProps {
   products: Product[];
@@ -18,22 +20,31 @@ export function ProductSelector({
 }: ProductSelectorProps) {
   const [reviewedProducts, setReviewedProducts] = useState<Set<string>>(new Set());
   const [filterValue, setFilterValue] = useState('');
+  const [showOnlySelected, setShowOnlySelected] = useState(false);
 
   // Sort products by order
   const sortedProducts = [...products].sort((a, b) => a.order - b.order);
 
-  // Filter products based on search term
-  const filteredProducts = filterValue.trim()
-    ? sortedProducts.filter(product => {
-        const searchTerm = filterValue.toLowerCase();
-        return (
-          product.name.toLowerCase().includes(searchTerm) ||
-          product.sku.toLowerCase().includes(searchTerm) ||
-          (product.supplierCode?.toLowerCase().includes(searchTerm)) ||
-          product.tags?.some(tag => tag.toLowerCase().includes(searchTerm))
-        );
-      })
-    : sortedProducts;
+  // Filter products based on search term and selected filter
+  const filteredProducts = sortedProducts.filter(product => {
+    // First apply selected filter if active
+    if (showOnlySelected && !selectedProducts.has(product.id!)) {
+      return false;
+    }
+
+    // Then apply search filter if there's a search term
+    if (filterValue.trim()) {
+      const searchTerm = filterValue.toLowerCase();
+      return (
+        product.name.toLowerCase().includes(searchTerm) ||
+        product.sku.toLowerCase().includes(searchTerm) ||
+        (product.supplierCode?.toLowerCase().includes(searchTerm)) ||
+        product.tags?.some(tag => tag.toLowerCase().includes(searchTerm))
+      );
+    }
+
+    return true;
+  });
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     if (newQuantity >= 0) {
@@ -54,10 +65,24 @@ export function ProductSelector({
 
   return (
     <div className="space-y-3">
-      <ProductFilter 
-        value={filterValue}
-        onChange={setFilterValue}
-      />
+      {/* Filters */}
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <ProductFilter 
+            value={filterValue}
+            onChange={setFilterValue}
+            placeholder="Filtrar"
+          />
+        </div>
+        <Button
+          variant={showOnlySelected ? "primary" : "outline"}
+          onClick={() => setShowOnlySelected(!showOnlySelected)}
+          className="w-10 h-10 p-0 flex items-center justify-center"
+          title={showOnlySelected ? 'Mostrar todos' : 'Solo seleccionados'}
+        >
+          <Filter className="w-4 h-4" />
+        </Button>
+      </div>
       
       {filteredProducts.map((product) => (
         <OrderProductCard
@@ -75,7 +100,10 @@ export function ProductSelector({
 
       {filteredProducts.length === 0 && (
         <div className="text-center py-8 text-gray-500">
-          No se encontraron productos que coincidan con la búsqueda
+          {showOnlySelected 
+            ? 'No hay productos seleccionados'
+            : 'No se encontraron productos que coincidan con la búsqueda'
+          }
         </div>
       )}
     </div>

@@ -39,6 +39,20 @@ function formatProducts(products: Product[], items: Order['items']): string[] {
     .filter((line): line is string => line !== null);
 }
 
+function formatSummary(items: Order['items']): string[] {
+  // Calcular totales
+  const totalItems = items.length;
+  const totalUnits = items.reduce((sum, item) => sum + item.quantity, 0);
+
+  return [
+    '',
+    '--------------------------------',
+    `Total Items: ${totalItems}`,
+    `Total Unidades: ${totalUnits}`,
+    ''
+  ];
+}
+
 export function formatReport(order: Order, products: Product[], isWhatsApp: boolean = false): string {
   if (isWhatsApp) {
     const header = [
@@ -62,16 +76,24 @@ export function formatReport(order: Order, products: Product[], isWhatsApp: bool
       })
       .filter(Boolean);
 
-    return [...header, ...items].join('\n');
+    const summary = [
+      '',
+      '--------------------------------',
+      `Total Items: ${order.items.length}`,
+      `Total Unidades: ${order.items.reduce((sum, item) => sum + item.quantity, 0)}`
+    ];
+
+    return [...header, ...items, ...summary].join('\n');
   }
 
   // Thermal printer format
   const header = formatHeader(order.date);
   const formattedProducts = formatProducts(products, order.items);
+  const summary = formatSummary(order.items);
 
   return [
     ...header,
     ...formattedProducts,
-    ''
+    ...summary
   ].join('\n');
 }

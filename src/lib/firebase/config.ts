@@ -1,19 +1,20 @@
 import { initializeApp } from 'firebase/app';
+import { validateConfig, getDemoConfig } from './validation';
 
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
-};
+const validation = validateConfig();
+const config = validation.isValid ? validation.config! : getDemoConfig();
 
-// Log environment information
-const environment = import.meta.env.MODE;
-console.log(`Running in ${environment} mode`);
-console.log(`Using database: ${firebaseConfig.databaseURL}`);
+// Initialize Firebase
+export const app = initializeApp(config);
 
-// Initialize Firebase with environment-specific config
-export const app = initializeApp(firebaseConfig);
+// Log initialization mode
+if (!validation.isValid) {
+  console.warn(
+    'Firebase initialized in demo mode. The following environment variables are missing:',
+    validation.missingVars
+  );
+} else {
+  console.info(`Firebase initialized in ${import.meta.env.MODE} mode`);
+}
+
+export const isDemoMode = !validation.isValid;

@@ -227,7 +227,7 @@ export function ProductForm({
 
       {/* Form Actions */}
       <div className="flex justify-end space-x-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading || isSubmitting}>
           Cancelar
         </Button>
         <Button type="submit" isLoading={isLoading || isSubmitting}>

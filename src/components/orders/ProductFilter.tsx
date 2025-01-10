@@ -11,7 +11,7 @@ export function ProductFilter({ value, onChange }: ProductFilterProps) {
   return (
     <div className="relative mb-6">
       <Input
-        placeholder="Filtrar productos por nombre, SKU, código o etiquetas..."
+        placeholder="Filtrar"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="pl-10"

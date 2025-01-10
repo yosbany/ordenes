@@ -30,7 +30,10 @@ export function OrderList({
   return (
     <div className="space-y-4">
       {sortedOrders.map((order, index) => {
-        const totalProducts = order.items.reduce((sum, item) => sum + item.quantity, 0);
+        // Get unique products count
+        const uniqueProducts = new Set(order.items.map(item => item.productId)).size;
+        // Get total quantity
+        const totalQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0);
         const orderNumber = sortedOrders.length - index;
         const orderProvider = provider || providers.find(p => p.id === order.providerId);
         
@@ -71,9 +74,11 @@ export function OrderList({
 
               {/* Order Details */}
               <div className="flex items-center justify-between text-gray-600 mt-2">
-                <span>
-                  {totalProducts} {totalProducts === 1 ? 'producto' : 'productos'}
-                </span>
+                <div className="space-x-2">
+                  <span>{uniqueProducts} {uniqueProducts === 1 ? 'producto' : 'productos'}</span>
+                  <span className="text-gray-400">•</span>
+                  <span>{totalQuantity} {totalQuantity === 1 ? 'unidad' : 'unidades'}</span>
+                </div>
                 <span className="font-medium text-blue-600">
                   {formatPrice(order.total)}
                 </span>
