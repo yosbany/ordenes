@@ -29,21 +29,18 @@ export function Products() {
     setIsSubmitting(true);
     try {
       if (editingProduct) {
-        await updateProduct(editingProduct.id!, {
-          ...data,
-          id: editingProduct.id
-        });
-        toast.success('Producto actualizado exitosamente');
+        await updateProduct(editingProduct.id!, data);
+        handleCloseForm();
       } else {
         const defaultSector = SECTORS[0].code;
         const sectorProducts = products.filter(p => getSectorFromOrder(p.order) === defaultSector);
         const newOrder = calculateNewOrder(defaultSector, sectorProducts.length + 1);
         
         await addProduct({ ...data, order: newOrder });
-        toast.success('Producto creado exitosamente');
+        handleCloseForm();
       }
-      handleCloseForm();
     } catch (error) {
+      console.error('Error al guardar producto:', error);
       toast.error('Error al guardar el producto');
     } finally {
       setIsSubmitting(false);
@@ -59,7 +56,6 @@ export function Products() {
     
     try {
       await deleteProduct(productToDelete.id!);
-      toast.success('Producto eliminado exitosamente');
       setProductToDelete(null);
     } catch (error) {
       toast.error('Error al eliminar el producto');

@@ -7,25 +7,20 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { FullscreenProductEditor } from '@/components/products/FullscreenProductEditor';
+import { useGlobalProducts } from '@/hooks/useGlobalProducts';
 
 interface OrderProductCardProps {
   product: Product;
-  products: Product[];
-  isSelected: boolean;
   quantity: number;
   onQuantityChange: (quantity: number) => void;
-  onProductUpdate?: (product: Product, data: Partial<Product>) => Promise<void>;
   onReview: () => void;
   isReviewed: boolean;
 }
 
 export function OrderProductCard({
   product,
-  products,
-  isSelected,
   quantity,
   onQuantityChange,
-  onProductUpdate,
   onReview,
   isReviewed
 }: OrderProductCardProps) {
@@ -36,6 +31,10 @@ export function OrderProductCard({
   const quantityControlsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const clickTimeoutRef = useRef<NodeJS.Timeout>();
+  const { products, updateProduct } = useGlobalProducts();
+
+  // Get latest product data
+  const currentProduct = products.find(p => p.id === product.id) || product;
 
   useEffect(() => {
     setInputValue(quantity.toString());
@@ -60,16 +59,9 @@ export function OrderProductCard({
   }, [showQuantityInput]);
 
   const handleProductUpdate = async (data: Omit<Product, 'id'>) => {
-    if (!onProductUpdate) return;
     setIsSubmitting(true);
     try {
-      // Preserve the original ID and providerId
-      const updatedData = {
-        ...data,
-        id: product.id,
-        providerId: product.providerId
-      };
-      await onProductUpdate(product, updatedData);
+      await updateProduct(currentProduct.id!, data);
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating product:', error);
@@ -95,7 +87,7 @@ export function OrderProductCard({
       // Double click - toggle product selection
       clearTimeout(clickTimeoutRef.current);
       clickTimeoutRef.current = undefined;
-      onQuantityChange(isSelected ? 0 : product.desiredStock);
+      onQuantityChange(quantity > 0 ? 0 : currentProduct.desiredStock);
     } else {
       // Single click - mark as reviewed
       clickTimeoutRef.current = setTimeout(() => {
@@ -144,7 +136,7 @@ export function OrderProductCard({
 
   return (
     <>
-      <Card isSelected={isSelected}>
+      <Card isSelected={quantity > 0}>
         <Card.Header className="!p-3">
           <div className="relative" onClick={handleCardClick}>
             {/* Review Indicator */}
@@ -159,17 +151,17 @@ export function OrderProductCard({
               <div
                 className={`
                   flex-shrink-0 w-5 h-5 rounded border cursor-pointer transition-colors mt-1
-                  ${isSelected 
+                  ${quantity > 0 
                     ? 'bg-blue-500 border-blue-500' 
                     : 'border-gray-300 hover:border-blue-500'
                   }
                 `}
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleQuantityChange(isSelected ? 0 : product.desiredStock);
+                  handleQuantityChange(quantity > 0 ? 0 : currentProduct.desiredStock);
                 }}
               >
-                {isSelected && (
+                {quantity > 0 && (
                   <Check className="w-full h-full text-white p-0.5" />
                 )}
               </div>
@@ -178,7 +170,7 @@ export function OrderProductCard({
                 {/* Product Name */}
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold text-gray-900">
-                    {product.name}
+                    {currentProduct.name}
                   </h3>
                   <Button
                     variant="ghost"
@@ -197,16 +189,16 @@ export function OrderProductCard({
                 <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-3">
                   <div className="flex items-center">
                     <ArrowUpDown className="w-4 h-4 mr-1.5 flex-shrink-0" />
-                    <span>Orden: {formatOrderNumber(product.order)}</span>
+                    <span>Orden: {formatOrderNumber(currentProduct.order)}</span>
                   </div>
                   <div className="flex items-center">
                     <Archive className="w-4 h-4 mr-1.5 flex-shrink-0" />
-                    <span>Stock: {product.minPackageStock} - {product.desiredStock}</span>
+                    <span>Stock: {currentProduct.minPackageStock} - {currentProduct.desiredStock}</span>
                   </div>
                 </div>
 
                 {/* Quantity Controls */}
-                {isSelected && (
+                {quantity > 0 && (
                   <div className="flex items-end justify-between gap-4">
                     <div className="flex-1">
                       <div ref={quantityControlsRef} className="quantity-controls">
@@ -230,7 +222,7 @@ export function OrderProductCard({
                               value={inputValue}
                               onChange={handleInputChange}
                               onClick={(e) => e.stopPropagation()}
-                              placeholder={product.desiredStock.toString()}
+                              placeholder={currentProduct.desiredStock.toString()}
                               className="text-center text-lg h-12"
                             />
                             
@@ -250,7 +242,7 @@ export function OrderProductCard({
                             className="w-full h-12 px-4 text-left bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
                           >
                             <span className="text-lg font-medium">
-                              {quantity} {product.purchasePackaging}
+                              {quantity} {currentProduct.purchasePackaging}
                             </span>
                           </button>
                         )}
@@ -259,19 +251,19 @@ export function OrderProductCard({
 
                     <div className="text-right">
                       <div className="text-lg font-bold text-blue-600">
-                        ${formatPrice(product.price)}
+                        {formatPrice(currentProduct.price)}
                       </div>
                       <div className="text-sm text-gray-500">
-                        Total: ${formatPrice(product.price * quantity)}
+                        Total: {formatPrice(currentProduct.price * quantity)}
                       </div>
                     </div>
                   </div>
                 )}
 
                 {/* Price (when not selected) */}
-                {!isSelected && (
+                {!quantity && (
                   <div className="text-lg font-bold text-blue-600">
-                    ${formatPrice(product.price)}
+                    {formatPrice(currentProduct.price)}
                   </div>
                 )}
               </div>
@@ -283,8 +275,8 @@ export function OrderProductCard({
       {/* Product Edit Modal */}
       {isEditing && (
         <FullscreenProductEditor
-          providerId={product.providerId}
-          product={product}
+          providerId={currentProduct.providerId}
+          product={currentProduct}
           onSubmit={handleProductUpdate}
           onCancel={() => setIsEditing(false)}
           isSubmitting={isSubmitting}

@@ -9,11 +9,11 @@ export const REQUIRED_ENV_VARS = [
 ] as const;
 
 export const DEMO_CONFIG = {
-  apiKey: "demo-mode-key",
-  authDomain: "demo-mode.firebaseapp.com",
-  databaseURL: "https://demo-mode.firebaseio.com",
-  projectId: "demo-mode",
-  storageBucket: "demo-mode.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "demo-mode-app-id"
+  apiKey: "AIzaSyCswObxYzO5gjurKWnAI387lzoEXJjn24k",
+  authDomain: "nrd-ordenes.firebaseapp.com",
+  databaseURL: "https://nrd-ordenes-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "nrd-ordenes",
+  storageBucket: "nrd-ordenes.firebasestorage.app",
+  messagingSenderId: "158356819364",
+  appId: "1:158356819364:web:c9a87a35706babd4608531"
 } as const;

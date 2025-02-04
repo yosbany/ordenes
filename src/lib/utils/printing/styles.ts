@@ -9,7 +9,7 @@ export const thermalPrintStyles = `
   /* Base styles */
   body {
     font-family: 'Courier New', monospace;
-    font-size: 14px;
+    font-size: 12px;
     line-height: 1.2;
     background: #f3f4f6;
     min-height: 100vh;
@@ -28,8 +28,8 @@ export const thermalPrintStyles = `
     border-radius: 4px;
   }
 
+  /* Header */
   .header {
-    text-align: center;
     margin-bottom: 3mm;
     border-bottom: 1px dashed #000;
     padding-bottom: 2mm;
@@ -38,9 +38,24 @@ export const thermalPrintStyles = `
   .header div {
     margin-bottom: 1mm;
     font-weight: bold;
-    font-size: 20px;
   }
 
+  /* Business Info - Larger */
+  .header div:nth-child(1) {
+    font-size: 14px;
+  }
+
+  /* Owner Info */
+  .header div:nth-child(2) {
+    font-size: 12px;
+  }
+
+  /* Date - Smaller */
+  .header div:nth-child(3) {
+    font-size: 10px;
+  }
+
+  /* Table */
   table {
     width: 100%;
     border-collapse: collapse;
@@ -52,10 +67,9 @@ export const thermalPrintStyles = `
   }
 
   td {
-    padding: 0.2mm;
-    font-size: 14px;
+    padding: 0.5mm 1mm;
+    font-size: 12px;
     vertical-align: top;
-    font-weight: bold;
   }
 
   td.quantity {
@@ -63,13 +77,10 @@ export const thermalPrintStyles = `
     padding-right: 2mm;
     width: 1%;
     font-weight: bold;
-    font-size: 14px;
   }
 
   td.name {
     word-break: break-word;
-    font-size: 14px;
-    font-weight: bold;
   }
 
   /* Summary Section */
@@ -77,19 +88,21 @@ export const thermalPrintStyles = `
     margin-top: 3mm;
     padding-top: 2mm;
     border-top: 1px dashed #000;
-    text-align: right;
   }
 
   .summary-row {
     display: flex;
     justify-content: space-between;
     margin-bottom: 1mm;
-    font-weight: bold;
-    font-size: 14px;
+    font-size: 12px;
   }
 
   .summary-label {
     font-weight: normal;
+  }
+
+  .summary-value {
+    font-weight: bold;
   }
 
   /* Print Controls */
@@ -152,13 +165,12 @@ export const thermalPrintStyles = `
       padding: 0;
       background: white;
       min-height: auto;
-      font-size: 14px;
     }
 
     .content {
       width: 100%;
       margin: 0;
-      padding: 1mm;
+      padding: 2mm;
       box-shadow: none;
       border-radius: 0;
     }
@@ -167,40 +179,60 @@ export const thermalPrintStyles = `
       display: none !important;
     }
 
-    tr {
-      page-break-inside: avoid;
+    /* Print header styles */
+    .header {
+      margin-bottom: 3mm;
+      padding-bottom: 2mm;
+    }
+
+    .header div:nth-child(1) {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .header div:nth-child(2) {
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .header div:nth-child(3) {
+      font-size: 10px;
+    }
+
+    /* Print table styles */
+    table {
+      margin: 2mm 0;
     }
 
     td {
-      font-size: 14px;
-      padding: 0.2mm 1mm;
-      vertical-align: top;
-      font-weight: bold;
+      padding: 0.5mm 1mm;
+      font-size: 12px;
     }
 
     td.quantity {
-      font-size: 14px;
       font-weight: bold;
     }
 
-    td.name {
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    .header {
-      margin-bottom: 2mm;
-      padding-bottom: 1mm;
-    }
-
-    .header div {
-      margin-bottom: 0.5mm;
-      font-size: 20px;
-    }
-
+    /* Print summary styles */
     .summary {
-      margin-top: 2mm;
-      padding-top: 1mm;
+      margin-top: 3mm;
+      padding-top: 2mm;
+      border-top: 1px dashed #000;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1mm;
+      font-size: 12px;
+    }
+
+    .summary-label {
+      font-weight: normal;
+    }
+
+    .summary-value {
+      font-weight: bold;
     }
   }
 `;

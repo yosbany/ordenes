@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { Product } from '@/types';
+import { Button } from '@/components/ui/Button';
 import { ProductForm } from './ProductForm';
 
 interface FullscreenProductFormProps {
@@ -18,58 +19,50 @@ export function FullscreenProductForm({
   onCancel,
   isLoading
 }: FullscreenProductFormProps) {
-  const handleSubmit = async (data: Omit<Product, 'id'>) => {
-    try {
-      // Si hay datos iniciales, preservar ID y orden
-      if (initialData) {
-        await onSubmit({
-          ...data,
-          id: initialData.id,
-          order: initialData.order,
-          providerId: initialData.providerId
-        });
-      } else {
-        // Para nuevo producto
-        await onSubmit({
-          ...data,
-          providerId
-        });
+  const [isDirty, setIsDirty] = useState(false);
+
+  const handleClose = () => {
+    if (isDirty) {
+      if (confirm('¿Está seguro que desea descartar los cambios?')) {
+        onCancel();
       }
-    } catch (error) {
-      console.error('Error en FullscreenProductForm submit:', error);
-      throw error;
+    } else {
+      onCancel();
     }
   };
 
   return (
     <div className="fixed inset-0 bg-white z-50 flex flex-col">
       {/* Header */}
-      <div className="border-b bg-white sticky top-0 z-10">
-        <div className="flex items-center justify-between px-3 h-16">
+      <div className="border-b bg-white">
+        <div className="flex items-center justify-between px-4 h-14">
           <h2 className="text-lg font-semibold">
-            {initialData ? `Editar ${initialData.name}` : 'Nuevo Producto'}
+            {initialData ? 'Editar' : 'Nuevo'} Producto
           </h2>
-          <button
-            onClick={onCancel}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            disabled={isLoading}
-            aria-label="Cerrar"
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClose}
+            className="p-2 hover:bg-gray-100 rounded-full"
           >
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="container mx-auto max-w-2xl px-3 py-4">
-          <ProductForm
-            providerId={providerId}
-            initialData={initialData}
-            onSubmit={handleSubmit}
-            onCancel={onCancel}
-            isLoading={isLoading}
-          />
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto px-4 py-6">
+          <div className="max-w-3xl mx-auto">
+            <ProductForm
+              providerId={providerId}
+              initialData={initialData}
+              onSubmit={onSubmit}
+              onCancel={onCancel}
+              isLoading={isLoading}
+              onDirtyChange={setIsDirty}
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -1,7 +1,9 @@
 import { ref, get, set } from 'firebase/database';
 import { db } from './index';
+import { auth } from '@/lib/firebase/auth';
+import { initializeMeasures } from './initializeMeasures';
 
-const COLLECTIONS = ['orders', 'products', 'providers', 'packaging'] as const;
+const COLLECTIONS = ['orders', 'products', 'providers', 'measures'] as const;
 type Collection = typeof COLLECTIONS[number];
 
 interface CollectionStatus {
@@ -12,6 +14,14 @@ interface CollectionStatus {
 
 async function checkCollection(collection: Collection): Promise<CollectionStatus> {
   try {
+    // Only check collections if user is authenticated
+    if (!auth.currentUser) {
+      return {
+        name: collection,
+        exists: false
+      };
+    }
+
     const collectionRef = ref(db, collection);
     const snapshot = await get(collectionRef);
     
@@ -29,13 +39,25 @@ async function checkCollection(collection: Collection): Promise<CollectionStatus
 }
 
 async function createCollection(collection: Collection): Promise<void> {
+  // Only create collections if user is authenticated
+  if (!auth.currentUser) {
+    console.warn(`Skipping collection creation for "${collection}" - user not authenticated`);
+    return;
+  }
+
   const collectionRef = ref(db, collection);
   await set(collectionRef, {});
 }
 
 export async function initializeCollections(): Promise<void> {
   try {
-    console.log('Starting collections initialization...');
+    // Skip initialization if user is not authenticated
+    if (!auth.currentUser) {
+      console.info('Skipping collections initialization - user not authenticated');
+      return;
+    }
+
+    console.info('Starting collections initialization...');
     
     // Check all collections first
     const statuses = await Promise.all(
@@ -48,21 +70,30 @@ export async function initializeCollections(): Promise<void> {
       .map(async ({ name }) => {
         try {
           await createCollection(name);
-          console.log(`Collection "${name}" created successfully`);
+          console.info(`Collection "${name}" created successfully`);
         } catch (error) {
+          // Log error but don't throw to allow other collections to be created
           console.error(`Failed to create collection "${name}":`, error);
         }
       });
 
     await Promise.all(createPromises);
-    console.log('Collections initialization completed');
+
+    // Initialize standard measures
+    await initializeMeasures();
+
+    console.info('Collections initialization completed');
   } catch (error) {
     console.error('Failed to initialize collections:', error);
-    throw error;
+    // Don't throw error to prevent app from crashing
   }
 }
 
-// Initialize collections when the module is imported
-initializeCollections().catch(error => {
-  console.error('Critical error during collections initialization:', error);
+// Initialize collections when user signs in
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    initializeCollections().catch(error => {
+      console.error('Critical error during collections initialization:', error);
+    });
+  }
 });

@@ -8,7 +8,10 @@ import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Providers } from './pages/Providers';
 import { Products } from './pages/Products';
+import { Recipes } from './pages/Recipes';
 import { Orders } from './pages/Orders';
+import { Schedule } from './pages/Schedule';
+import { Inventory } from './pages/Inventory';
 
 function App() {
   return (
@@ -22,7 +25,10 @@ function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/providers" element={<Providers />} />
               <Route path="/products" element={<Products />} />
+              <Route path="/recipes" element={<Recipes />} />
               <Route path="/orders" element={<Orders />} />
+              <Route path="/schedule" element={<Schedule />} />
+              <Route path="/inventory" element={<Inventory />} />
             </Route>
           </Route>
         </Routes>

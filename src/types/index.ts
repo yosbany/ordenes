@@ -21,6 +21,11 @@ export interface Product {
   minPackageStock: number;
   providerId: string;
   tags: string[];
+  isProduction: boolean;
+  unitMeasure?: string;
+  pricePerUnit?: number;
+  currentStock?: number;
+  lastStockCheck?: number;
 }
 
 export interface Order {

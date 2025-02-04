@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Order } from '@/types';
-import { getProviderOrders } from '@/lib/services/orders';
+import { orderService } from '@/lib/services/orders';
+import { toast } from 'react-hot-toast';
 
 export function useProviderOrders(providerId: string) {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -8,31 +9,40 @@ export function useProviderOrders(providerId: string) {
 
   useEffect(() => {
     let mounted = true;
+    let unsubscribe: (() => void) | undefined;
 
-    const fetchOrders = async () => {
+    const loadOrders = async () => {
+      if (!providerId) {
+        setOrders([]);
+        setLoading(false);
+        return;
+      }
+
       try {
-        const data = await getProviderOrders(providerId);
-        if (mounted) {
-          setOrders(data);
-        }
+        // Subscribe to real-time updates
+        unsubscribe = orderService.subscribeToProviderOrders(providerId, (updatedOrders) => {
+          if (mounted) {
+            setOrders(updatedOrders);
+            setLoading(false);
+          }
+        });
       } catch (error) {
-        console.error('Error fetching provider orders:', error);
-      } finally {
+        console.error('Error loading provider orders:', error);
         if (mounted) {
+          toast.error('Error al cargar las órdenes');
+          setOrders([]);
           setLoading(false);
         }
       }
     };
 
-    if (providerId) {
-      fetchOrders();
-    } else {
-      setOrders([]);
-      setLoading(false);
-    }
+    loadOrders();
 
     return () => {
       mounted = false;
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
   }, [providerId]);
 

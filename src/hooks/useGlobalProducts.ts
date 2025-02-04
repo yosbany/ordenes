@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { ref, onValue } from 'firebase/database';
+import { ref, onValue, update } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { Product } from '@/types';
+import { toast } from 'react-hot-toast';
 
 export function useGlobalProducts() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -29,5 +30,21 @@ export function useGlobalProducts() {
     return () => unsubscribe();
   }, []);
 
-  return { products, loading };
+  const updateProduct = async (id: string, updates: Partial<Product>) => {
+    try {
+      const productRef = ref(db, `products/${id}`);
+      await update(productRef, updates);
+      toast.success('Producto actualizado exitosamente');
+    } catch (error) {
+      console.error('Error updating product:', error);
+      toast.error('Error al actualizar el producto');
+      throw error;
+    }
+  };
+
+  return { 
+    products, 
+    loading,
+    updateProduct
+  };
 }

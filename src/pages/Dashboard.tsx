@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
+import { observer } from 'mobx-react-lite';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useProviders } from '@/hooks/useProviders';
 import { Card } from '@/components/ui/Card';
 import { 
   Package, 
@@ -10,52 +10,50 @@ import {
   BarChart2, 
   TrendingUp, 
   Archive, 
-  ShoppingCart 
+  ShoppingCart,
+  RefreshCw,
+  Tag
 } from 'lucide-react';
-import { WeekDay } from '@/types';
-import { useTodayOrdersCount } from '@/hooks/useTodayOrdersCount';
-import { useAnalytics } from '@/hooks/useAnalytics';
+import { Button } from '@/components/ui/Button';
+import { useDashboardViewModel } from '@/presentation/hooks/useViewModel';
 import { AnalyticsCard } from '@/components/dashboard/AnalyticsCard';
 import { TopProductsModal } from '@/components/dashboard/TopProductsModal';
-import { ProviderOrderStatus } from '@/components/dashboard/ProviderOrderStatus';
-import { ProviderDeliveryStatus } from '@/components/dashboard/ProviderDeliveryStatus';
+import { TopProductsByTags } from '@/components/dashboard/TopProductsByTags';
 import { CsvImportCard } from '@/components/dashboard/CsvImportCard';
 import { formatPrice } from '@/lib/utils';
 
-const WEEKDAY_MAP: Record<string, WeekDay> = {
-  'lunes': 'monday',
-  'martes': 'tuesday',
-  'miércoles': 'wednesday',
-  'jueves': 'thursday',
-  'viernes': 'friday',
-  'sábado': 'saturday',
-  'domingo': 'sunday'
-};
-
-export function Dashboard() {
-  const { providers } = useProviders();
-  const today = new Date();
-  const currentDayName = WEEKDAY_MAP[format(today, 'EEEE', { locale: es })];
-  const { count: todayOrdersCount, loading: ordersLoading } = useTodayOrdersCount();
-  const { weeklyOrders, topProducts, totalProducts, totalProviders, loading: analyticsLoading } = useAnalytics();
+export const Dashboard = observer(() => {
+  const viewModel = useDashboardViewModel();
   const [isTopProductsModalOpen, setIsTopProductsModalOpen] = useState(false);
+  const [isTopProductsByTagsModalOpen, setIsTopProductsByTagsModalOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
-  // Filter providers that have orders scheduled for today
-  const providersForOrder = providers.filter(p => 
-    p.orderDays?.includes(currentDayName)
-  );
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await viewModel.loadStats();
+    setIsRefreshing(false);
+  };
 
-  // Get weekly orders total
-  const totalWeeklyOrders = weeklyOrders[0]?.count || 0;
-
-  // Get top product by amount
-  const topProduct = topProducts[0];
-
-  // Calculate total orders
-  const totalOrders = weeklyOrders.reduce((sum, week) => sum + week.count, 0);
+  const topProduct = viewModel.topProducts[0];
+  const topTag = viewModel.topProductsByTags[0];
 
   return (
     <div className="space-y-6">
+      {/* Header con botón de actualización */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={viewModel.loading || isRefreshing}
+          className="gap-2"
+        >
+          <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          Actualizar
+        </Button>
+      </div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {/* Date Card */}
@@ -64,10 +62,10 @@ export function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-2xl font-bold capitalize">
-                  {format(today, 'EEEE', { locale: es })}
+                  {format(new Date(), 'EEEE', { locale: es })}
                 </div>
                 <div className="text-sm text-gray-600 mt-1">
-                  {format(today, 'dd/MM/yyyy')}
+                  {format(new Date(), 'dd/MM/yyyy')}
                 </div>
               </div>
               <div className="p-2 bg-orange-100 rounded-lg">
@@ -81,27 +79,27 @@ export function Dashboard() {
         <AnalyticsCard
           title="Total Productos"
           icon={<Archive className="w-5 h-5 text-indigo-600" />}
-          loading={analyticsLoading}
+          loading={viewModel.loading}
         >
-          <h3 className="text-2xl font-bold mt-1">{totalProducts}</h3>
+          <h3 className="text-2xl font-bold mt-1">{viewModel.totalProducts}</h3>
         </AnalyticsCard>
 
         {/* Total Providers Card */}
         <AnalyticsCard
           title="Total Proveedores"
           icon={<Users className="w-5 h-5 text-emerald-600" />}
-          loading={analyticsLoading}
+          loading={viewModel.loading}
         >
-          <h3 className="text-2xl font-bold mt-1">{totalProviders}</h3>
+          <h3 className="text-2xl font-bold mt-1">{viewModel.totalProviders}</h3>
         </AnalyticsCard>
 
         {/* Total Orders Card */}
         <AnalyticsCard
           title="Total Órdenes"
           icon={<ShoppingCart className="w-5 h-5 text-amber-600" />}
-          loading={analyticsLoading}
+          loading={viewModel.loading}
         >
-          <h3 className="text-2xl font-bold mt-1">{totalOrders}</h3>
+          <h3 className="text-2xl font-bold mt-1">{viewModel.totalOrders}</h3>
         </AnalyticsCard>
 
         {/* Today's Orders Card */}
@@ -111,12 +109,15 @@ export function Dashboard() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Pedidos Hoy</p>
                 <h3 className="text-2xl font-bold mt-1">
-                  {ordersLoading ? (
+                  {viewModel.loading ? (
                     <span className="text-gray-400">...</span>
                   ) : (
-                    todayOrdersCount
+                    viewModel.todayOrdersCount
                   )}
                 </h3>
+                <div className="text-sm text-gray-500 mt-1">
+                  {formatPrice(viewModel.todayOrdersAmount)}
+                </div>
               </div>
               <div className="p-2 bg-purple-100 rounded-lg">
                 <Package className="w-5 h-5 text-purple-600" />
@@ -129,28 +130,58 @@ export function Dashboard() {
         <AnalyticsCard
           title="Órdenes Semanales"
           icon={<BarChart2 className="w-5 h-5 text-blue-600" />}
-          loading={analyticsLoading}
+          loading={viewModel.loading}
         >
-          <h3 className="text-2xl font-bold mt-1">{totalWeeklyOrders}</h3>
+          <h3 className="text-2xl font-bold mt-1">{viewModel.weekOrdersCount}</h3>
+          <div className="text-sm text-gray-500 mt-1">
+            {formatPrice(viewModel.weekOrdersAmount)}
+          </div>
         </AnalyticsCard>
 
         {/* Most Valuable Product Card */}
         <AnalyticsCard
           title="Producto Más Valorado"
           icon={<TrendingUp className="w-5 h-5 text-green-600" />}
-          loading={analyticsLoading}
-          className="lg:col-span-2 cursor-pointer hover:shadow-md transition-shadow"
+          loading={viewModel.loading}
+          className="cursor-pointer hover:shadow-md transition-shadow"
           onClick={() => setIsTopProductsModalOpen(true)}
         >
           {topProduct && (
             <div className="mt-1">
-              <h3 className="text-lg font-bold break-words">{topProduct.name}</h3>
+              <h3 className="text-lg font-bold break-words">
+                {topProduct.name}
+              </h3>
               <div className="flex items-center justify-between mt-1">
                 <span className="text-lg font-bold text-blue-600">
                   {formatPrice(topProduct.totalAmount)}
                 </span>
                 <span className="text-sm text-gray-500">
-                  {topProduct.totalQuantity} {topProduct.purchasePackaging}
+                  {topProduct.totalQuantity} unidades
+                </span>
+              </div>
+            </div>
+          )}
+        </AnalyticsCard>
+
+        {/* Most Valuable Tag Card */}
+        <AnalyticsCard
+          title="Etiqueta Más Valorada"
+          icon={<Tag className="w-5 h-5 text-rose-600" />}
+          loading={viewModel.loading}
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => setIsTopProductsByTagsModalOpen(true)}
+        >
+          {topTag && (
+            <div className="mt-1">
+              <h3 className="text-lg font-bold break-words">
+                {topTag.tag}
+              </h3>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-lg font-bold text-blue-600">
+                  {formatPrice(topTag.totalAmount)}
+                </span>
+                <span className="text-sm text-gray-500">
+                  {topTag.products.length} productos
                 </span>
               </div>
             </div>
@@ -161,61 +192,30 @@ export function Dashboard() {
         <CsvImportCard />
       </div>
 
-      {/* Daily Activities */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Orders Section */}
-        <Card>
-          <Card.Header>
-            <Card.Title>Hoy se deben realizar pedidos a:</Card.Title>
-          </Card.Header>
-          <Card.Content>
-            {providersForOrder.length > 0 ? (
-              <ul className="divide-y">
-                {providersForOrder.map(provider => (
-                  <ProviderOrderStatus 
-                    key={provider.id} 
-                    provider={provider}
-                  />
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-500 py-3">
-                No hay pedidos programados para hoy
-              </p>
-            )}
-          </Card.Content>
-        </Card>
-
-        {/* Deliveries Section */}
-        <Card>
-          <Card.Header>
-            <Card.Title>Hoy se deben recibir pedidos de:</Card.Title>
-          </Card.Header>
-          <Card.Content>
-            {providersForOrder.length > 0 ? (
-              <ul className="divide-y">
-                {providersForOrder.map(provider => (
-                  <ProviderDeliveryStatus 
-                    key={provider.id} 
-                    provider={provider}
-                  />
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-500 py-3">
-                No hay entregas programadas para hoy
-              </p>
-            )}
-          </Card.Content>
-        </Card>
-      </div>
-
-      {/* Top Products Modal */}
+      {/* Modals */}
       <TopProductsModal
         isOpen={isTopProductsModalOpen}
         onClose={() => setIsTopProductsModalOpen(false)}
-        products={topProducts}
+        products={viewModel.topProducts}
       />
+
+      <TopProductsByTags
+        isOpen={isTopProductsByTagsModalOpen}
+        onClose={() => setIsTopProductsByTagsModalOpen(false)}
+        tagStats={viewModel.topProductsByTags}
+      />
+
+      {/* Last Update Info */}
+      {viewModel.formattedLastUpdate && (
+        <div className="text-center text-sm text-gray-500">
+          Última actualización: {viewModel.formattedLastUpdate}
+          {viewModel.isStale && (
+            <span className="text-amber-500 ml-2">
+              (Datos desactualizados)
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
-}
+});

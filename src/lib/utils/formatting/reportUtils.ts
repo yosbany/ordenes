@@ -10,9 +10,9 @@ const PRINT_WIDTH = 48;
 function formatHeader(date: number): string[] {
   const dateStr = format(fromTimestamp(date), "dd/MM/yyyy HH:mm", { locale: es });
   return [
-    `Pedido Fecha: ${dateStr}`,
     BUSINESS_INFO.name,
     BUSINESS_INFO.owner,
+    `Pedido Fecha: ${dateStr}`,
     ''
   ];
 }
@@ -40,7 +40,7 @@ function formatProducts(products: Product[], items: Order['items']): string[] {
 }
 
 function formatSummary(items: Order['items']): string[] {
-  // Calcular totales
+  // Calculate totals
   const totalItems = items.length;
   const totalUnits = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -76,11 +76,15 @@ export function formatReport(order: Order, products: Product[], isWhatsApp: bool
       })
       .filter(Boolean);
 
+    // Calculate totals
+    const totalItems = order.items.length;
+    const totalUnits = order.items.reduce((sum, item) => sum + item.quantity, 0);
+
     const summary = [
       '',
       '--------------------------------',
-      `Total Items: ${order.items.length}`,
-      `Total Unidades: ${order.items.reduce((sum, item) => sum + item.quantity, 0)}`
+      `Total Items: ${totalItems}`,
+      `Total Unidades: ${totalUnits}`
     ];
 
     return [...header, ...items, ...summary].join('\n');
@@ -91,6 +95,7 @@ export function formatReport(order: Order, products: Product[], isWhatsApp: bool
   const formattedProducts = formatProducts(products, order.items);
   const summary = formatSummary(order.items);
 
+  // Combine all sections with proper spacing
   return [
     ...header,
     ...formattedProducts,

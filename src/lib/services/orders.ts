@@ -9,11 +9,35 @@ import {
 } from './database';
 import { ref, query, orderByChild, equalTo, onValue, get } from 'firebase/database';
 import { db } from './database';
+import { auth } from '@/lib/firebase/auth';
+import { toast } from 'react-hot-toast';
 
 const ORDERS_COLLECTION = 'orders';
 
+export async function getProviderOrders(providerId: string): Promise<Order[]> {
+  if (!auth.currentUser) {
+    console.warn('User not authenticated, returning empty orders');
+    return [];
+  }
+
+  try {
+    const orders = await queryByField<Order>(ORDERS_COLLECTION, 'providerId', providerId);
+    return orders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  } catch (error) {
+    console.error('Error fetching provider orders:', error);
+    toast.error('Error al cargar las órdenes');
+    return [];
+  }
+}
+
 export const orderService = {
   subscribeToProviderOrders(providerId: string, callback: (orders: Order[]) => void): () => void {
+    if (!auth.currentUser) {
+      console.warn('User not authenticated, skipping subscription');
+      callback([]);
+      return () => {};
+    }
+
     const ordersRef = ref(db, ORDERS_COLLECTION);
     const providerOrdersQuery = query(
       ordersRef,
@@ -38,31 +62,38 @@ export const orderService = {
       );
 
       callback(sortedOrders);
+    }, (error) => {
+      console.error('Error fetching provider orders:', error);
+      toast.error('Error al cargar las órdenes');
+      callback([]);
     });
 
     return unsubscribe;
   },
 
   async getByProvider(providerId: string): Promise<Order[]> {
-    try {
-      const orders = await queryByField<Order>(ORDERS_COLLECTION, 'providerId', providerId);
-      return orders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    } catch (error) {
-      console.error('Error fetching provider orders:', error);
-      return [];
-    }
+    return getProviderOrders(providerId);
   },
 
   async create(data: Omit<Order, 'id'>): Promise<string> {
+    if (!auth.currentUser) {
+      throw new Error('User not authenticated');
+    }
+
     try {
       return await createDocument(ORDERS_COLLECTION, data);
     } catch (error) {
       console.error('Error creating order:', error);
+      toast.error('Error al crear la orden');
       throw error;
     }
   },
 
   async update(id: string, updates: Partial<Order>): Promise<void> {
+    if (!auth.currentUser) {
+      throw new Error('User not authenticated');
+    }
+
     try {
       // First get the current order
       const orderRef = ref(db, `${ORDERS_COLLECTION}/${id}`);
@@ -83,43 +114,31 @@ export const orderService = {
       await updateDocument(ORDERS_COLLECTION, id, updatedOrder);
     } catch (error) {
       console.error('Error updating order:', error);
+      toast.error('Error al actualizar la orden');
       throw error;
     }
   },
 
   async delete(id: string): Promise<void> {
+    if (!auth.currentUser) {
+      throw new Error('User not authenticated');
+    }
+
     try {
       await deleteDocument(ORDERS_COLLECTION, id);
     } catch (error) {
       console.error('Error deleting order:', error);
+      toast.error('Error al eliminar la orden');
       throw error;
     }
   }
 };
 
-export async function getProviderOrders(providerId: string): Promise<Order[]> {
-  try {
-    const orders = await queryByField<Order>(ORDERS_COLLECTION, 'providerId', providerId);
-    return orders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  } catch (error) {
-    console.error('Error fetching provider orders:', error);
-    return [];
-  }
-}
-
-export async function getTodayOrdersCount(providerId: string): Promise<number> {
-  try {
-    const orders = await queryByField<Order>(ORDERS_COLLECTION, 'providerId', providerId);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    return orders.filter(order => {
-      const orderDate = new Date(order.date);
-      orderDate.setHours(0, 0, 0, 0);
-      return orderDate.getTime() === today.getTime();
-    }).length;
-  } catch (error) {
-    console.error('Error fetching today orders count:', error);
-    return 0;
-  }
-}
+// Re-export all functions from orderService
+export const {
+  subscribeToProviderOrders,
+  getByProvider,
+  create,
+  update,
+  delete: deleteOrder // Renamed to avoid conflict with keyword
+} = orderService;

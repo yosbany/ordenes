@@ -1,19 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { TagInput } from '@/components/ui/TagInput';
+import { Card } from '@/components/ui/Card';
 import { TagsInput } from '@/components/ui/TagsInput';
-import { ArrowUpDown } from 'lucide-react';
+import { MeasureSelect } from '@/components/ui/MeasureSelect';
+import { ArrowUpDown, ChefHat } from 'lucide-react';
 import { Product } from '@/types';
 import { useProviders } from '@/hooks/useProviders';
-import { usePackaging } from '@/hooks/usePackaging';
 import { useTags } from '@/hooks/useTags';
-import { useProducts } from '@/hooks/useProducts';
-import { useSkuSuggestion } from '@/hooks/useSkuSuggestion';
-import { useProductForm } from '@/hooks/useProductForm';
-import { ProductOrderModal } from './ProductOrderModal';
-import { formatOrderNumber } from '@/lib/order/utils';
-import { getSectorFromOrder } from '@/lib/order/utils';
+import { getSectorFromOrder, formatOrderNumber } from '@/lib/utils';
 import { getSectorColor } from '@/lib/sectorColors';
 
 interface ProductFormProps {
@@ -22,6 +17,7 @@ interface ProductFormProps {
   onSubmit: (data: Omit<Product, 'id'>) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 export function ProductForm({
@@ -30,221 +26,241 @@ export function ProductForm({
   onSubmit,
   onCancel,
   isLoading,
+  onDirtyChange
 }: ProductFormProps) {
   const { providers } = useProviders();
-  const { packagingSuggestions, addPackaging } = usePackaging();
   const { tags: tagSuggestions, addTag } = useTags();
-  const { products } = useProducts(initialProviderId);
-  const { suggestedSku, loading: skuLoading } = useSkuSuggestion();
-  const [isOrderModalOpen, setIsOrderModalOpen] = React.useState(false);
-
-  const {
-    formData,
-    updateField,
-    handleProviderChange,
-    handleSubmit,
-    isSubmitting,
-    errors
-  } = useProductForm({
-    initialData,
-    providerId: initialProviderId,
-    onSubmit: async (data) => {
-      try {
-        await onSubmit({
-          ...data,
-          providerId: data.providerId || initialProviderId,
-          id: initialData?.id // Preserve ID for updates
-        });
-      } catch (error) {
-        console.error('Error in form submission:', error);
-        throw error;
-      }
-    }
+  const [formData, setFormData] = useState<Omit<Product, 'id'>>({
+    name: initialData?.name || '',
+    sku: initialData?.sku || '',
+    supplierCode: initialData?.supplierCode || '',
+    purchasePackaging: initialData?.purchasePackaging || '',
+    salePackaging: initialData?.salePackaging || '',
+    order: initialData?.order || 0,
+    price: initialData?.price || 0,
+    desiredStock: initialData?.desiredStock || 0,
+    minPackageStock: initialData?.minPackageStock || 0,
+    providerId: initialData?.providerId || initialProviderId,
+    tags: initialData?.tags || [],
+    isProduction: initialData?.isProduction || false,
+    unitMeasure: initialData?.unitMeasure || 'UNIDAD',
+    pricePerUnit: initialData?.pricePerUnit || 0
   });
 
-  const handleOrderChange = async (newOrder: number) => {
-    updateField('order', newOrder);
-    setIsOrderModalOpen(false);
+  const updateField = <K extends keyof Omit<Product, 'id'>>(
+    field: K,
+    value: Omit<Product, 'id'>[K]
+  ) => {
+    setFormData(prev => {
+      const updates: Partial<Omit<Product, 'id'>> = { [field]: value };
+      
+      // If toggling isProduction, set default unitMeasure
+      if (field === 'isProduction' && value === true) {
+        updates.unitMeasure = prev.unitMeasure || 'UNIDAD';
+      }
+      
+      return { ...prev, ...updates };
+    });
   };
 
-  const handleTagsChange = async (tags: string[]) => {
-    updateField('tags', tags);
-    
-    // Add any new tags to the suggestions
-    const newTags = tags.filter(tag => !tagSuggestions.includes(tag));
-    for (const tag of newTags) {
-      await addTag(tag);
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await onSubmit(formData);
   };
 
   const sectorColor = getSectorColor(getSectorFromOrder(formData.order));
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Product Name */}
-      <Input
-        label="Nombre del producto"
-        value={formData.name}
-        onChange={(e) => updateField('name', e.target.value.toUpperCase())}
-        error={errors.name}
-        required
-      />
+      <Card>
+        <Card.Header>
+          <Card.Title>Información Básica</Card.Title>
+        </Card.Header>
+        <Card.Content className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Input
+              label="Nombre del producto"
+              value={formData.name}
+              onChange={(e) => updateField('name', e.target.value.toUpperCase())}
+              required
+            />
+            <Input
+              label="SKU"
+              value={formData.sku}
+              onChange={(e) => updateField('sku', e.target.value.toUpperCase())}
+              required
+            />
+          </div>
 
-      {/* SKU */}
-      <div className="space-y-2">
-        <Input
-          label="SKU"
-          value={formData.sku}
-          onChange={(e) => updateField('sku', e.target.value.toUpperCase())}
-          error={errors.sku}
-          required
-        />
-        {!initialData && !skuLoading && suggestedSku && (
-          <p className="text-sm text-blue-600">
-            SKU sugerido: {suggestedSku}
-          </p>
-        )}
-      </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Proveedor</label>
+              <select
+                value={formData.providerId}
+                onChange={(e) => updateField('providerId', e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              >
+                {providers.map(provider => (
+                  <option key={provider.id} value={provider.id}>
+                    {provider.commercialName}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-      {/* Provider and Supplier Code */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">Proveedor</label>
-          <select
-            value={formData.providerId}
-            onChange={(e) => handleProviderChange(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            <Input
+              label="Código de proveedor"
+              value={formData.supplierCode}
+              onChange={(e) => updateField('supplierCode', e.target.value.toUpperCase())}
+              placeholder="Código asignado por el proveedor"
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <MeasureSelect
+              label="Empaque de Compra"
+              value={formData.purchasePackaging}
+              onChange={(value) => updateField('purchasePackaging', value)}
+              required
+              placeholder="Seleccionar empaque de compra"
+            />
+
+            <MeasureSelect
+              label="Empaque de Venta"
+              value={formData.salePackaging}
+              onChange={(value) => updateField('salePackaging', value)}
+              placeholder="Seleccionar empaque de venta"
+            />
+          </div>
+        </Card.Content>
+      </Card>
+
+      <Card>
+        <Card.Header>
+          <Card.Title>Material de Producción</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <fieldset>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="isProduction"
+                checked={formData.isProduction}
+                onChange={(e) => updateField('isProduction', e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <label htmlFor="isProduction" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <ChefHat className="w-4 h-4" />
+                Material de producción
+              </label>
+            </div>
+
+            {formData.isProduction && (
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <MeasureSelect
+                  label="Unidad de Medida"
+                  value={formData.unitMeasure || 'UNIDAD'}
+                  onChange={(value) => updateField('unitMeasure', value)}
+                  required
+                  placeholder="Seleccionar unidad de medida"
+                />
+                <Input
+                  label="Precio por Unidad"
+                  type="number"
+                  value={formData.pricePerUnit}
+                  onChange={(e) => updateField('pricePerUnit', parseFloat(e.target.value) || 0)}
+                  min={0}
+                  step="0.01"
+                  required
+                  isCurrency
+                />
+              </div>
+            )}
+          </fieldset>
+        </Card.Content>
+      </Card>
+
+      <Card>
+        <Card.Header>
+          <Card.Title>Etiquetas y Orden</Card.Title>
+        </Card.Header>
+        <Card.Content className="space-y-4">
+          <TagsInput
+            label="Etiquetas"
+            value={formData.tags}
+            onChange={async (tags) => {
+              updateField('tags', tags);
+              for (const tag of tags) {
+                if (!tagSuggestions.includes(tag)) {
+                  await addTag(tag);
+                }
+              }
+            }}
+            suggestions={tagSuggestions}
+          />
+
+          <div 
+            className={`rounded-lg p-4 border ${sectorColor.bg} ${sectorColor.border}`}
           >
-            {providers.map(provider => (
-              <option key={provider.id} value={provider.id}>
-                {provider.commercialName}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <Input
-          label="Código de proveedor"
-          value={formData.supplierCode}
-          onChange={(e) => updateField('supplierCode', e.target.value.toUpperCase())}
-          placeholder="Código asignado por el proveedor"
-        />
-      </div>
-
-      {/* Packaging */}
-      <div className="grid grid-cols-2 gap-4">
-        <TagInput
-          label="Empaque de Compra"
-          value={formData.purchasePackaging}
-          onChange={async (packaging) => {
-            updateField('purchasePackaging', packaging.toUpperCase());
-            if (!packagingSuggestions.includes(packaging.toUpperCase())) {
-              await addPackaging(packaging);
-            }
-          }}
-          onRemove={() => updateField('purchasePackaging', '')}
-          suggestions={packagingSuggestions}
-          placeholder="Escriba y presione Enter"
-          error={errors.purchasePackaging}
-          required
-        />
-
-        <TagInput
-          label="Empaque de Venta"
-          value={formData.salePackaging}
-          onChange={async (packaging) => {
-            updateField('salePackaging', packaging.toUpperCase());
-            if (!packagingSuggestions.includes(packaging.toUpperCase())) {
-              await addPackaging(packaging);
-            }
-          }}
-          onRemove={() => updateField('salePackaging', '')}
-          suggestions={packagingSuggestions}
-          placeholder="Escriba y presione Enter"
-          error={errors.salePackaging}
-        />
-      </div>
-
-      {/* Tags */}
-      <TagsInput
-        label="Etiquetas"
-        value={formData.tags}
-        onChange={handleTagsChange}
-        suggestions={tagSuggestions}
-      />
-
-      {/* Order Display */}
-      <div 
-        className={`rounded-lg p-4 border cursor-pointer transition-colors ${sectorColor.bg} ${sectorColor.border} hover:opacity-90`}
-        onClick={() => setIsOrderModalOpen(true)}
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <label className={`text-sm font-medium ${sectorColor.text}`}>
-              Orden del Producto
-            </label>
-            <div className={`text-lg font-bold mt-1 ${sectorColor.text}`}>
-              {formatOrderNumber(formData.order)}
+            <div className="flex items-center justify-between">
+              <div>
+                <label className={`text-sm font-medium ${sectorColor.text}`}>
+                  Orden del Producto
+                </label>
+                <div className={`text-lg font-bold mt-1 ${sectorColor.text}`}>
+                  {formatOrderNumber(formData.order)}
+                </div>
+              </div>
+              <ArrowUpDown className={`w-5 h-5 ${sectorColor.text}`} />
             </div>
           </div>
-          <ArrowUpDown className={`w-5 h-5 ${sectorColor.text}`} />
-        </div>
-      </div>
+        </Card.Content>
+      </Card>
 
-      {/* Price */}
-      <Input
-        label="Precio"
-        value={formData.price}
-        onChange={(e) => updateField('price', parseFloat(e.target.value) || 0)}
-        error={errors.price}
-        min={0}
-        required
-        isCurrency
-      />
+      <Card>
+        <Card.Header>
+          <Card.Title>Precio y Stock</Card.Title>
+        </Card.Header>
+        <Card.Content className="space-y-4">
+          <Input
+            label="Precio"
+            value={formData.price}
+            onChange={(e) => updateField('price', parseFloat(e.target.value) || 0)}
+            min={0}
+            required
+            isCurrency
+          />
 
-      {/* Stock */}
-      <div className="grid grid-cols-2 gap-4">
-        <Input
-          label="Stock mínimo"
-          type="number"
-          value={formData.minPackageStock}
-          onChange={(e) => updateField('minPackageStock', parseInt(e.target.value) || 0)}
-          error={errors.minPackageStock}
-          min={0}
-          required
-        />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Stock mínimo"
+              type="number"
+              value={formData.minPackageStock}
+              onChange={(e) => updateField('minPackageStock', parseInt(e.target.value) || 0)}
+              min={0}
+              required
+            />
 
-        <Input
-          label="Stock deseado"
-          type="number"
-          value={formData.desiredStock}
-          onChange={(e) => updateField('desiredStock', parseInt(e.target.value) || 0)}
-          error={errors.desiredStock}
-          min={0}
-          required
-        />
-      </div>
+            <Input
+              label="Stock deseado"
+              type="number"
+              value={formData.desiredStock}
+              onChange={(e) => updateField('desiredStock', parseInt(e.target.value) || 0)}
+              min={0}
+              required
+            />
+          </div>
+        </Card.Content>
+      </Card>
 
-      {/* Form Actions */}
       <div className="flex justify-end space-x-4">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading || isSubmitting}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           Cancelar
         </Button>
-        <Button type="submit" isLoading={isLoading || isSubmitting}>
+        <Button type="submit" isLoading={isLoading}>
           {initialData ? 'Actualizar' : 'Crear'} Producto
         </Button>
       </div>
-
-      {/* Order Modal */}
-      {initialData && (
-        <ProductOrderModal
-          isOpen={isOrderModalOpen}
-          onClose={() => setIsOrderModalOpen(false)}
-          product={initialData}
-          products={products}
-          onOrderChange={handleOrderChange}
-        />
-      )}
     </form>
   );
 }

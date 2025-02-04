@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import 'reflect-metadata'; // Add this import
 import App from './App';
 import './index.css';
 

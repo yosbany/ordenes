@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Package, ShoppingCart, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, Package, ShoppingCart, LogOut, Menu, X, ChefHat, Calendar, ClipboardCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
@@ -8,7 +8,10 @@ const navigation = [
   { name: 'Dashboard', to: '/', icon: LayoutDashboard },
   { name: 'Proveedores', to: '/providers', icon: Users },
   { name: 'Productos', to: '/products', icon: Package },
+  { name: 'Recetas', to: '/recipes', icon: ChefHat },
   { name: 'Órdenes', to: '/orders', icon: ShoppingCart },
+  { name: 'Cronograma', to: '/schedule', icon: Calendar },
+  { name: 'Inventario', to: '/inventory', icon: ClipboardCheck },
 ];
 
 export function TopNav() {

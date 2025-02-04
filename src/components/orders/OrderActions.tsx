@@ -5,7 +5,7 @@ import { Dialog } from '@/components/ui/Dialog';
 import { Order, Product, Provider } from '@/types';
 import { formatWhatsAppReport } from '@/lib/utils/formatting/whatsappReport';
 import { generateWhatsAppLink } from '@/lib/utils';
-import { generatePrintTemplate } from '@/lib/utils/formatting/printTemplate';
+import { generatePrintTemplate } from '@/lib/utils/printing/printTemplate';
 import { useOrders } from '@/hooks/useOrders';
 import { toast } from 'react-hot-toast';
 
