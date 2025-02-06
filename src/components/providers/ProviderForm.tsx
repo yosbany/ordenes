@@ -21,6 +21,8 @@ const WEEK_DAYS: { value: WeekDay; label: string }[] = [
   { value: 'sunday', label: 'Domingo' },
 ];
 
+const MONTH_DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
+
 export function ProviderForm({ initialData, onSubmit, onCancel, isLoading }: ProviderFormProps) {
   const [formData, setFormData] = React.useState<Omit<Provider, 'id'>>({
     commercialName: initialData?.commercialName || '',
@@ -29,6 +31,8 @@ export function ProviderForm({ initialData, onSubmit, onCancel, isLoading }: Pro
     phone: initialData?.phone || '',
     deliveryDays: initialData?.deliveryDays || [],
     orderDays: initialData?.orderDays || [],
+    billingType: initialData?.billingType || 'weekly',
+    billingDays: initialData?.billingDays || [],
   });
 
   const [phoneError, setPhoneError] = useState<string>('');
@@ -70,6 +74,13 @@ export function ProviderForm({ initialData, onSubmit, onCancel, isLoading }: Pro
     }));
   };
 
+  const handleBillingDaySelect = (day: number) => {
+    setFormData(prev => ({
+      ...prev,
+      billingDays: [day]
+    }));
+  };
+
   const formattedPhone = formData.phone ? formatPhoneNumber(formData.phone) : '';
 
   return (
@@ -106,7 +117,68 @@ export function ProviderForm({ initialData, onSubmit, onCancel, isLoading }: Pro
         )}
       </div>
       
-      <div className="space-y-6">
+      <div className="space-y-4">
+        {/* Billing Type Selection */}
+        <div className="space-y-3">
+          <label className="block text-sm font-medium text-gray-700">
+            Tipo de Facturación
+          </label>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={formData.billingType === 'weekly'}
+                onChange={() => setFormData(prev => ({ 
+                  ...prev, 
+                  billingType: 'weekly',
+                  billingDays: [] // Clear billing days when switching to weekly
+                }))}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span>Semanal</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={formData.billingType === 'monthly'}
+                onChange={() => setFormData(prev => ({ 
+                  ...prev, 
+                  billingType: 'monthly',
+                  billingDays: [] // Clear billing days when switching to monthly
+                }))}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span>Mensual</span>
+            </label>
+          </div>
+        </div>
+
+        {formData.billingType === 'monthly' && (
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-700">
+              Día de facturación
+            </label>
+            <div className="grid grid-cols-7 gap-2">
+              {MONTH_DAYS.map((day) => (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => handleBillingDaySelect(day)}
+                  className={`
+                    px-2 py-1 text-sm font-medium rounded-md transition-colors
+                    ${formData.billingDays?.includes(day)
+                      ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                    }
+                  `}
+                >
+                  {day}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="space-y-3">
           <label className="block text-sm font-medium text-gray-700">
             Días de pedido

@@ -46,10 +46,8 @@ export function Inventory() {
 
   // Group products by SKU
   const productGroups = useMemo(() => {
-    // Filter out products without SKU
     const productsWithSku = products.filter(p => p.sku?.trim());
 
-    // Group by SKU
     const groups = productsWithSku.reduce((acc, product) => {
       const sku = product.sku.trim().toUpperCase();
       if (!acc[sku]) {
@@ -61,7 +59,6 @@ export function Inventory() {
         };
       }
       acc[sku].products.push(product);
-      // Update group stock if this product has a more recent check
       if (product.lastStockCheck && (!acc[sku].lastStockCheck || product.lastStockCheck > acc[sku].lastStockCheck)) {
         acc[sku].currentStock = product.currentStock || 0;
         acc[sku].lastStockCheck = product.lastStockCheck;
@@ -69,7 +66,6 @@ export function Inventory() {
       return acc;
     }, {} as Record<string, ProductGroup>);
 
-    // Convert to array and sort
     return Object.values(groups)
       .filter(group => 
         !searchTerm || 
@@ -80,19 +76,15 @@ export function Inventory() {
         )
       )
       .sort((a, b) => {
-        // Products never checked go first
         if (!a.lastStockCheck && !b.lastStockCheck) return 0;
         if (!a.lastStockCheck) return -1;
         if (!b.lastStockCheck) return 1;
-        
-        // Then sort by date (oldest first)
         return a.lastStockCheck - b.lastStockCheck;
       });
   }, [products, searchTerm]);
 
   const handleStockUpdate = async (sku: string, newStock: number) => {
     try {
-      // Update all products with this SKU
       const updates = productGroups
         .find(g => g.sku === sku)
         ?.products.map(product => 
@@ -124,26 +116,31 @@ export function Inventory() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Control de Inventario</h1>
-        <div className="flex gap-2">
-          <Button
-            onClick={handleShowReport}
-            variant="outline"
-            className="gap-2"
-          >
-            <Calendar className="w-4 h-4" />
-            Ver Reporte
-          </Button>
-          <Button
-            onClick={handleAuthenticate}
-            isLoading={isAuthenticating}
-            variant={isAuthenticated ? "outline" : "default"}
-            className="gap-2"
-          >
-            <LogIn className="w-4 h-4" />
-            {isAuthenticated ? 'Autenticado' : 'Autenticar en Zureo'}
-          </Button>
+      {/* Header */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h1 className="text-2xl font-bold text-gray-900">Control de Inventario</h1>
+          <div className="grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto">
+            <Button
+              onClick={handleShowReport}
+              variant="outline"
+              className="w-full sm:w-auto gap-2"
+            >
+              <Calendar className="w-4 h-4" />
+              <span className="whitespace-nowrap">Ver Reporte</span>
+            </Button>
+            <Button
+              onClick={handleAuthenticate}
+              isLoading={isAuthenticating}
+              variant={isAuthenticated ? "outline" : "default"}
+              className="w-full sm:w-auto gap-2"
+            >
+              <LogIn className="w-4 h-4" />
+              <span className="whitespace-nowrap">
+                {isAuthenticated ? 'Autenticado' : 'Autenticar'}
+              </span>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -164,7 +161,7 @@ export function Inventory() {
       {showReport ? (
         <>
           <div className="bg-blue-50 p-4 rounded-lg">
-            <div className="max-w-xs">
+            <div className="w-full sm:max-w-xs">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Mostrar controles desde:
               </label>
@@ -189,7 +186,6 @@ export function Inventory() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {productGroups.map((group) => {
-            // Calculate days since last check
             const daysSinceCheck = group.lastStockCheck
               ? Math.floor((Date.now() - group.lastStockCheck) / (1000 * 60 * 60 * 24))
               : null;

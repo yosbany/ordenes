@@ -9,14 +9,14 @@ interface ProductSelectorProps {
   products: Product[];
   selectedProducts: Map<string, number>;
   onProductSelect: (productId: string, quantity: number) => void;
-  onProductUpdate?: (id: string, data: Partial<Product>) => Promise<void>;
+  allowEdit?: boolean;
 }
 
 export function ProductSelector({
   products,
   selectedProducts,
   onProductSelect,
-  onProductUpdate
+  allowEdit = true
 }: ProductSelectorProps) {
   const [reviewedProducts, setReviewedProducts] = useState<Set<string>>(new Set());
   const [filterValue, setFilterValue] = useState('');
@@ -53,12 +53,6 @@ export function ProductSelector({
     }
   };
 
-  const handleProductUpdate = async (product: Product, data: Partial<Product>) => {
-    if (!onProductUpdate) return;
-    await onProductUpdate(product.id!, data);
-    markAsReviewed(product.id!);
-  };
-
   const markAsReviewed = (productId: string) => {
     setReviewedProducts(prev => new Set(prev).add(productId));
   };
@@ -92,9 +86,9 @@ export function ProductSelector({
           isSelected={selectedProducts.has(product.id!)}
           quantity={selectedProducts.get(product.id!) || 0}
           onQuantityChange={(quantity) => handleQuantityChange(product.id!, quantity)}
-          onProductUpdate={handleProductUpdate}
           onReview={() => markAsReviewed(product.id!)}
           isReviewed={reviewedProducts.has(product.id!)}
+          allowEdit={allowEdit}
         />
       ))}
 

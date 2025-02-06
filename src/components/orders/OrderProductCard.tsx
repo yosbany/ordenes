@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Archive, Check, Pencil, Plus, Minus, ArrowUpDown } from 'lucide-react';
+import { Archive, Check, Plus, Minus, ArrowUpDown } from 'lucide-react';
 import { Product } from '@/types';
 import { formatPrice } from '@/lib/utils/formatting/currency';
 import { formatOrderNumber } from '@/lib/order/utils';
@@ -15,6 +15,7 @@ interface OrderProductCardProps {
   onQuantityChange: (quantity: number) => void;
   onReview: () => void;
   isReviewed: boolean;
+  allowEdit?: boolean;
 }
 
 export function OrderProductCard({
@@ -22,7 +23,8 @@ export function OrderProductCard({
   quantity,
   onQuantityChange,
   onReview,
-  isReviewed
+  isReviewed,
+  allowEdit = true
 }: OrderProductCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -172,17 +174,6 @@ export function OrderProductCard({
                   <h3 className="font-semibold text-gray-900">
                     {currentProduct.name}
                   </h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsEditing(true);
-                    }}
-                    className="p-1 hover:bg-gray-100 rounded-full"
-                  >
-                    <Pencil className="w-4 h-4 text-gray-500" />
-                  </Button>
                 </div>
 
                 {/* Product Details */}
@@ -272,8 +263,8 @@ export function OrderProductCard({
         </Card.Header>
       </Card>
 
-      {/* Product Edit Modal */}
-      {isEditing && (
+      {/* Product Edit Modal - Only show if editing is allowed */}
+      {allowEdit && isEditing && (
         <FullscreenProductEditor
           providerId={currentProduct.providerId}
           product={currentProduct}

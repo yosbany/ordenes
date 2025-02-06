@@ -27,10 +27,10 @@ export function calculateProductStats(orders: Order[], products: Product[]): Pro
   }>();
 
   // Process all orders
-  orders.forEach(order => {
-    order.items.forEach(item => {
+  for (const order of orders) {
+    for (const item of order.items) {
       const product = products.find(p => p.id === item.productId);
-      if (!product) return;
+      if (!product) continue;
 
       const currentStats = stats.get(item.productId) || {
         amount: 0,
@@ -47,8 +47,8 @@ export function calculateProductStats(orders: Order[], products: Product[]): Pro
       currentStats.orders.add(order.id!);
       
       stats.set(item.productId, currentStats);
-    });
-  });
+    }
+  }
 
   // Convert to array and add product details
   return Array.from(stats.entries())
@@ -72,7 +72,7 @@ export function calculateProductStats(orders: Order[], products: Product[]): Pro
 export function calculateTagStats(products: Product[], productStats: ProductStats[]): TagStats[] {
   // Create a map to store stats for each tag
   const tagStats = new Map<string, {
-    products: ProductStats[];
+    products: Set<ProductStats>;
     totalAmount: number;
     totalQuantity: number;
     orderCount: number;
@@ -89,19 +89,17 @@ export function calculateTagStats(products: Product[], productStats: ProductStat
       if (!normalizedTag) continue;
 
       const currentStats = tagStats.get(normalizedTag) || {
-        products: [],
+        products: new Set<ProductStats>(),
         totalAmount: 0,
         totalQuantity: 0,
         orderCount: 0
       };
 
-      // Only add the product if it's not already in the list
-      if (!currentStats.products.some(p => p.id === stats.id)) {
-        currentStats.products.push(stats);
-        currentStats.totalAmount += stats.totalAmount;
-        currentStats.totalQuantity += stats.totalQuantity;
-        currentStats.orderCount += stats.orderCount;
-      }
+      // Add the product stats to the tag
+      currentStats.products.add(stats);
+      currentStats.totalAmount += stats.totalAmount;
+      currentStats.totalQuantity += stats.totalQuantity;
+      currentStats.orderCount += stats.orderCount;
 
       tagStats.set(normalizedTag, currentStats);
     }
@@ -111,7 +109,7 @@ export function calculateTagStats(products: Product[], productStats: ProductStat
   return Array.from(tagStats.entries())
     .map(([tag, stats]) => ({
       tag,
-      products: stats.products.sort((a, b) => b.totalAmount - a.totalAmount),
+      products: Array.from(stats.products).sort((a, b) => b.totalAmount - a.totalAmount),
       totalAmount: Number(stats.totalAmount.toFixed(2)),
       totalQuantity: stats.totalQuantity,
       orderCount: stats.orderCount

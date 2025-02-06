@@ -11,14 +11,14 @@ import {
   TrendingUp, 
   Archive, 
   ShoppingCart,
-  RefreshCw,
-  Tag
+  RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useDashboardViewModel } from '@/presentation/hooks/useViewModel';
 import { AnalyticsCard } from '@/components/dashboard/AnalyticsCard';
 import { TopProductsModal } from '@/components/dashboard/TopProductsModal';
 import { TopProductsByTags } from '@/components/dashboard/TopProductsByTags';
+import { TagProductsCard } from '@/components/dashboard/TagProductsCard';
 import { CsvImportCard } from '@/components/dashboard/CsvImportCard';
 import { formatPrice } from '@/lib/utils';
 
@@ -35,7 +35,6 @@ export const Dashboard = observer(() => {
   };
 
   const topProduct = viewModel.topProducts[0];
-  const topTag = viewModel.topProductsByTags[0];
 
   return (
     <div className="space-y-6">
@@ -163,30 +162,12 @@ export const Dashboard = observer(() => {
           )}
         </AnalyticsCard>
 
-        {/* Most Valuable Tag Card */}
-        <AnalyticsCard
-          title="Etiqueta Más Valorada"
-          icon={<Tag className="w-5 h-5 text-rose-600" />}
+        {/* Tag Products Card */}
+        <TagProductsCard
+          tagStats={viewModel.topProductsByTags}
           loading={viewModel.loading}
-          className="cursor-pointer hover:shadow-md transition-shadow"
           onClick={() => setIsTopProductsByTagsModalOpen(true)}
-        >
-          {topTag && (
-            <div className="mt-1">
-              <h3 className="text-lg font-bold break-words">
-                {topTag.tag}
-              </h3>
-              <div className="flex items-center justify-between mt-1">
-                <span className="text-lg font-bold text-blue-600">
-                  {formatPrice(topTag.totalAmount)}
-                </span>
-                <span className="text-sm text-gray-500">
-                  {topTag.products.length} productos
-                </span>
-              </div>
-            </div>
-          )}
-        </AnalyticsCard>
+        />
 
         {/* CSV Import Card */}
         <CsvImportCard />

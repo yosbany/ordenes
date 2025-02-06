@@ -1,5 +1,3 @@
-import { Product } from './index';
-
 export interface Recipe {
   id?: string;
   name: string;
@@ -13,12 +11,14 @@ export interface Recipe {
   unitCost: number;
   suggestedPrice: number;
   lastUpdated: number;
-  costHistory: CostHistoryEntry[];
-  costThreshold: number;
+  costHistory?: CostHistoryEntry[];
+  costThreshold?: number;
+  isBase?: boolean; // Flag to mark base recipes
 }
 
 export interface RecipeMaterial {
-  productId: string;
+  id: string;
+  type: 'product' | 'recipe'; // Type of material
   quantity: number;
   unit: string;
   unitCost: number;
@@ -29,4 +29,23 @@ export interface CostHistoryEntry {
   date: number;
   unitCost: number;
   changePercentage: number;
+}
+
+export interface MonthlyFixedCosts {
+  id?: string;
+  month: number; // 1-12
+  year: number;
+  totalMaterialsCost: number;
+  totalFixedCosts: number;
+  totalSales: number;
+  productionSales: number;
+  fixedCostPercentage: number;
+  lastUpdated: number;
+}
+
+export interface FixedCostsHistory {
+  date: number;
+  totalMaterialsCost: number;
+  totalFixedCosts: number;
+  fixedCostPercentage: number;
 }

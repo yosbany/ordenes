@@ -10,22 +10,23 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, label, error, value, type, onChange, isCurrency, ...props }, ref) => {
     const [displayValue, setDisplayValue] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
 
     // Format number with thousand separators and comma decimal
     const formatNumber = (num: number): string => {
-      const parts = num.toFixed(2).split('.');
+      const parts = num.toString().split('.');
       parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
       return parts.join(',');
     };
 
     // Initialize display value
     useEffect(() => {
-      if (isCurrency && typeof value === 'number') {
+      if (isCurrency && typeof value === 'number' && !isEditing) {
         setDisplayValue(formatNumber(value));
       }
-    }, [value, isCurrency]);
+    }, [value, isCurrency, isEditing]);
 
-    // Handle number inputs to prevent NaN values
+    // Handle number inputs
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (isCurrency) {
         // Remove all non-numeric characters except comma and dot
@@ -41,17 +42,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           value = parts[0] + '.' + parts.slice(1).join('');
         }
 
-        // Limit to 2 decimal places
-        const parts = value.split('.');
-        if (parts[1]?.length > 2) {
-          parts[1] = parts[1].slice(0, 2);
-          value = parts.join('.');
-        }
-
-        const numericValue = parseFloat(value) || 0;
-        setDisplayValue(formatNumber(numericValue));
+        // Update display value without formatting while editing
+        setDisplayValue(value);
         
         // Pass the numeric value to onChange
+        const numericValue = parseFloat(value) || 0;
         onChange?.({ 
           ...e, 
           target: { ...e.target, value: numericValue.toString() } 
@@ -68,16 +63,21 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
     // Handle focus to show unformatted value
     const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-      if (isCurrency && typeof value === 'number') {
-        setDisplayValue(value.toFixed(2).replace('.', ','));
+      if (isCurrency) {
+        setIsEditing(true);
+        const numValue = typeof value === 'number' ? value.toString() : '0';
+        setDisplayValue(numValue.replace('.', ','));
       }
       props.onFocus?.(e);
     };
 
     // Handle blur to reformat value
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-      if (isCurrency && typeof value === 'number') {
-        setDisplayValue(formatNumber(value));
+      if (isCurrency) {
+        setIsEditing(false);
+        if (typeof value === 'number') {
+          setDisplayValue(formatNumber(value));
+        }
       }
       props.onBlur?.(e);
     };

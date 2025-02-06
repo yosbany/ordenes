@@ -6,6 +6,8 @@ export interface Provider {
   phone?: string;
   deliveryDays?: string[];
   orderDays?: string[];
+  billingType?: 'weekly' | 'monthly';
+  billingDays?: number[]; // For monthly billing, days of the month (1-31)
 }
 
 export interface Product {

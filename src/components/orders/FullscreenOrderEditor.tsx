@@ -11,7 +11,6 @@ interface FullscreenOrderEditorProps {
   products: Product[];
   selectedProducts: Map<string, number>;
   onProductSelect: (productId: string, quantity: number) => void;
-  onProductUpdate?: (id: string, data: Partial<Product>) => Promise<void>;
   onConfirm: () => void;
   onCancel: () => void;
   isSubmitting?: boolean;
@@ -22,7 +21,6 @@ export function FullscreenOrderEditor({
   products,
   selectedProducts,
   onProductSelect,
-  onProductUpdate,
   onConfirm,
   onCancel,
   isSubmitting,
@@ -128,11 +126,12 @@ export function FullscreenOrderEditor({
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto">
           <div className="container mx-auto max-w-3xl px-2 py-4">
+            {/* Disable product editing in this view */}
             <ProductSelector
               products={allProducts}
               selectedProducts={selectedProducts}
               onProductSelect={onProductSelect}
-              onProductUpdate={onProductUpdate}
+              allowEdit={false}
             />
           </div>
         </div>

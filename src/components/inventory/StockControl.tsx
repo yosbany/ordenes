@@ -48,7 +48,6 @@ export function StockControl({
         return;
       }
 
-      // Show the stock value and input field
       setZureoStock(stock);
       setManualStock(stock.toString());
       setShowInput(true);
@@ -57,7 +56,6 @@ export function StockControl({
     } catch (error) {
       toast.dismiss(loadingToast);
       
-      // Handle specific error messages with fallbacks
       let errorMessage = 'Error al consultar stock en Zureo';
       
       if (error instanceof Error) {
@@ -97,7 +95,6 @@ export function StockControl({
       await onStockUpdate(newStock);
       toast.success('Stock actualizado exitosamente');
       
-      // Reset state
       setZureoStock(null);
       setManualStock('');
       setShowInput(false);
@@ -116,33 +113,37 @@ export function StockControl({
   return (
     <div className="space-y-3">
       {showInput && (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <Input
             type="number"
             min="0"
             value={manualStock}
             onChange={(e) => setManualStock(e.target.value)}
             placeholder="Ingrese cantidad"
-            className="text-center"
+            className="text-center flex-1"
           />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleConfirmStock}
-            className="text-green-600 hover:text-green-700 hover:bg-green-50 w-9 h-9 p-0"
-            title="Confirmar"
-          >
-            <Check className="w-5 h-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCancel}
-            className="text-red-600 hover:text-red-700 hover:bg-red-50 w-9 h-9 p-0"
-            title="Cancelar"
-          >
-            <X className="w-5 h-5" />
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleConfirmStock}
+              className="flex-1 sm:flex-none text-green-600 hover:text-green-700 hover:bg-green-50"
+              title="Confirmar"
+            >
+              <Check className="w-5 h-5" />
+              <span className="sm:hidden ml-2">Confirmar</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+              className="flex-1 sm:flex-none text-red-600 hover:text-red-700 hover:bg-red-50"
+              title="Cancelar"
+            >
+              <X className="w-5 h-5" />
+              <span className="sm:hidden ml-2">Cancelar</span>
+            </Button>
+          </div>
         </div>
       )}
 

@@ -2,10 +2,19 @@
   "rules": {
     ".read": "auth != null",
     ".write": "auth != null",
+    "orders": {
+      ".indexOn": ["providerId"]
+    },
     "products": {
       ".indexOn": ["providerId"],
       "$productId": {
         ".validate": "newData.hasChildren(['name', 'sku', 'purchasePackaging', 'order', 'price', 'desiredStock', 'minPackageStock', 'providerId'])"
+      }
+    },
+    "monthlyFixedCosts": {
+      ".indexOn": ["month", "year"],
+      "$costId": {
+        ".validate": "newData.hasChildren(['month', 'year', 'totalMaterialsCost', 'totalFixedCosts', 'totalSales', 'productionSales', 'fixedCostPercentage', 'lastUpdated'])"
       }
     }
   }

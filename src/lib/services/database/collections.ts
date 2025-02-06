@@ -3,7 +3,14 @@ import { db } from './index';
 import { auth } from '@/lib/firebase/auth';
 import { initializeMeasures } from './initializeMeasures';
 
-const COLLECTIONS = ['orders', 'products', 'providers', 'measures'] as const;
+const COLLECTIONS = [
+  'orders', 
+  'products', 
+  'providers', 
+  'measures',
+  'monthlyFixedCosts'
+] as const;
+
 type Collection = typeof COLLECTIONS[number];
 
 interface CollectionStatus {
