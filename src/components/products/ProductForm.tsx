@@ -8,6 +8,7 @@ import { ArrowUpDown, ChefHat } from 'lucide-react';
 import { Product } from '@/types';
 import { useProviders } from '@/hooks/useProviders';
 import { useTags } from '@/hooks/useTags';
+import { useSkuSuggestion } from '@/hooks/useSkuSuggestion';
 import { getSectorFromOrder, formatOrderNumber } from '@/lib/utils';
 import { getSectorColor } from '@/lib/sectorColors';
 
@@ -30,6 +31,7 @@ export function ProductForm({
 }: ProductFormProps) {
   const { providers } = useProviders();
   const { tags: tagSuggestions, addTag } = useTags();
+  const { suggestedSku } = useSkuSuggestion();
   const [formData, setFormData] = useState<Omit<Product, 'id'>>({
     name: initialData?.name || '',
     sku: initialData?.sku || '',
@@ -54,7 +56,6 @@ export function ProductForm({
     setFormData(prev => {
       const updates: Partial<Omit<Product, 'id'>> = { [field]: value };
       
-      // If toggling isProduction, set default unitMeasure
       if (field === 'isProduction' && value === true) {
         updates.unitMeasure = prev.unitMeasure || 'UNIDAD';
       }
@@ -90,7 +91,7 @@ export function ProductForm({
               required
             />
             <Input
-              label="SKU"
+              label={!initialData && suggestedSku ? `SKU (Sugerido: ${suggestedSku})` : "SKU"}
               value={formData.sku}
               onChange={(e) => updateField('sku', e.target.value.toUpperCase())}
               required
