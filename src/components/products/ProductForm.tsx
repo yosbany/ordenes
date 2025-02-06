@@ -68,6 +68,10 @@ export function ProductForm({
     await onSubmit(formData);
   };
 
+  const handleNameBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    updateField('name', e.target.value.toUpperCase());
+  };
+
   const sectorColor = getSectorColor(getSectorFromOrder(formData.order));
 
   return (
@@ -81,7 +85,8 @@ export function ProductForm({
             <Input
               label="Nombre del producto"
               value={formData.name}
-              onChange={(e) => updateField('name', e.target.value.toUpperCase())}
+              onChange={(e) => updateField('name', e.target.value)}
+              onBlur={handleNameBlur}
               required
             />
             <Input

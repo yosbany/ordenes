@@ -2,9 +2,6 @@
   "rules": {
     ".read": "auth != null",
     ".write": "auth != null",
-    "orders": {
-      ".indexOn": ["providerId"]
-    },
     "products": {
       ".indexOn": ["providerId"],
       "$productId": {

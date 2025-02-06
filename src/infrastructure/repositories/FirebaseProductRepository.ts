@@ -97,8 +97,7 @@ export class FirebaseProductRepository {
       }
 
       // Format data for saving
-      const productData = {
-        ...product,
+      const productData: Record<string, any> = {
         name: product.name.trim().toUpperCase(),
         sku: product.sku.trim().toUpperCase(),
         supplierCode: product.supplierCode?.trim().toUpperCase() || '',
@@ -108,11 +107,16 @@ export class FirebaseProductRepository {
         minPackageStock: Number(product.minPackageStock) || 0,
         desiredStock: Number(product.desiredStock) || 0,
         order: Number(product.order) || 0,
+        providerId: product.providerId,
         tags: Array.isArray(product.tags) ? product.tags : [],
-        isProduction: Boolean(product.isProduction),
-        unitMeasure: product.isProduction ? (product.unitMeasure || 'UNIDAD') : undefined,
-        pricePerUnit: product.isProduction ? (Number(product.pricePerUnit) || 0) : undefined
+        isProduction: Boolean(product.isProduction)
       };
+
+      // Only add production-specific fields if it's a production product
+      if (product.isProduction) {
+        productData.unitMeasure = product.unitMeasure?.trim().toUpperCase() || 'UNIDAD';
+        productData.pricePerUnit = Number(product.pricePerUnit) || 0;
+      }
 
       await update(newProductRef, productData);
       return newProductRef.key;
@@ -136,7 +140,7 @@ export class FirebaseProductRepository {
       const currentProduct = snapshot.val();
       
       // Merge and format data
-      const updatedProduct = {
+      const updatedProduct: Record<string, any> = {
         ...currentProduct,
         ...updates,
         name: updates.name?.trim().toUpperCase() ?? currentProduct.name,
@@ -157,7 +161,7 @@ export class FirebaseProductRepository {
         updatedProduct.unitMeasure = updates.unitMeasure?.trim().toUpperCase() ?? currentProduct.unitMeasure ?? 'UNIDAD';
         updatedProduct.pricePerUnit = typeof updates.pricePerUnit === 'number' ? Number(updates.pricePerUnit) : currentProduct.pricePerUnit ?? 0;
       } else {
-        // Remove production fields if not a production material
+        // Remove production fields if not a production product
         delete updatedProduct.unitMeasure;
         delete updatedProduct.pricePerUnit;
       }
