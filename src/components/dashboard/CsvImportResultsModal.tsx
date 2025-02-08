@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Dialog } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { CheckCircle, AlertCircle, XCircle, Search } from 'lucide-react';
+import { Search, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
 
 interface ImportResult {
   updated: number;
@@ -13,10 +14,11 @@ interface ImportResult {
       oldPrice: number;
       newPrice: number;
       csvName: string;
+      type: 'product' | 'recipe';
     }>;
     notFoundProducts: Array<{
       code: string;
-      providerRut: string;
+      providerRut?: string;
       csvName: string;
     }>;
     invalidRows: Array<{
@@ -30,42 +32,43 @@ interface CsvImportResultsModalProps {
   isOpen: boolean;
   onClose: () => void;
   result: ImportResult | null;
+  importType: 'purchase' | 'sale';
 }
 
-export function CsvImportResultsModal({ isOpen, onClose, result }: CsvImportResultsModalProps) {
+export function CsvImportResultsModal({ 
+  isOpen, 
+  onClose, 
+  result,
+  importType
+}: CsvImportResultsModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Filter results based on search term
-  const filteredResults = useMemo(() => {
-    if (!result) return null;
-
-    const term = searchTerm.toLowerCase();
-    return {
-      updatedProducts: result.details.updatedProducts.filter(product => 
-        product.name.toLowerCase().includes(term) ||
-        product.csvName.toLowerCase().includes(term)
-      ),
-      notFoundProducts: result.details.notFoundProducts.filter(item => 
-        item.code.toLowerCase().includes(term) ||
-        item.csvName.toLowerCase().includes(term) ||
-        item.providerRut.toLowerCase().includes(term)
-      ),
-      invalidRows: result.details.invalidRows.filter(error => 
-        error.reason.toLowerCase().includes(term)
-      )
-    };
-  }, [result, searchTerm]);
-  
-  if (!result || !filteredResults) return null;
+  if (!result) return null;
 
   const hasUpdates = result.updated > 0;
   const hasErrors = result.errors.length > 0;
+
+  // Filter results based on search term
+  const filteredUpdates = result.details.updatedProducts.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.csvName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredNotFound = result.details.notFoundProducts.filter(item =>
+    item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.csvName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.providerRut?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredInvalid = result.details.invalidRows.filter(row =>
+    row.reason.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      title="Resultado de la Importación"
+      title={`Resultado de la Importación - Precios de ${importType === 'purchase' ? 'Compra' : 'Venta'}`}
     >
       <div className="space-y-6">
         {/* Summary */}
@@ -80,7 +83,7 @@ export function CsvImportResultsModal({ isOpen, onClose, result }: CsvImportResu
           <div>
             <h3 className="font-medium">Resumen de la importación</h3>
             <p className="text-sm text-gray-600">
-              {result.updated} producto{result.updated !== 1 ? 's' : ''} actualizado{result.updated !== 1 ? 's' : ''}
+              {result.updated} {result.updated === 1 ? 'actualización' : 'actualizaciones'} realizadas
             </p>
           </div>
         </div>
@@ -98,22 +101,27 @@ export function CsvImportResultsModal({ isOpen, onClose, result }: CsvImportResu
 
         {/* Results Sections */}
         <div className="space-y-6 max-h-[60vh] overflow-y-auto">
-          {/* Updated Products */}
-          {filteredResults.updatedProducts.length > 0 && (
+          {/* Updated Items */}
+          {filteredUpdates.length > 0 && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <h4 className="font-medium text-green-800 mb-3">
-                Productos Actualizados ({filteredResults.updatedProducts.length})
+              <h4 className="font-medium text-green-900 mb-3">
+                Actualizaciones ({filteredUpdates.length})
               </h4>
               <div className="space-y-3">
-                {filteredResults.updatedProducts.map((product, index) => (
+                {filteredUpdates.map((item, index) => (
                   <div key={index} className="bg-white rounded-lg p-3 shadow-sm">
-                    <div className="font-medium text-green-700">{product.name}</div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      Nombre en CSV: {product.csvName}
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-green-700">{item.name}</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                        {item.type === 'product' ? 'Producto' : 'Receta'}
+                      </span>
                     </div>
                     <div className="text-sm text-gray-600 mt-1">
-                      Precio anterior: ${product.oldPrice.toFixed(2)} → 
-                      Nuevo precio: ${product.newPrice.toFixed(2)}
+                      Nombre en CSV: {item.csvName}
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      Precio anterior: {formatPrice(item.oldPrice)} → 
+                      Nuevo precio: {formatPrice(item.newPrice)}
                     </div>
                   </div>
                 ))}
@@ -121,14 +129,14 @@ export function CsvImportResultsModal({ isOpen, onClose, result }: CsvImportResu
             </div>
           )}
 
-          {/* Not Found Products */}
-          {filteredResults.notFoundProducts.length > 0 && (
+          {/* Not Found Items */}
+          {filteredNotFound.length > 0 && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <h4 className="font-medium text-amber-800 mb-3">
-                Productos no encontrados ({filteredResults.notFoundProducts.length})
+              <h4 className="font-medium text-amber-900 mb-3">
+                No encontrados ({filteredNotFound.length})
               </h4>
               <div className="space-y-3">
-                {filteredResults.notFoundProducts.map((item, index) => (
+                {filteredNotFound.map((item, index) => (
                   <div key={index} className="bg-white rounded-lg p-3 shadow-sm">
                     <div className="font-medium text-amber-700">
                       Código: {item.code}
@@ -136,9 +144,11 @@ export function CsvImportResultsModal({ isOpen, onClose, result }: CsvImportResu
                     <div className="text-sm text-gray-600 mt-1">
                       Nombre en CSV: {item.csvName}
                     </div>
-                    <div className="text-sm text-gray-600">
-                      RUT Proveedor: {item.providerRut}
-                    </div>
+                    {item.providerRut && (
+                      <div className="text-sm text-gray-600">
+                        RUT Proveedor: {item.providerRut}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -146,13 +156,13 @@ export function CsvImportResultsModal({ isOpen, onClose, result }: CsvImportResu
           )}
 
           {/* Invalid Rows */}
-          {filteredResults.invalidRows.length > 0 && (
+          {filteredInvalid.length > 0 && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <h4 className="font-medium text-red-800 mb-3">
-                Filas con errores ({filteredResults.invalidRows.length})
+              <h4 className="font-medium text-red-900 mb-3">
+                Filas con errores ({filteredInvalid.length})
               </h4>
               <div className="space-y-3">
-                {filteredResults.invalidRows.map((error, index) => (
+                {filteredInvalid.map((error, index) => (
                   <div key={index} className="bg-white rounded-lg p-3 shadow-sm">
                     <div className="font-medium text-red-700">
                       Fila {error.row}
@@ -163,6 +173,15 @@ export function CsvImportResultsModal({ isOpen, onClose, result }: CsvImportResu
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {searchTerm && 
+           filteredUpdates.length === 0 && 
+           filteredNotFound.length === 0 && 
+           filteredInvalid.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              No se encontraron resultados para "{searchTerm}"
             </div>
           )}
         </div>

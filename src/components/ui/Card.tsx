@@ -6,16 +6,28 @@ interface CardProps {
   className?: string;
   isSelected?: boolean;
   onClick?: () => void;
+  variant?: 'default' | 'blue' | 'green' | 'amber' | 'purple' | 'rose' | 'teal' | 'indigo';
 }
 
-export function Card({ children, className, isSelected, onClick }: CardProps) {
+const variantStyles = {
+  default: 'border-gray-200 hover:border-gray-300',
+  blue: 'border-blue-200 hover:border-blue-300',
+  green: 'border-emerald-200 hover:border-emerald-300',
+  amber: 'border-amber-200 hover:border-amber-300',
+  purple: 'border-purple-200 hover:border-purple-300',
+  rose: 'border-rose-200 hover:border-rose-300',
+  teal: 'border-teal-200 hover:border-teal-300',
+  indigo: 'border-indigo-200 hover:border-indigo-300'
+};
+
+export function Card({ children, className, isSelected, onClick, variant = 'default' }: CardProps) {
   return (
     <div
       className={mergeClasses(
         'rounded-lg transition-all duration-200 h-full',
         isSelected 
           ? 'border-2 border-blue-500 shadow-sm ring-2 ring-blue-100 bg-blue-50'
-          : 'border border-gray-200 shadow-sm hover:border-gray-300 hover:shadow bg-gradient-to-br from-slate-50 to-gray-50',
+          : `border ${variantStyles[variant]} shadow-sm hover:shadow bg-white`,
         onClick && 'cursor-pointer',
         className
       )}
@@ -28,7 +40,7 @@ export function Card({ children, className, isSelected, onClick }: CardProps) {
 
 Card.Header = function CardHeader({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={mergeClasses('p-3 sm:p-4 space-y-2', className)}>
+    <div className={mergeClasses('p-4 border-b border-gray-100', className)}>
       {children}
     </div>
   );
@@ -36,7 +48,7 @@ Card.Header = function CardHeader({ children, className }: { children: React.Rea
 
 Card.Content = function CardContent({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={mergeClasses('px-3 sm:px-4 pb-3 sm:pb-4', className)}>
+    <div className={mergeClasses('p-4', className)}>
       {children}
     </div>
   );
@@ -44,7 +56,7 @@ Card.Content = function CardContent({ children, className }: { children: React.R
 
 Card.Footer = function CardFooter({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={mergeClasses('px-3 sm:px-4 py-2 sm:py-3 border-t bg-white/50 rounded-b-lg', className)}>
+    <div className={mergeClasses('px-4 py-3 border-t bg-gray-50 rounded-b-lg', className)}>
       {children}
     </div>
   );
@@ -52,7 +64,7 @@ Card.Footer = function CardFooter({ children, className }: { children: React.Rea
 
 Card.Title = function CardTitle({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <h3 className={mergeClasses('text-base sm:text-lg font-semibold text-gray-900 line-clamp-2', className)}>
+    <h3 className={mergeClasses('text-base font-semibold text-gray-900 line-clamp-2', className)}>
       {children}
     </h3>
   );

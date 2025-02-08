@@ -12,12 +12,14 @@ export function useOrderAutosave({
   selectedProducts,
   products,
   onSave,
+  orderId,
   enabled = true
 }: {
   providerId: string;
   selectedProducts: Map<string, number>;
   products: Product[];
   onSave: (orderData: Omit<Order, 'id'>) => Promise<void>;
+  orderId?: string;
   enabled?: boolean;
 }) {
   const lastSaveRef = useRef<number>(Date.now());
@@ -25,7 +27,13 @@ export function useOrderAutosave({
   const debounceTimeoutRef = useRef<NodeJS.Timeout>();
   const isSavingRef = useRef(false);
   const isMountedRef = useRef(true);
-  const lastDataHashRef = useRef<string>('');
+  const currentOrderIdRef = useRef<string | undefined>(orderId);
+  const lastSavedHashRef = useRef<string>('');
+
+  // Update orderId ref when it changes
+  useEffect(() => {
+    currentOrderIdRef.current = orderId;
+  }, [orderId]);
 
   // Function to generate a hash of the current order data
   const getDataHash = () => {
@@ -69,8 +77,8 @@ export function useOrderAutosave({
         // Get current data hash
         const currentHash = getDataHash();
 
-        // Skip save if data hasn't changed
-        if (currentHash === lastDataHashRef.current) {
+        // Skip save if data hasn't changed since last save
+        if (currentHash === lastSavedHashRef.current) {
           return;
         }
 
@@ -94,20 +102,13 @@ export function useOrderAutosave({
           // Update last save time and data hash only if component is still mounted
           if (isMountedRef.current) {
             lastSaveRef.current = Date.now();
-            lastDataHashRef.current = currentHash;
-            toast.success('Orden guardada automáticamente', {
-              duration: 2000,
-              position: 'bottom-right'
-            });
+            lastSavedHashRef.current = currentHash;
           }
         }
       } catch (error) {
         console.error('Error in autosave:', error);
         if (isMountedRef.current) {
-          toast.error('Error al guardar automáticamente', {
-            duration: 2000,
-            position: 'bottom-right'
-          });
+          toast.error('Error al guardar automáticamente');
         }
       } finally {
         isSavingRef.current = false;
@@ -134,7 +135,7 @@ export function useOrderAutosave({
 
     // Cleanup on unmount or when dependencies change
     return cleanup;
-  }, [enabled, providerId, selectedProducts, products, onSave]);
+  }, [enabled, providerId, selectedProducts, products, onSave, orderId]);
 
   return {
     lastSaveTime: lastSaveRef.current

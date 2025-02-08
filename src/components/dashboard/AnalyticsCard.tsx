@@ -24,7 +24,7 @@ export function AnalyticsCard({
       onClick={onClick}
     >
       <Card.Header className="!p-4">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-medium text-gray-600 mb-1">{title}</h3>
             {loading ? (
@@ -35,7 +35,7 @@ export function AnalyticsCard({
               </div>
             )}
           </div>
-          <div className="flex-shrink-0 p-2 bg-blue-100 rounded-lg">
+          <div className="flex-shrink-0 p-2 bg-gray-100 rounded-lg">
             {icon}
           </div>
         </div>

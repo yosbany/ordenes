@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Plus, Pencil, Trash2, Phone } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Plus, Pencil, Trash2, Phone, Search } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { Dialog } from '@/components/ui/Dialog';
 import { ProviderForm } from '@/components/providers/ProviderForm';
 import { useProviders } from '@/hooks/useProviders';
@@ -14,6 +15,20 @@ export function Providers() {
   const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [providerToDelete, setProviderToDelete] = useState<Provider | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Filter providers based on search term
+  const filteredProviders = useMemo(() => {
+    if (!searchTerm) return providers;
+
+    const searchLower = searchTerm.toLowerCase();
+    return providers.filter(provider => 
+      provider.commercialName.toLowerCase().includes(searchLower) ||
+      provider.legalName?.toLowerCase().includes(searchLower) ||
+      provider.rut?.toLowerCase().includes(searchLower) ||
+      provider.phone?.includes(searchLower)
+    );
+  }, [providers, searchTerm]);
 
   const handleSubmit = async (data: Omit<Provider, 'id'>) => {
     setIsSubmitting(true);
@@ -27,13 +42,14 @@ export function Providers() {
       }
       handleCloseForm();
     } catch (error) {
+      console.error('Error saving provider:', error);
       toast.error('Ocurrió un error al guardar el proveedor');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async (provider: Provider) => {
+  const handleDelete = (provider: Provider) => {
     setProviderToDelete(provider);
   };
 
@@ -45,6 +61,7 @@ export function Providers() {
       toast.success('Proveedor eliminado exitosamente');
       setProviderToDelete(null);
     } catch (error) {
+      console.error('Error deleting provider:', error);
       toast.error('Ocurrió un error al eliminar el proveedor');
     }
   };
@@ -60,36 +77,7 @@ export function Providers() {
   };
 
   const handleNewProvider = () => {
-    if (editingProvider) {
-      const dialog = Dialog({
-        isOpen: true,
-        onClose: () => {},
-        title: "Advertencia",
-        children: (
-          <div className="space-y-4">
-            <p className="text-amber-600">
-              Hay un proveedor en edición. ¿Desea cancelar los cambios y crear uno nuevo?
-            </p>
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => dialog.close()}>
-                Cancelar
-              </Button>
-              <Button
-                onClick={() => {
-                  setEditingProvider(null);
-                  setIsFormOpen(true);
-                  dialog.close();
-                }}
-              >
-                Continuar
-              </Button>
-            </div>
-          </div>
-        ),
-      });
-    } else {
-      setIsFormOpen(true);
-    }
+    setIsFormOpen(true);
   };
 
   if (loading) {
@@ -102,31 +90,37 @@ export function Providers() {
 
   if (isFormOpen || editingProvider) {
     return (
-      <div className="bg-white p-4 md:p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4">
-          {editingProvider ? 'Editar' : 'Nuevo'} Proveedor
-        </h2>
-        <ProviderForm
-          initialData={editingProvider || undefined}
-          onSubmit={handleSubmit}
-          onCancel={handleCloseForm}
-          isLoading={isSubmitting}
-        />
-      </div>
+      <ProviderForm
+        initialData={editingProvider || undefined}
+        onSubmit={handleSubmit}
+        onCancel={handleCloseForm}
+        isLoading={isSubmitting}
+      />
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <Button onClick={handleNewProvider}>
+      {/* Header with Search and Add Button */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Input
+            placeholder="Buscar proveedores..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        </div>
+        <Button onClick={handleNewProvider} className="whitespace-nowrap">
           <Plus className="w-4 h-4 mr-2" />
           Nuevo Proveedor
         </Button>
       </div>
 
+      {/* Providers Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {providers.map((provider) => (
+        {filteredProviders.map((provider) => (
           <div
             key={provider.id}
             className="bg-white p-4 md:p-6 rounded-lg shadow-sm space-y-4"
@@ -160,6 +154,7 @@ export function Providers() {
                   variant="outline"
                   size="sm"
                   onClick={() => handleDelete(provider)}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Eliminar
@@ -180,17 +175,34 @@ export function Providers() {
             </div>
           </div>
         ))}
+
+        {filteredProviders.length === 0 && (
+          <div className="col-span-full flex items-center justify-center h-32 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+            <p className="text-gray-500 text-center">
+              {searchTerm 
+                ? 'No se encontraron proveedores que coincidan con la búsqueda'
+                : 'No hay proveedores registrados'
+              }
+            </p>
+          </div>
+        )}
       </div>
 
+      {/* Delete Confirmation Dialog */}
       <Dialog
         isOpen={!!providerToDelete}
         onClose={() => setProviderToDelete(null)}
         title="Eliminar proveedor"
       >
         <div className="space-y-4">
-          <p className="text-amber-600">
-            ¿Está seguro que desea eliminar el proveedor "{providerToDelete?.commercialName}"?
-          </p>
+          <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+            <p className="text-amber-800">
+              ¿Está seguro que desea eliminar el proveedor <span className="font-semibold">{providerToDelete?.commercialName}</span>?
+            </p>
+            <p className="text-sm text-amber-700 mt-2">
+              Esta acción no se puede deshacer.
+            </p>
+          </div>
           <div className="flex justify-end space-x-2">
             <Button
               variant="outline"
@@ -198,7 +210,10 @@ export function Providers() {
             >
               Cancelar
             </Button>
-            <Button onClick={confirmDelete}>
+            <Button
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
               Eliminar
             </Button>
           </div>

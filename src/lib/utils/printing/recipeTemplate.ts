@@ -8,24 +8,15 @@ import { printScripts } from './scripts';
 export function generateRecipePrintTemplate(recipe: Recipe, products: Product[]): string {
   const date = format(new Date(), "dd/MM/yyyy HH:mm", { locale: es });
   
-  // Sort materials by product order
-  const sortedMaterials = recipe.materials
-    .sort((a, b) => {
-      const productA = products.find(p => p.id === a.productId);
-      const productB = products.find(p => p.id === b.productId);
-      if (!productA || !productB) return 0;
-      return productA.order - productB.order;
-    });
-
   // Generate materials HTML
-  const materialsHtml = sortedMaterials
+  const materialsHtml = recipe.materials
     .map(material => {
-      const product = products.find(p => p.id === material.productId);
+      const product = products.find(p => p.id === material.id);
       if (!product) return '';
       return `
         <tr>
-          <td class="quantity">${material.quantity} ${material.unit}</td>
-          <td class="material">${product.name}</td>
+          <td class="quantity text-left">${material.quantity} ${material.unit}</td>
+          <td class="name text-right">${product.name}</td>
         </tr>
       `;
     })
@@ -41,7 +32,7 @@ export function generateRecipePrintTemplate(recipe: Recipe, products: Product[])
         <style>
           ${thermalPrintStyles}
           
-          /* Recipe specific styles */
+          /* Additional styles for recipe printing */
           .recipe-header {
             text-align: center;
             margin: 3mm 0;
@@ -60,33 +51,44 @@ export function generateRecipePrintTemplate(recipe: Recipe, products: Product[])
             margin: 0;
           }
           
-          table thead tr th {
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 3mm 0;
+          }
+          
+          th {
             font-size: 12px;
             font-weight: bold;
             padding: 1mm 0;
+            text-align: inherit;
           }
           
-          table thead tr th.quantity-header {
-            text-align: left;
-            width: 30%;
-          }
-          
-          table thead tr th.material-header {
-            text-align: right;
-            width: 70%;
+          td {
+            padding: 1mm 0;
+            font-size: 12px;
+            vertical-align: top;
           }
           
           td.quantity {
-            font-weight: bold;
             width: 30%;
-            text-align: left;
+            font-weight: bold;
             white-space: nowrap;
+            text-align: left;
           }
           
-          td.material {
+          td.name {
             width: 70%;
             text-align: right;
             padding-left: 2mm;
+          }
+          
+          .text-left {
+            text-align: left;
+          }
+          
+          .text-right {
+            text-align: right;
           }
           
           .notes {
@@ -124,8 +126,8 @@ export function generateRecipePrintTemplate(recipe: Recipe, products: Product[])
           <table>
             <thead>
               <tr>
-                <th class="quantity-header">Cantidad</th>
-                <th class="material-header">Material</th>
+                <th class="text-left">Cantidad</th>
+                <th class="text-right">Material</th>
               </tr>
             </thead>
             <tbody>

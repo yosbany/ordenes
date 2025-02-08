@@ -1,13 +1,16 @@
 import { Product, Provider } from '@/types';
+import { Recipe } from '@/types/recipe';
 import { updateProduct } from '@/lib/services/products';
+import { updateRecipe } from '@/lib/services/recipes';
 import { parseCSVContent } from './csvParser';
 
 interface CsvRow {
-  fecha: string;
-  rut: string;
+  fecha?: string;
+  rut?: string;
   codigo: string;
-  nombre: string;
-  precio: string;
+  nombre?: string;
+  precio?: string;
+  contado?: string;
 }
 
 interface ImportResult {
@@ -19,10 +22,11 @@ interface ImportResult {
       oldPrice: number;
       newPrice: number;
       csvName: string;
+      type: 'product' | 'recipe';
     }>;
     notFoundProducts: Array<{
       code: string;
-      providerRut: string;
+      providerRut?: string;
       csvName: string;
     }>;
     invalidRows: Array<{
@@ -33,101 +37,58 @@ interface ImportResult {
 }
 
 function normalizeHeaders(headers: string[]): string[] {
-  return headers.map(header => 
-    header
+  const headerMap: Record<string, string> = {
+    'código': 'codigo',
+    'codigo': 'codigo',
+    'artículo': 'nombre',
+    'articulo': 'nombre',
+    'contado': 'contado',
+    'fecha': 'fecha',
+    'rut': 'rut',
+    'nombre': 'nombre',
+    'precio': 'precio'
+  };
+
+  return headers.map(header => {
+    const normalizedHeader = header
       .toLowerCase()
       .trim()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Remove accents
-  );
-}
-
-function parseCsvRows(content: string): CsvRow[] {
-  const rows = parseCSVContent(content);
-  if (rows.length < 2) {
-    throw new Error('El archivo está vacío o no tiene el formato correcto');
-  }
-
-  // Get headers and validate
-  const headers = normalizeHeaders(rows[0]);
-  const requiredHeaders = ['fecha', 'rut', 'codigo', 'nombre', 'precio'];
-  
-  const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
-  if (missingHeaders.length > 0) {
-    throw new Error(`Faltan las siguientes columnas: ${missingHeaders.join(', ')}`);
-  }
-
-  // Get header indexes
-  const headerIndexes = requiredHeaders.map(h => headers.indexOf(h));
-
-  // Parse data rows
-  return rows.slice(1).map(values => {
-    if (values.length < headerIndexes.length) {
-      throw new Error('Número incorrecto de columnas');
-    }
-
-    return {
-      fecha: values[headerIndexes[0]],
-      rut: values[headerIndexes[1]],
-      codigo: values[headerIndexes[2]],
-      nombre: values[headerIndexes[3]],
-      precio: values[headerIndexes[4]]
-    };
+      .replace(/[\u0300-\u036f]/g, "");
+    
+    return headerMap[normalizedHeader] || normalizedHeader;
   });
 }
 
-function validateRow(row: CsvRow): string | null {
-  // Clean and validate RUT
-  const cleanRut = row.rut.replace(/\D/g, '');
-  if (!cleanRut) return 'RUT vacío';
-  if (!/^\d{12}$/.test(cleanRut)) return 'RUT inválido';
-
-  // Clean and validate code
-  const cleanCode = row.codigo.trim();
-  if (!cleanCode) return 'Código vacío';
-
-  // Clean and validate price
-  const cleanPrice = row.precio
-    .replace(/[^\d.,]/g, '') // Remove all non-digit, non-decimal characters
-    .replace(/\./g, '') // Remove thousands separator
-    .replace(',', '.'); // Replace decimal comma with dot
-
-  const price = parseFloat(cleanPrice);
-  if (isNaN(price) || price < 0) return 'Precio inválido';
-  
-  return null;
-}
-
 function parsePrice(priceStr: string): number {
-  // Remove currency symbols and spaces
-  let clean = priceStr.replace(/[^\d.,]/g, '');
-  
-  // Handle different number formats:
-  // 1.234,56 -> 1234.56
-  // 1,234.56 -> 1234.56
-  // 1234,56 -> 1234.56
-  if (clean.includes(',')) {
-    // If there's a dot before the comma, it's thousands (1.234,56)
-    if (clean.indexOf('.') < clean.indexOf(',')) {
-      clean = clean.replace(/\./g, '').replace(',', '.');
-    } else {
-      // Otherwise, just replace comma with dot
-      clean = clean.replace(',', '.');
+  try {
+    let clean = priceStr.replace(/[^\d.,]/g, '');
+    
+    if (clean.includes(',')) {
+      if (clean.indexOf('.') < clean.indexOf(',')) {
+        clean = clean.replace(/\./g, '').replace(',', '.');
+      } else {
+        clean = clean.replace(',', '.');
+      }
     }
-  }
 
-  const price = parseFloat(clean);
-  if (isNaN(price)) {
-    throw new Error(`Precio inválido: ${priceStr}`);
+    const price = parseFloat(clean);
+    if (isNaN(price)) {
+      throw new Error(`Valor no numérico: ${priceStr}`);
+    }
+    
+    return Number(price.toFixed(2));
+  } catch (error) {
+    throw new Error(`Error al procesar precio "${priceStr}": ${error instanceof Error ? error.message : 'formato inválido'}`);
   }
-  
-  return Number(price.toFixed(2)); // Ensure 2 decimal places
 }
 
 export async function processCsvImport(
   content: string,
   products: Product[],
-  providers: Provider[]
+  providers: Provider[],
+  recipes: Recipe[],
+  importType: 'purchase' | 'sale' = 'purchase'
 ): Promise<ImportResult> {
   const result: ImportResult = {
     updated: 0,
@@ -140,83 +101,143 @@ export async function processCsvImport(
   };
   
   try {
-    // Validate content is not empty
     if (!content.trim()) {
       throw new Error('El archivo está vacío');
     }
 
-    const rows = parseCsvRows(content);
-    if (rows.length === 0) {
+    const rows = parseCSVContent(content);
+    if (rows.length < 2) {
       throw new Error('No se encontraron datos para procesar');
     }
 
-    // Process each row
-    for (const [index, row] of rows.entries()) {
+    const headers = normalizeHeaders(rows[0]);
+    const requiredHeaders = importType === 'purchase' 
+      ? ['fecha', 'rut', 'codigo', 'nombre', 'precio']
+      : ['codigo', 'nombre', 'contado'];
+    
+    const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+    if (missingHeaders.length > 0) {
+      throw new Error(`Faltan las siguientes columnas: ${missingHeaders.join(', ')}`);
+    }
+
+    const headerIndexes = requiredHeaders.map(h => headers.indexOf(h));
+
+    for (const [index, values] of rows.slice(1).entries()) {
       try {
-        // Validate row
-        const error = validateRow(row);
-        if (error) {
+        if (values.length < headerIndexes.length) {
           result.details.invalidRows.push({
             row: index + 2,
-            reason: error
+            reason: 'Número incorrecto de columnas'
           });
           continue;
         }
 
-        // Clean RUT
-        const cleanRut = row.rut.replace(/\D/g, '');
+        const row = importType === 'purchase' ? {
+          fecha: values[headerIndexes[0]],
+          rut: values[headerIndexes[1]],
+          codigo: values[headerIndexes[2]].replace(/[°\[\]]/g, '').trim(),
+          nombre: values[headerIndexes[3]],
+          precio: values[headerIndexes[4]]
+        } : {
+          codigo: values[headerIndexes[0]].replace(/[°\[\]]/g, '').trim(),
+          nombre: values[headerIndexes[1]],
+          contado: values[headerIndexes[2]]
+        };
 
-        // Find provider by RUT
-        const provider = providers.find(p => p.rut?.replace(/\D/g, '') === cleanRut);
-        if (!provider) {
-          result.details.notFoundProducts.push({
-            code: row.codigo,
-            providerRut: row.rut,
-            csvName: row.nombre
-          });
-          continue;
-        }
-
-        // Find product by provider code
-        const product = products.find(p => 
-          p.providerId === provider.id && 
-          p.supplierCode?.toLowerCase() === row.codigo.toLowerCase()
-        );
-
-        if (!product) {
-          result.details.notFoundProducts.push({
-            code: row.codigo,
-            providerRut: row.rut,
-            csvName: row.nombre
-          });
-          continue;
-        }
-
-        // Parse and validate price
         try {
-          const newPrice = parsePrice(row.precio);
+          const newPrice = parsePrice(importType === 'purchase' ? row.precio! : row.contado!);
 
-          // Update product price if different
-          if (Math.abs(product.price - newPrice) > 0.01) {
-            await updateProduct(product.id!, { price: newPrice });
-            result.updated++;
-            result.details.updatedProducts.push({
-              name: product.name,
-              oldPrice: product.price,
-              newPrice: newPrice,
-              csvName: row.nombre
-            });
+          if (importType === 'purchase') {
+            // Handle purchase price updates (products only)
+            const matchingProducts = products.filter(p => p.sku === row.codigo);
+            if (matchingProducts.length === 0) {
+              result.details.notFoundProducts.push({
+                code: row.codigo,
+                providerRut: row.rut,
+                csvName: row.nombre || ''
+              });
+              continue;
+            }
+
+            const cleanRut = row.rut!.replace(/\D/g, '');
+            const provider = providers.find(p => p.rut?.replace(/\D/g, '') === cleanRut);
+            if (!provider) {
+              result.details.notFoundProducts.push({
+                code: row.codigo,
+                providerRut: row.rut,
+                csvName: row.nombre || ''
+              });
+              continue;
+            }
+
+            const productsToUpdate = matchingProducts.filter(p => p.providerId === provider.id);
+            for (const product of productsToUpdate) {
+              if (Math.abs(product.price - newPrice) > 0.01) {
+                await updateProduct(product.id!, { price: newPrice });
+                result.updated++;
+                result.details.updatedProducts.push({
+                  name: product.name,
+                  oldPrice: product.price,
+                  newPrice: newPrice,
+                  csvName: row.nombre || row.codigo,
+                  type: 'product'
+                });
+              }
+            }
+          } else {
+            // Handle sale price updates (both products and recipes)
+            const matchingItems = [
+              ...products.filter(p => p.sku === row.codigo).map(p => ({ type: 'product' as const, item: p })),
+              ...recipes.filter(r => r.sku === row.codigo).map(r => ({ type: 'recipe' as const, item: r }))
+            ];
+
+            if (matchingItems.length === 0) {
+              result.details.notFoundProducts.push({
+                code: row.codigo,
+                csvName: row.nombre || ''
+              });
+              continue;
+            }
+
+            for (const { type, item } of matchingItems) {
+              const currentPrice = type === 'product' 
+                ? (item as Product).salePrice || 0
+                : (item as Recipe).salePrice || 0;
+
+              if (Math.abs(currentPrice - newPrice) > 0.01) {
+                if (type === 'product') {
+                  await updateProduct(item.id!, {
+                    salePrice: newPrice,
+                    forSale: true
+                  });
+                } else {
+                  await updateRecipe(item.id!, {
+                    salePrice: newPrice,
+                    forSale: true
+                  });
+                }
+
+                result.updated++;
+                result.details.updatedProducts.push({
+                  name: item.name,
+                  oldPrice: currentPrice,
+                  newPrice: newPrice,
+                  csvName: row.nombre || row.codigo,
+                  type
+                });
+              }
+            }
           }
         } catch (error) {
           result.details.invalidRows.push({
             row: index + 2,
-            reason: error instanceof Error ? error.message : 'Precio inválido'
+            reason: error instanceof Error ? error.message : 'Error al procesar el precio'
           });
         }
       } catch (error) {
         result.details.invalidRows.push({
           row: index + 2,
-          reason: error instanceof Error ? error.message : 'Error desconocido'
+          reason: error instanceof Error ? error.message : 'Error al procesar la fila'
         });
       }
     }

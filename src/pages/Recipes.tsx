@@ -23,6 +23,7 @@ export function Recipes() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUpdatingCosts, setIsUpdatingCosts] = useState(false);
+  const [recipeToDelete, setRecipeToDelete] = useState<Recipe | null>(null);
 
   // Sort recipes: base recipes first, then by name
   const sortedRecipes = [...recipes].sort((a, b) => {
@@ -36,6 +37,11 @@ export function Recipes() {
   );
 
   const handleSubmit = async (data: Omit<Recipe, 'id'>) => {
+    if (!data.name || !data.yield || !data.yieldUnit || !data.materials.length) {
+      toast.error('Por favor complete todos los campos requeridos');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       if (editingRecipe) {
@@ -56,17 +62,26 @@ export function Recipes() {
       }
       handleCloseForm();
     } catch (error) {
+      console.error('Error saving recipe:', error);
       toast.error('Error al guardar la receta');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async (recipe: Recipe) => {
+  const handleDelete = (recipe: Recipe) => {
+    setRecipeToDelete(recipe);
+  };
+
+  const confirmDelete = async () => {
+    if (!recipeToDelete) return;
+    
     try {
-      await deleteRecipe(recipe.id!);
+      await deleteRecipe(recipeToDelete.id!);
       toast.success('Receta eliminada exitosamente');
+      setRecipeToDelete(null);
     } catch (error) {
+      console.error('Error deleting recipe:', error);
       toast.error('Error al eliminar la receta');
     }
   };
@@ -203,6 +218,7 @@ export function Recipes() {
         toast.error(`Error al actualizar ${errorCount} recetas`);
       }
     } catch (error) {
+      console.error('Error updating costs:', error);
       toast.error('Error al actualizar los costos');
     } finally {
       setIsUpdatingCosts(false);
@@ -212,15 +228,13 @@ export function Recipes() {
   return (
     <div className="space-y-6">
       {isFormOpen ? (
-        <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
-          <RecipeForm
-            initialData={editingRecipe}
-            onSubmit={handleSubmit}
-            onCancel={handleCloseForm}
-            isLoading={isSubmitting}
-            recipes={recipes}
-          />
-        </div>
+        <RecipeForm
+          initialData={editingRecipe}
+          onSubmit={handleSubmit}
+          onCancel={handleCloseForm}
+          isLoading={isSubmitting}
+          recipes={recipes}
+        />
       ) : (
         <>
           {/* Header and Actions */}
@@ -305,6 +319,43 @@ export function Recipes() {
           }}
           onCancel={() => setIsFixedCostsFormOpen(false)}
         />
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        isOpen={!!recipeToDelete}
+        onClose={() => setRecipeToDelete(null)}
+        title="Eliminar receta"
+      >
+        <div className="space-y-4">
+          <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+            <p className="text-amber-800">
+              ¿Está seguro que desea eliminar la receta <span className="font-semibold">{recipeToDelete?.name}</span>?
+            </p>
+            {recipeToDelete?.isBase && (
+              <p className="text-sm text-amber-700 mt-2">
+                Esta es una receta base. Al eliminarla, las recetas que la utilizan como material se verán afectadas.
+              </p>
+            )}
+            <p className="text-sm text-amber-700 mt-2">
+              Esta acción no se puede deshacer.
+            </p>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setRecipeToDelete(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Eliminar
+            </Button>
+          </div>
+        </div>
       </Dialog>
     </div>
   );

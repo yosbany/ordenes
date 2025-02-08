@@ -8,7 +8,8 @@ const COLLECTIONS = [
   'products', 
   'providers', 
   'measures',
-  'monthlyFixedCosts'
+  'monthlyFixedCosts',
+  'unitConversions'
 ] as const;
 
 type Collection = typeof COLLECTIONS[number];

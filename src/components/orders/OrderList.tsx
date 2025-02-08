@@ -42,51 +42,87 @@ export function OrderList({
         return (
           <div
             key={order.id}
-            className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+            className={`
+              bg-white rounded-lg border transition-all duration-200
+              ${order.status === 'completed' 
+                ? 'border-green-200 hover:border-green-300' 
+                : 'border-amber-200 hover:border-amber-300'
+              }
+              hover:shadow-md
+            `}
           >
             <div 
               className="cursor-pointer"
               onClick={() => onSelect(order, orderNumber)}
             >
               {/* Order Header */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  {order.status === 'completed' ? (
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-yellow-500" />
-                  )}
+              <div className="p-4">
+                {/* Date and Status */}
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="text-lg font-bold text-gray-900">
+                    {format(new Date(order.date), "d 'de' MMMM", { locale: es })}
+                    <span className="text-gray-500 ml-2 text-base font-normal">
+                      {format(new Date(order.date), "HH:mm", { locale: es })}
+                    </span>
+                  </div>
+                  <span className={`
+                    inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                    ${order.status === 'completed' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-amber-100 text-amber-800'
+                    }
+                  `}>
+                    {order.status === 'completed' ? (
+                      <>
+                        <CheckCircle className="w-4 h-4 mr-1.5" />
+                        Completada
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="w-4 h-4 mr-1.5" />
+                        Pendiente
+                      </>
+                    )}
+                  </span>
+                </div>
+
+                {/* Order Number and Provider */}
+                <div className="flex items-center justify-between gap-4 mb-3">
                   <div>
-                    <h3 className="text-lg font-semibold">
-                      Orden #{orderNumber} - {format(new Date(order.date), "d 'de' MMMM, yyyy", {
-                        locale: es,
-                      })}
+                    <h3 className="text-2xl font-bold text-blue-600">
+                      Orden #{orderNumber}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <div className="text-base font-medium text-gray-900 mt-1">
                       {orderProvider.commercialName}
                       {orderProvider.legalName && orderProvider.legalName !== orderProvider.commercialName && (
-                        <span className="text-gray-400"> • {orderProvider.legalName}</span>
+                        <span className="text-sm font-normal text-gray-500 ml-2">
+                          ({orderProvider.legalName})
+                        </span>
                       )}
-                    </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-gray-900">
+                      {formatPrice(order.total)}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Order Details */}
-              <div className="flex items-center justify-between text-gray-600 mt-2">
-                <div className="space-x-2">
-                  <span>{uniqueProducts} {uniqueProducts === 1 ? 'producto' : 'productos'}</span>
-                  <span className="text-gray-400">•</span>
-                  <span>{totalQuantity} {totalQuantity === 1 ? 'unidad' : 'unidades'}</span>
+                {/* Summary */}
+                <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <span>
+                    {uniqueProducts} {uniqueProducts === 1 ? 'producto' : 'productos'}
+                  </span>
+                  <span className="text-gray-300">•</span>
+                  <span>
+                    {totalQuantity} {totalQuantity === 1 ? 'unidad' : 'unidades'}
+                  </span>
                 </div>
-                <span className="font-medium text-blue-600">
-                  {formatPrice(order.total)}
-                </span>
               </div>
             </div>
             
             {/* Order Actions */}
-            <div className="mt-4 pt-4 border-t">
+            <div className="px-4 py-3 bg-gray-50 border-t rounded-b-lg">
               <OrderActions
                 order={order}
                 products={products}

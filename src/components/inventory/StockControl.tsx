@@ -8,21 +8,19 @@ import { toast } from 'react-hot-toast';
 interface StockControlProps {
   productId: string;
   sku: string;
-  currentStock: number;
-  onStockUpdate: (newStock: number) => Promise<void>;
+  onStockAdjustment: (adjustment: number) => Promise<void>;
   isEnabled: boolean;
 }
 
 export function StockControl({ 
   productId, 
   sku, 
-  currentStock, 
-  onStockUpdate,
+  onStockAdjustment,
   isEnabled
 }: StockControlProps) {
   const [isChecking, setIsChecking] = useState(false);
   const [zureoStock, setZureoStock] = useState<number | null>(null);
-  const [manualStock, setManualStock] = useState<string>('');
+  const [adjustment, setAdjustment] = useState<string>('');
   const [showInput, setShowInput] = useState(false);
 
   const handleCheckStock = async () => {
@@ -49,7 +47,6 @@ export function StockControl({
       }
 
       setZureoStock(stock);
-      setManualStock(stock.toString());
       setShowInput(true);
       
       toast.success(`Stock consultado: ${stock}`);
@@ -84,65 +81,73 @@ export function StockControl({
     }
   };
 
-  const handleConfirmStock = async () => {
+  const handleConfirmAdjustment = async () => {
     try {
-      const newStock = parseInt(manualStock);
-      if (isNaN(newStock) || newStock < 0) {
+      const adjustmentValue = parseInt(adjustment);
+      if (isNaN(adjustmentValue)) {
         toast.error('Ingrese un valor válido');
         return;
       }
 
-      await onStockUpdate(newStock);
-      toast.success('Stock actualizado exitosamente');
+      await onStockAdjustment(adjustmentValue);
+      toast.success('Ajuste de stock registrado exitosamente');
       
       setZureoStock(null);
-      setManualStock('');
+      setAdjustment('');
       setShowInput(false);
     } catch (error) {
-      toast.error('Error al actualizar el stock');
+      toast.error('Error al registrar el ajuste');
       console.error('Error updating stock:', error);
     }
   };
 
   const handleCancel = () => {
     setZureoStock(null);
-    setManualStock('');
+    setAdjustment('');
     setShowInput(false);
   };
 
   return (
     <div className="space-y-3">
       {showInput && (
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <Input
-            type="number"
-            min="0"
-            value={manualStock}
-            onChange={(e) => setManualStock(e.target.value)}
-            placeholder="Ingrese cantidad"
-            className="text-center flex-1"
-          />
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleConfirmStock}
-              className="flex-1 sm:flex-none text-green-600 hover:text-green-700 hover:bg-green-50"
-              title="Confirmar"
-            >
-              <Check className="w-5 h-5" />
-              <span className="sm:hidden ml-2">Confirmar</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCancel}
-              className="flex-1 sm:flex-none text-red-600 hover:text-red-700 hover:bg-red-50"
-              title="Cancelar"
-            >
-              <X className="w-5 h-5" />
-              <span className="sm:hidden ml-2">Cancelar</span>
-            </Button>
+        <div className="space-y-3">
+          {/* Show current stock from Zureo */}
+          <div className="bg-blue-50 p-3 rounded-lg">
+            <div className="text-sm text-blue-700 font-medium">Stock en Zureo:</div>
+            <div className="text-lg font-bold text-blue-800">{zureoStock}</div>
+          </div>
+
+          {/* Adjustment input */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <Input
+              type="number"
+              value={adjustment}
+              onChange={(e) => setAdjustment(e.target.value)}
+              placeholder="Ingrese el ajuste (+/-)"
+              className="text-center flex-1"
+            />
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleConfirmAdjustment}
+                className="flex-1 sm:flex-none text-green-600 hover:text-green-700 hover:bg-green-50"
+                title="Confirmar"
+              >
+                <Check className="w-5 h-5" />
+                <span className="sm:hidden ml-2">Confirmar</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCancel}
+                className="flex-1 sm:flex-none text-red-600 hover:text-red-700 hover:bg-red-50"
+                title="Cancelar"
+              >
+                <X className="w-5 h-5" />
+                <span className="sm:hidden ml-2">Cancelar</span>
+              </Button>
+            </div>
           </div>
         </div>
       )}

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Grid } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
@@ -13,17 +13,20 @@ import { FullscreenProductForm } from '@/components/products/FullscreenProductFo
 import { Product } from '@/types';
 import { SECTORS } from '@/config/constants';
 import { calculateNewOrder, getSectorFromOrder } from '@/lib/order/utils';
+import { useGlobalProducts } from '@/hooks/useGlobalProducts';
 
 export function Products() {
   const { providers } = useProviders();
   const [selectedProviderId, setSelectedProviderId] = useState<string>('');
   const { products, loading, addProduct, updateProduct, deleteProduct } = useProducts(selectedProviderId);
+  const { products: allProducts, loading: allProductsLoading } = useGlobalProducts();
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [isFiltering, setIsFiltering] = useState(false);
+  const [showAllProducts, setShowAllProducts] = useState(false);
 
   const handleSubmit = async (data: Omit<Product, 'id'>) => {
     setIsSubmitting(true);
@@ -73,6 +76,11 @@ export function Products() {
   };
 
   const handleNewProduct = () => {
+    if (!selectedProviderId) {
+      toast.error('Seleccione un proveedor primero');
+      return;
+    }
+
     if (editingProduct) {
       const dialog = Dialog({
         isOpen: true,
@@ -110,23 +118,56 @@ export function Products() {
     setIsFiltering(isActiveFilter);
   }, []);
 
+  // Render fullscreen form outside of the main content
+  if (isFormOpen) {
+    return (
+      <FullscreenProductForm
+        providerId={editingProduct?.providerId || selectedProviderId}
+        initialData={editingProduct || undefined}
+        onSubmit={handleSubmit}
+        onCancel={handleCloseForm}
+        isLoading={isSubmitting}
+      />
+    );
+  }
+
+  const displayProducts = showAllProducts ? allProducts : products;
+  const isLoading = showAllProducts ? allProductsLoading : loading;
+
   return (
     <div className="space-y-6">
-      {/* Global Product Search */}
-      <GlobalProductSearch onProductSelect={handleEdit} />
+      {/* Only show global search when not showing all products */}
+      {!showAllProducts && (
+        <GlobalProductSearch onProductSelect={handleEdit} />
+      )}
 
       {/* Provider Selection and New Product Button */}
       <div className="space-y-4 md:space-y-0">
         <div className="flex flex-col md:flex-row md:items-end gap-4">
           <div className="flex-1">
-            <ProviderSelector
-              providers={providers}
-              selectedProviderId={selectedProviderId}
-              onChange={setSelectedProviderId}
-            />
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <ProviderSelector
+                  providers={providers}
+                  selectedProviderId={selectedProviderId}
+                  onChange={(id) => {
+                    setSelectedProviderId(id);
+                    setShowAllProducts(false);
+                  }}
+                />
+              </div>
+              <Button
+                variant={showAllProducts ? "primary" : "outline"}
+                onClick={() => setShowAllProducts(!showAllProducts)}
+                className="h-[48px] w-[48px] flex items-center justify-center flex-shrink-0"
+                title={showAllProducts ? "Mostrar por proveedor" : "Mostrar todos"}
+              >
+                <Grid className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
 
-          {selectedProviderId && (
+          {selectedProviderId && !showAllProducts && (
             <div className="flex-shrink-0 w-full md:w-auto">
               <Button
                 onClick={handleNewProduct}
@@ -140,51 +181,38 @@ export function Products() {
         </div>
       </div>
 
-      {/* Product Form */}
-      {isFormOpen && (
-        <FullscreenProductForm
-          providerId={editingProduct?.providerId || selectedProviderId}
-          initialData={editingProduct || undefined}
-          onSubmit={handleSubmit}
-          onCancel={handleCloseForm}
-          isLoading={isSubmitting}
-        />
-      )}
-
       {/* Main Content */}
-      {selectedProviderId ? (
-        loading ? (
+      {selectedProviderId || showAllProducts ? (
+        isLoading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
           </div>
         ) : (
-          !isFormOpen && (
-            <>
-              <ProviderProductSearch
-                products={products}
-                onFilter={handleFilter}
+          <>
+            <ProviderProductSearch
+              products={displayProducts}
+              onFilter={handleFilter}
+            />
+            {(!isFiltering || filteredProducts.length > 0) ? (
+              <ProductCarousel
+                products={isFiltering ? filteredProducts : displayProducts}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                providerId={selectedProviderId}
               />
-              {(!isFiltering || filteredProducts.length > 0) ? (
-                <ProductCarousel
-                  products={isFiltering ? filteredProducts : products}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  providerId={selectedProviderId}
-                />
-              ) : (
-                <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                  <p className="text-gray-500 text-center px-4">
-                    No se encontraron productos que coincidan con la búsqueda
-                  </p>
-                </div>
-              )}
-            </>
-          )
+            ) : (
+              <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                <p className="text-gray-500 text-center px-4">
+                  No se encontraron productos que coincidan con la búsqueda
+                </p>
+              </div>
+            )}
+          </>
         )
       ) : (
         <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
           <p className="text-gray-500 text-center px-4">
-            Seleccione un proveedor para ver sus productos
+            Seleccione un proveedor para ver sus productos o use el botón para ver todos
           </p>
         </div>
       )}

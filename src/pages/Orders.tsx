@@ -180,6 +180,22 @@ export function Orders() {
 
   const isLoading = loading || globalOrdersLoading || globalProductsLoading;
 
+  // Render fullscreen editor outside of main content
+  if (isFormOpen && selectedProvider) {
+    return (
+      <FullscreenOrderEditor
+        products={products}
+        selectedProducts={selectedProducts}
+        onProductSelect={handleProductSelect}
+        onConfirm={handleSubmit}
+        onCancel={handleCloseForm}
+        isSubmitting={isSubmitting}
+        provider={selectedProvider}
+        orderId={selectedOrder?.id}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4">
       {/* Global Order Search */}
@@ -232,19 +248,6 @@ export function Orders() {
             </div>
           )}
 
-          {isFormOpen && selectedProvider && (
-            <FullscreenOrderEditor
-              products={products}
-              selectedProducts={selectedProducts}
-              onProductSelect={handleProductSelect}
-              onProductUpdate={updateProduct}
-              onConfirm={handleSubmit}
-              onCancel={handleCloseForm}
-              isSubmitting={isSubmitting}
-              provider={selectedProvider}
-            />
-          )}
-
           {viewingOrder && selectedProvider && (
             <OrderDetails
               order={viewingOrder.order}
@@ -256,7 +259,7 @@ export function Orders() {
             />
           )}
 
-          {!isFormOpen && !viewingOrder && selectedProviderId && (
+          {!viewingOrder && selectedProviderId && (
             <OrderList
               orders={orders}
               products={products}

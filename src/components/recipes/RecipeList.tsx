@@ -5,7 +5,7 @@ import { Recipe } from '@/types/recipe';
 import { formatPrice } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
-import { Pencil, Trash2, Printer, History, ChefHat } from 'lucide-react';
+import { Pencil, Trash2, Printer, History, ChefHat, ShoppingCart } from 'lucide-react';
 import { generateRecipePrintTemplate } from '@/lib/utils/printing/recipeTemplate';
 import { useGlobalProducts } from '@/hooks/useGlobalProducts';
 
@@ -47,6 +47,11 @@ export function RecipeList({ recipes, onEdit, onDelete }: RecipeListProps) {
           const exceedsThreshold = lastEntry && Math.abs(lastEntry.changePercentage) > threshold;
           const isIncrease = lastEntry?.changePercentage > 0;
 
+          // Calculate profit margin if sale price is set
+          const profitMargin = recipe.salePrice && recipe.unitCost
+            ? ((recipe.salePrice - recipe.unitCost) / recipe.unitCost * 100)
+            : null;
+
           return (
             <div
               key={recipe.id}
@@ -61,16 +66,29 @@ export function RecipeList({ recipes, onEdit, onDelete }: RecipeListProps) {
                   <h3 className="text-lg font-semibold flex-1 break-words">
                     {recipe.name}
                   </h3>
-                  {recipe.isBase && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
-                      <ChefHat className="w-3 h-3 mr-1" />
-                      Base
-                    </span>
-                  )}
+                  <div className="flex flex-wrap gap-1">
+                    {recipe.isBase && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                        <ChefHat className="w-3 h-3 mr-1" />
+                        Base
+                      </span>
+                    )}
+                    {recipe.forSale && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                        <ShoppingCart className="w-3 h-3 mr-1" />
+                        Venta
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <p className="text-sm text-gray-500 mt-1">
                   Rendimiento: {recipe.yield} {recipe.yieldUnit}
                 </p>
+                {recipe.sku && (
+                  <p className="text-sm text-gray-500">
+                    SKU: {recipe.sku}
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -84,13 +102,31 @@ export function RecipeList({ recipes, onEdit, onDelete }: RecipeListProps) {
                     {formatPrice(recipe.unitCost)} / {recipe.yieldUnit}
                   </p>
                 </div>
-                <div className="col-span-2">
-                  <span className="text-gray-500">Precio Sugerido:</span>
-                  <p className="font-medium text-blue-600">
-                    {formatPrice(recipe.suggestedPrice)} / {recipe.yieldUnit}
-                  </p>
-                </div>
               </div>
+
+              {/* Sale Price and Margin */}
+              {recipe.forSale && (
+                <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+                  <div>
+                    <span className="text-gray-500">Precio de Venta:</span>
+                    <p className="font-medium text-blue-600">
+                      {formatPrice(recipe.salePrice || 0)}
+                    </p>
+                  </div>
+                  {profitMargin !== null && (
+                    <div>
+                      <span className="text-gray-500">Margen:</span>
+                      <p className={`font-medium ${
+                        profitMargin >= recipe.profitPercentage
+                          ? 'text-green-600'
+                          : 'text-amber-600'
+                      }`}>
+                        {profitMargin.toFixed(1)}%
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {exceedsThreshold && (
                 <div className={`p-2 rounded-lg ${

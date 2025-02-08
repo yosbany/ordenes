@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/Button';
 import { useGlobalProducts } from '@/hooks/useGlobalProducts';
 import { StockControl } from '@/components/inventory/StockControl';
 import { StockReport } from '@/components/inventory/StockReport';
-import { formatPrice } from '@/lib/utils';
 import { authenticateZureo } from '@/lib/services/zureo/stockCheck';
 import { toast } from 'react-hot-toast';
 import { Product } from '@/types';
@@ -13,7 +12,7 @@ import { Product } from '@/types';
 interface ProductGroup {
   sku: string;
   products: Product[];
-  currentStock: number;
+  stockAdjustments: Product['stockAdjustments'];
   lastStockCheck: number | null;
 }
 
@@ -54,13 +53,13 @@ export function Inventory() {
         acc[sku] = {
           sku,
           products: [],
-          currentStock: product.currentStock || 0,
+          stockAdjustments: product.stockAdjustments || [],
           lastStockCheck: product.lastStockCheck || null
         };
       }
       acc[sku].products.push(product);
       if (product.lastStockCheck && (!acc[sku].lastStockCheck || product.lastStockCheck > acc[sku].lastStockCheck)) {
-        acc[sku].currentStock = product.currentStock || 0;
+        acc[sku].stockAdjustments = product.stockAdjustments || [];
         acc[sku].lastStockCheck = product.lastStockCheck;
       }
       return acc;
@@ -77,19 +76,25 @@ export function Inventory() {
       )
       .sort((a, b) => {
         if (!a.lastStockCheck && !b.lastStockCheck) return 0;
-        if (!a.lastStockCheck) return -1;
-        if (!b.lastStockCheck) return 1;
-        return a.lastStockCheck - b.lastStockCheck;
+        if (!a.lastStockCheck) return 1;
+        if (!b.lastStockCheck) return -1;
+        return b.lastStockCheck - a.lastStockCheck;
       });
   }, [products, searchTerm]);
 
-  const handleStockUpdate = async (sku: string, newStock: number) => {
+  const handleStockAdjustment = async (sku: string, adjustment: number) => {
     try {
       const updates = productGroups
         .find(g => g.sku === sku)
         ?.products.map(product => 
           updateProduct(product.id!, {
-            currentStock: newStock,
+            stockAdjustments: [
+              ...(product.stockAdjustments || []),
+              {
+                date: Date.now(),
+                quantity: adjustment
+              }
+            ],
             lastStockCheck: Date.now()
           })
         ) || [];
@@ -101,16 +106,11 @@ export function Inventory() {
     }
   };
 
-  const handleShowReport = () => {
-    setShowReport(true);
-  };
-
   // Prepare report data
   const reportData = productGroups.map(group => ({
     sku: group.sku,
     names: group.products.map(p => p.name),
-    currentStock: group.currentStock,
-    lastStockCheck: group.lastStockCheck,
+    stockAdjustments: group.stockAdjustments || [],
     packaging: group.products[0].salePackaging || group.products[0].purchasePackaging
   }));
 
@@ -122,7 +122,7 @@ export function Inventory() {
           <h1 className="text-2xl font-bold text-gray-900">Control de Inventario</h1>
           <div className="grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto">
             <Button
-              onClick={handleShowReport}
+              onClick={() => setShowReport(true)}
               variant="outline"
               className="w-full sm:w-auto gap-2"
             >
@@ -163,7 +163,7 @@ export function Inventory() {
           <div className="bg-blue-50 p-4 rounded-lg">
             <div className="w-full sm:max-w-xs">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Mostrar controles desde:
+                Mostrar ajustes desde:
               </label>
               <input
                 type="date"
@@ -189,6 +189,9 @@ export function Inventory() {
             const daysSinceCheck = group.lastStockCheck
               ? Math.floor((Date.now() - group.lastStockCheck) / (1000 * 60 * 60 * 24))
               : null;
+
+            // Calculate total adjustments
+            const totalAdjustments = group.stockAdjustments?.reduce((sum, adj) => sum + adj.quantity, 0) || 0;
 
             return (
               <div
@@ -238,9 +241,16 @@ export function Inventory() {
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-500">Stock Actual:</span>
+                    <span className="text-gray-500">Último Ajuste:</span>
                     <p className="font-medium text-gray-900">
-                      {group.currentStock} {group.products[0].salePackaging || group.products[0].purchasePackaging}
+                      {totalAdjustments > 0 ? (
+                        <span className="text-green-600">+{totalAdjustments}</span>
+                      ) : totalAdjustments < 0 ? (
+                        <span className="text-red-600">{totalAdjustments}</span>
+                      ) : (
+                        <span>0</span>
+                      )}
+                      {' '}{group.products[0].salePackaging || group.products[0].purchasePackaging}
                     </p>
                   </div>
                   <div>
@@ -268,8 +278,7 @@ export function Inventory() {
                   <StockControl
                     productId={group.products[0].id!}
                     sku={group.sku}
-                    currentStock={group.currentStock}
-                    onStockUpdate={(newStock) => handleStockUpdate(group.sku, newStock)}
+                    onStockAdjustment={(adjustment) => handleStockAdjustment(group.sku, adjustment)}
                     isEnabled={isAuthenticated}
                   />
                 </div>

@@ -5,18 +5,23 @@ import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
 const navigation = [
-  { name: 'Dashboard', to: '/', icon: LayoutDashboard },
-  { name: 'Proveedores', to: '/providers', icon: Users },
-  { name: 'Productos', to: '/products', icon: Package },
-  { name: 'Recetas', to: '/recipes', icon: ChefHat },
-  { name: 'Órdenes', to: '/orders', icon: ShoppingCart },
-  { name: 'Cronograma', to: '/schedule', icon: Calendar },
-  { name: 'Inventario', to: '/inventory', icon: ClipboardCheck },
+  { name: 'Dashboard', to: '/', icon: LayoutDashboard, color: 'bg-blue-500' },
+  { name: 'Proveedores', to: '/providers', icon: Users, color: 'bg-emerald-500' },
+  { name: 'Productos', to: '/products', icon: Package, color: 'bg-purple-500' },
+  { name: 'Recetas', to: '/recipes', icon: ChefHat, color: 'bg-amber-500' },
+  { name: 'Órdenes', to: '/orders', icon: ShoppingCart, color: 'bg-indigo-500' },
+  { name: 'Cronograma', to: '/schedule', icon: Calendar, color: 'bg-rose-500' },
+  { name: 'Inventario', to: '/inventory', icon: ClipboardCheck, color: 'bg-teal-500' },
 ];
 
 export function TopNav() {
   const { signOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+
+  // Get current route color
+  const currentRoute = navigation.find(item => item.to === location.pathname);
+  const currentColor = currentRoute?.color || 'bg-gray-100';
 
   return (
     <header className="bg-white border-b border-gray-200">
@@ -39,7 +44,7 @@ export function TopNav() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-4">
+          <nav className="hidden md:flex space-x-1">
             {navigation.map((item) => (
               <NavLink
                 key={item.name}
@@ -48,7 +53,7 @@ export function TopNav() {
                   cn(
                     'inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors',
                     isActive
-                      ? 'text-blue-600 bg-blue-50'
+                      ? `${item.color.replace('bg-', 'text-')} ${item.color.replace('bg-', 'bg-')}/10`
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   )
                 }
@@ -69,7 +74,7 @@ export function TopNav() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <nav className="md:hidden py-4 space-y-2">
+          <nav className="md:hidden py-4 space-y-1">
             {navigation.map((item) => (
               <NavLink
                 key={item.name}
@@ -79,7 +84,7 @@ export function TopNav() {
                   cn(
                     'flex items-center px-3 py-2 text-base font-medium rounded-md w-full transition-colors',
                     isActive
-                      ? 'text-blue-600 bg-blue-50'
+                      ? `${item.color.replace('bg-', 'text-')} ${item.color.replace('bg-', 'bg-')}/10`
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   )
                 }
@@ -98,6 +103,9 @@ export function TopNav() {
           </nav>
         )}
       </div>
+
+      {/* Colored bar indicating current section */}
+      <div className={`h-1 ${currentColor}`} />
     </header>
   );
 }

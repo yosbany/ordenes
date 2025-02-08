@@ -13,12 +13,15 @@ export interface Recipe {
   lastUpdated: number;
   costHistory?: CostHistoryEntry[];
   costThreshold?: number;
-  isBase?: boolean; // Flag to mark base recipes
+  isBase?: boolean;
+  forSale?: boolean;
+  sku?: string;
+  salePrice?: number;
 }
 
 export interface RecipeMaterial {
   id: string;
-  type: 'product' | 'recipe'; // Type of material
+  type: 'product' | 'recipe';
   quantity: number;
   unit: string;
   unitCost: number;
@@ -33,7 +36,7 @@ export interface CostHistoryEntry {
 
 export interface MonthlyFixedCosts {
   id?: string;
-  month: number; // 1-12
+  month: number;
   year: number;
   totalMaterialsCost: number;
   totalFixedCosts: number;
