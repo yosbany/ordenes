@@ -33,9 +33,10 @@ export interface Product {
   forSale?: boolean;
   saleUnit?: string;
   salePrice?: number;
+  saleCostPerUnit?: number; // New field for unit cost in sale units
   priceHistory?: PriceHistoryEntry[];
   salePriceHistory?: PriceHistoryEntry[];
-  priceThreshold?: number; // Percentage threshold for significant price changes
+  priceThreshold?: number;
 }
 
 export interface PriceHistoryEntry {
@@ -46,7 +47,7 @@ export interface PriceHistoryEntry {
 
 export interface StockAdjustment {
   date: number;
-  quantity: number; // Positive for overages, negative for shortages
+  quantity: number;
   notes?: string;
 }
 

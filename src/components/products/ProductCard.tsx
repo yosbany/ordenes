@@ -20,9 +20,9 @@ export function ProductCard({
 }: ProductCardProps) {
   const [showHistory, setShowHistory] = useState(false);
 
-  // Calculate margin if product is for sale
-  const margin = product.forSale && product.salePrice && product.price
-    ? ((product.salePrice - product.price) / product.salePrice) * 100
+  // Calculate margin using saleCostPerUnit if product is for sale
+  const margin = product.forSale && product.salePrice && product.saleCostPerUnit
+    ? ((product.salePrice - product.saleCostPerUnit) / product.salePrice) * 100
     : null;
 
   // Get margin color based on value
@@ -34,12 +34,10 @@ export function ProductCard({
   };
 
   // Get last price change
-  const lastPriceChange = product.priceHistory?.[product.priceHistory.length - 1];
   const lastSalePriceChange = product.salePriceHistory?.[product.salePriceHistory.length - 1];
 
   // Check if price changes exceed threshold
   const priceThreshold = product.priceThreshold || 20;
-  const significantPriceChange = lastPriceChange && Math.abs(lastPriceChange.changePercentage) > priceThreshold;
   const significantSalePriceChange = lastSalePriceChange && Math.abs(lastSalePriceChange.changePercentage) > priceThreshold;
 
   return (
@@ -130,59 +128,55 @@ export function ProductCard({
           </div>
 
           {/* Pricing Section */}
-          <div className="pt-4 border-t space-y-3">
-            {/* Purchase Price */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Precio Compra:</span>
-              <div className="text-right">
-                <span className="text-lg font-bold text-gray-900">
-                  {formatPrice(product.price)}
-                </span>
-                {significantPriceChange && (
-                  <div className={`text-xs ${lastPriceChange.changePercentage > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                    {lastPriceChange.changePercentage > 0 ? '+' : ''}
-                    {lastPriceChange.changePercentage.toFixed(1)}%
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Sale Price and Margin */}
-            {product.forSale && (
-              <>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Precio Venta:</span>
-                  <div className="text-right">
-                    <span className="text-lg font-bold text-blue-600">
-                      {formatPrice(product.salePrice || 0)}
-                    </span>
-                    {significantSalePriceChange && (
-                      <div className={`text-xs ${lastSalePriceChange.changePercentage > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                        {lastSalePriceChange.changePercentage > 0 ? '+' : ''}
-                        {lastSalePriceChange.changePercentage.toFixed(1)}%
-                      </div>
-                    )}
+          {product.forSale && (
+            <div className="pt-4 border-t space-y-3">
+              {/* Sale Cost Per Unit */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Costo Unitario:</span>
+                <div className="text-right">
+                  <span className="text-lg font-bold text-gray-900">
+                    {formatPrice(product.saleCostPerUnit || 0)}
+                  </span>
+                  <div className="text-xs text-gray-500">
+                    por {product.saleUnit || product.purchasePackaging}
                   </div>
                 </div>
+              </div>
 
-                {margin !== null && (
-                  <div className={`
-                    flex items-center justify-between p-3 rounded-lg
-                    ${getMarginColor(margin)}
-                  `}>
-                    <span className="text-sm font-medium">Margen:</span>
-                    <span className="text-lg font-bold">
-                      {margin.toFixed(1)}%
-                    </span>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+              {/* Sale Price */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Precio Venta:</span>
+                <div className="text-right">
+                  <span className="text-lg font-bold text-blue-600">
+                    {formatPrice(product.salePrice || 0)}
+                  </span>
+                  {significantSalePriceChange && (
+                    <div className={`text-xs ${lastSalePriceChange.changePercentage > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                      {lastSalePriceChange.changePercentage > 0 ? '+' : ''}
+                      {lastSalePriceChange.changePercentage.toFixed(1)}%
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Margin */}
+              {margin !== null && (
+                <div className={`
+                  flex items-center justify-between p-3 rounded-lg
+                  ${getMarginColor(margin)}
+                `}>
+                  <span className="text-sm font-medium">Margen:</span>
+                  <span className="text-lg font-bold">
+                    {margin.toFixed(1)}%
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-4 border-t">
-            {(product.priceHistory?.length > 0 || product.salePriceHistory?.length > 0) && (
+            {product.salePriceHistory?.length > 0 && (
               <Button
                 variant="outline"
                 size="sm"
@@ -222,49 +216,6 @@ export function ProductCard({
         title={`Historial de Precios - ${product.name}`}
       >
         <div className="space-y-6">
-          {/* Purchase Price History */}
-          {product.priceHistory && product.priceHistory.length > 0 && (
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Precios de Compra</h3>
-              <div className="space-y-3">
-                {product.priceHistory.map((entry, index) => {
-                  const isSignificantChange = Math.abs(entry.changePercentage) > (product.priceThreshold || 20);
-                  const isIncrease = entry.changePercentage > 0;
-
-                  return (
-                    <div 
-                      key={entry.date}
-                      className={`p-3 rounded-lg ${
-                        isSignificantChange
-                          ? isIncrease
-                            ? 'bg-red-50 border-2 border-red-200'
-                            : 'bg-green-50 border-2 border-green-200'
-                          : 'bg-gray-50 border border-gray-200'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">
-                          {format(entry.date, "d 'de' MMMM, yyyy HH:mm", { locale: es })}
-                        </span>
-                        <span className={`text-sm font-medium ${
-                          entry.changePercentage > 0 ? 'text-red-600' : 'text-green-600'
-                        }`}>
-                          {entry.changePercentage > 0 ? '+' : ''}
-                          {entry.changePercentage.toFixed(1)}%
-                        </span>
-                      </div>
-                      <div className="mt-1">
-                        <span className="font-medium">
-                          {formatPrice(entry.price)}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
           {/* Sale Price History */}
           {product.salePriceHistory && product.salePriceHistory.length > 0 && (
             <div>
@@ -309,8 +260,7 @@ export function ProductCard({
           )}
 
           {/* No History Message */}
-          {(!product.priceHistory || product.priceHistory.length === 0) &&
-           (!product.salePriceHistory || product.salePriceHistory.length === 0) && (
+          {(!product.salePriceHistory || product.salePriceHistory.length === 0) && (
             <div className="text-center py-8 text-gray-500">
               No hay historial de precios disponible
             </div>

@@ -11,7 +11,6 @@ import { useTags } from '@/hooks/useTags';
 import { useSkuSuggestion } from '@/hooks/useSkuSuggestion';
 import { useUnitMeasures } from '@/hooks/useUnitMeasures';
 import { useUnitConversions } from '@/hooks/useUnitConversions';
-import { useGlobalOrders } from '@/hooks/useGlobalOrders';
 import { getSectorFromOrder, formatOrderNumber, formatPrice } from '@/lib/utils';
 import { getSectorColor } from '@/lib/sectorColors';
 
@@ -25,7 +24,7 @@ interface ProductFormProps {
 }
 
 export function ProductForm({
-  providerId: initialProviderId,
+  providerId,
   initialData,
   onSubmit,
   onCancel,
@@ -37,24 +36,6 @@ export function ProductForm({
   const { suggestedSku } = useSkuSuggestion();
   const { unitMeasures, loading: measuresLoading } = useUnitMeasures();
   const { conversions: unitConversions, loading: conversionsLoading } = useUnitConversions();
-  const { orders } = useGlobalOrders();
-
-  const averageOrderQuantity = useMemo(() => {
-    if (!initialData?.id) return 0;
-
-    const productOrders = orders.filter(order => 
-      order.items.some(item => item.productId === initialData.id)
-    );
-
-    if (productOrders.length === 0) return 0;
-
-    const totalQuantity = productOrders.reduce((sum, order) => {
-      const item = order.items.find(item => item.productId === initialData.id);
-      return sum + (item?.quantity || 0);
-    }, 0);
-
-    return Number((totalQuantity / productOrders.length).toFixed(1));
-  }, [orders, initialData?.id]);
 
   const [formData, setFormData] = useState<Omit<Product, 'id'>>({
     name: initialData?.name || '',
@@ -66,19 +47,17 @@ export function ProductForm({
     price: initialData?.price || 0,
     desiredStock: initialData?.desiredStock || 0,
     minPackageStock: initialData?.minPackageStock || 0,
-    providerId: initialData?.providerId || initialProviderId,
+    providerId: initialData?.providerId || providerId,
     tags: initialData?.tags || [],
     isProduction: initialData?.isProduction || false,
-    unitMeasure: initialData?.unitMeasure || '',
-    pricePerUnit: initialData?.pricePerUnit || 0,
     forSale: initialData?.forSale || false,
     saleUnit: initialData?.saleUnit || '',
     salePrice: initialData?.salePrice || 0,
-    averageOrderQuantity
+    saleCostPerUnit: initialData?.saleCostPerUnit || 0
   });
 
-  const unitCost = useMemo(() => {
-    if (!formData.price || !formData.purchasePackaging || !formData.saleUnit) {
+  const saleCostPerUnit = useMemo(() => {
+    if (!formData.forSale || !formData.price || !formData.purchasePackaging || !formData.saleUnit) {
       return 0;
     }
 
@@ -100,56 +79,21 @@ export function ProductForm({
     } else {
       return Number((formData.price * conversion.factor).toFixed(2));
     }
-  }, [formData.price, formData.purchasePackaging, formData.saleUnit, unitConversions]);
+  }, [formData.price, formData.purchasePackaging, formData.saleUnit, formData.forSale, unitConversions]);
 
-  const productionUnitCost = useMemo(() => {
-    if (!formData.price || !formData.purchasePackaging || !formData.unitMeasure) {
-      return 0;
+  useEffect(() => {
+    if (formData.forSale) {
+      setFormData(prev => ({
+        ...prev,
+        saleCostPerUnit
+      }));
     }
-
-    if (formData.purchasePackaging === formData.unitMeasure) {
-      return formData.price;
-    }
-
-    const conversion = unitConversions?.find(c => 
-      (c.fromUnit === formData.purchasePackaging && c.toUnit === formData.unitMeasure) ||
-      (c.fromUnit === formData.unitMeasure && c.toUnit === formData.purchasePackaging)
-    );
-
-    if (!conversion) {
-      return 0;
-    }
-
-    if (conversion.fromUnit === formData.purchasePackaging) {
-      return Number((formData.price / conversion.factor).toFixed(2));
-    } else {
-      return Number((formData.price * conversion.factor).toFixed(2));
-    }
-  }, [formData.price, formData.purchasePackaging, formData.unitMeasure, unitConversions]);
+  }, [saleCostPerUnit, formData.forSale]);
 
   const profitMargin = useMemo(() => {
-    if (!formData.salePrice || !unitCost) return 0;
-    return ((formData.salePrice - unitCost) / formData.salePrice) * 100;
-  }, [formData.salePrice, unitCost]);
-
-  useEffect(() => {
-    if (formData.isProduction && productionUnitCost > 0) {
-      setFormData(prev => ({
-        ...prev,
-        pricePerUnit: productionUnitCost
-      }));
-    }
-  }, [productionUnitCost, formData.isProduction]);
-
-  useEffect(() => {
-    if (!formData.isProduction) {
-      setFormData(prev => ({
-        ...prev,
-        pricePerUnit: 0,
-        unitMeasure: ''
-      }));
-    }
-  }, [formData.isProduction]);
+    if (!formData.salePrice || !saleCostPerUnit) return 0;
+    return ((formData.salePrice - saleCostPerUnit) / formData.salePrice) * 100;
+  }, [formData.salePrice, saleCostPerUnit]);
 
   const updateField = <K extends keyof Omit<Product, 'id'>>(
     field: K,
@@ -303,8 +247,8 @@ export function ProductForm({
                       <div className="text-2xl font-bold text-gray-900 mt-1">
                         {formData.purchasePackaging === formData.saleUnit ? (
                           formatPrice(formData.price)
-                        ) : unitCost > 0 ? (
-                          formatPrice(unitCost)
+                        ) : saleCostPerUnit > 0 ? (
+                          formatPrice(saleCostPerUnit)
                         ) : (
                           <span className="text-amber-600 text-base">
                             No hay conversión disponible entre {formData.purchasePackaging} y {formData.saleUnit}
@@ -316,19 +260,19 @@ export function ProductForm({
                       </div>
                     </div>
 
-                    {formData.salePrice > 0 && (formData.purchasePackaging === formData.saleUnit || unitCost > 0) && (
+                    {formData.salePrice > 0 && saleCostPerUnit > 0 && (
                       <div>
                         <div className="text-sm font-medium text-gray-700">Margen de Ganancia</div>
                         <div className="text-2xl font-bold text-blue-600 mt-1">
                           {profitMargin.toFixed(1)}%
                         </div>
                         <div className="text-sm text-gray-500">
-                          {formatPrice(formData.salePrice - (formData.purchasePackaging === formData.saleUnit ? formData.price : unitCost))} por {formData.saleUnit}
+                          {formatPrice(formData.salePrice - saleCostPerUnit)} por {formData.saleUnit}
                         </div>
                       </div>
                     )}
 
-                    {formData.saleUnit && formData.purchasePackaging !== formData.saleUnit && !unitCost && (
+                    {formData.saleUnit && formData.purchasePackaging !== formData.saleUnit && !saleCostPerUnit && (
                       <div className="flex items-center gap-2 text-amber-600 bg-amber-50 p-3 rounded-lg">
                         <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                         <div className="text-sm">
@@ -374,35 +318,6 @@ export function ProductForm({
                     required
                     placeholder="Seleccionar unidad de medida"
                   />
-                </div>
-
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div>
-                    <div className="text-sm font-medium text-gray-700">Costo por Unidad</div>
-                    <div className="text-2xl font-bold text-gray-900 mt-1">
-                      {formData.purchasePackaging === formData.unitMeasure ? (
-                        formatPrice(formData.price)
-                      ) : productionUnitCost > 0 ? (
-                        formatPrice(productionUnitCost)
-                      ) : (
-                        <span className="text-amber-600 text-base">
-                          No hay conversión disponible entre {formData.purchasePackaging} y {formData.unitMeasure}
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      Por {formData.unitMeasure || 'unidad'}
-                    </div>
-                  </div>
-
-                  {formData.unitMeasure && formData.purchasePackaging !== formData.unitMeasure && !productionUnitCost && (
-                    <div className="flex items-center gap-2 text-amber-600 bg-amber-50 p-3 rounded-lg mt-3">
-                      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                      <div className="text-sm">
-                        Agregue una conversión entre <strong>{formData.purchasePackaging}</strong> y <strong>{formData.unitMeasure}</strong> en la gestión de unidades
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
@@ -466,7 +381,7 @@ export function ProductForm({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Input
                 label={`Stock Mínimo (${formData.purchasePackaging || 'unidades'})`}
@@ -493,28 +408,6 @@ export function ProductForm({
               <p className="text-xs text-gray-500 mt-1">
                 Nivel óptimo de stock en empaques de compra
               </p>
-            </div>
-
-            <div>
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <label className="block text-sm font-medium text-gray-700">
-                  Stock Promedio
-                </label>
-                <div className="mt-1 text-2xl font-bold text-gray-900">
-                  {averageOrderQuantity} {formData.purchasePackaging}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Promedio de compra por orden
-                </p>
-                {averageOrderQuantity > 0 && averageOrderQuantity < formData.desiredStock && (
-                  <div className="flex items-center gap-2 text-amber-600 text-xs mt-2">
-                    <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-                    <span>
-                      El promedio está por debajo del stock deseado
-                    </span>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
 
