@@ -118,7 +118,7 @@ export function OrderProductCard({
   const handleDecrement = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (quantity > 0) {
-      handleQuantityChange(quantity - 1);
+      handleQuantityChange(Math.max(0, quantity - 1));
     }
   };
 
@@ -130,7 +130,7 @@ export function OrderProductCard({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
-    const numValue = parseInt(value);
+    const numValue = parseFloat(value);
     if (!isNaN(numValue) && numValue >= 0) {
       handleQuantityChange(numValue);
     }
@@ -210,6 +210,7 @@ export function OrderProductCard({
                               ref={inputRef}
                               type="number"
                               min="0"
+                              step="0.01"
                               value={inputValue}
                               onChange={handleInputChange}
                               onClick={(e) => e.stopPropagation()}
