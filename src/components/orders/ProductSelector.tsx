@@ -1,31 +1,31 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Product } from '@/types';
 import { OrderProductCard } from './OrderProductCard';
 import { ProductFilter } from './ProductFilter';
 import { Button } from '@/components/ui/Button';
 import { Filter } from 'lucide-react';
-import { motion, AnimatePresence, Reorder } from 'framer-motion';
-import { updateProductOrder } from '@/lib/services/database/productOrder';
-import { toast } from 'react-hot-toast';
+import { Reorder, useDragControls } from 'framer-motion';
 
 interface ProductSelectorProps {
   products: Product[];
   selectedProducts: Map<string, number>;
   onProductSelect: (productId: string, quantity: number) => void;
   allowEdit?: boolean;
+  onReorder?: (products: Product[]) => void;
 }
 
 export function ProductSelector({
   products,
   selectedProducts,
   onProductSelect,
-  allowEdit = true
+  allowEdit = true,
+  onReorder
 }: ProductSelectorProps) {
   const [reviewedProducts, setReviewedProducts] = useState<Set<string>>(new Set());
   const [filterValue, setFilterValue] = useState('');
   const [showOnlySelected, setShowOnlySelected] = useState(false);
-  const [isReordering, setIsReordering] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [draggingProduct, setDraggingProduct] = useState<string | null>(null);
+  const dragControls = useDragControls();
 
   // Filter out disabled products first, then sort by order
   const sortedProducts = [...products]
@@ -64,32 +64,9 @@ export function ProductSelector({
     setReviewedProducts(prev => new Set(prev).add(productId));
   };
 
-  const handleReorder = async (reorderedProducts: Product[]) => {
-    if (!isReordering) return;
-
-    try {
-      // Find the product that moved
-      const movedProduct = reorderedProducts.find((product, index) => {
-        const originalIndex = filteredProducts.findIndex(p => p.id === product.id);
-        return originalIndex !== index;
-      });
-
-      if (!movedProduct) return;
-
-      // Find the target position
-      const newIndex = reorderedProducts.findIndex(p => p.id === movedProduct.id);
-      const targetProduct = filteredProducts[newIndex];
-
-      if (!targetProduct) return;
-
-      // Update the product's order
-      await updateProductOrder(movedProduct.id!, targetProduct.order);
-      toast.success('Orden actualizado');
-    } catch (error) {
-      console.error('Error updating order:', error);
-      toast.error('Error al actualizar el orden');
-    } finally {
-      setIsReordering(false);
+  const handleReorder = (reorderedProducts: Product[]) => {
+    if (onReorder) {
+      onReorder(reorderedProducts);
     }
   };
 
@@ -115,48 +92,43 @@ export function ProductSelector({
       </div>
       
       {/* Products List */}
-      <div 
-        ref={containerRef} 
-        className="space-y-3 max-h-[calc(100vh-16rem)] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
+      <Reorder.Group
+        axis="y"
+        values={filteredProducts}
+        onReorder={handleReorder}
+        className="space-y-3"
       >
-        <Reorder.Group
-          axis="y"
-          values={filteredProducts}
-          onReorder={handleReorder}
-          className="space-y-3"
-        >
-          <AnimatePresence>
-            {filteredProducts.map((product) => (
-              <Reorder.Item
-                key={product.id}
-                value={product}
-                dragListener={true}
-                onDragStart={() => setIsReordering(true)}
-                onDragEnd={() => setIsReordering(false)}
-              >
-                <OrderProductCard
-                  product={product}
-                  quantity={selectedProducts.get(product.id!) || 0}
-                  onQuantityChange={(quantity) => handleQuantityChange(product.id!, quantity)}
-                  onReview={() => markAsReviewed(product.id!)}
-                  isReviewed={reviewedProducts.has(product.id!)}
-                  allowEdit={allowEdit}
-                  isDragging={isReordering}
-                />
-              </Reorder.Item>
-            ))}
-          </AnimatePresence>
-        </Reorder.Group>
+        {filteredProducts.map((product) => (
+          <Reorder.Item
+            key={product.id}
+            value={product}
+            dragListener={false}
+            dragControls={dragControls}
+            onDragStart={() => setDraggingProduct(product.id)}
+            onDragEnd={() => setDraggingProduct(null)}
+          >
+            <OrderProductCard
+              product={product}
+              quantity={selectedProducts.get(product.id!) || 0}
+              onQuantityChange={(quantity) => handleQuantityChange(product.id!, quantity)}
+              onReview={() => markAsReviewed(product.id!)}
+              isReviewed={reviewedProducts.has(product.id!)}
+              allowEdit={allowEdit}
+              onDragHandleHold={() => dragControls.start(product.id!)}
+              isDragging={draggingProduct === product.id}
+            />
+          </Reorder.Item>
+        ))}
+      </Reorder.Group>
 
-        {filteredProducts.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            {showOnlySelected 
-              ? 'No hay productos seleccionados'
-              : 'No se encontraron productos que coincidan con la búsqueda'
-            }
-          </div>
-        )}
-      </div>
+      {filteredProducts.length === 0 && (
+        <div className="text-center py-8 text-gray-500">
+          {showOnlySelected 
+            ? 'No hay productos seleccionados'
+            : 'No se encontraron productos que coincidan con la búsqueda'
+          }
+        </div>
+      )}
     </div>
   );
 }

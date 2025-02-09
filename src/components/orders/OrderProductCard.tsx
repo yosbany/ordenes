@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Archive, Check, Plus, Minus, ArrowUpDown } from 'lucide-react';
-import { motion, useDragControls } from 'framer-motion';
+import { Archive, Check, Plus, Minus, GripVertical } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Product } from '@/types';
 import { formatPrice } from '@/lib/utils/formatting/currency';
 import { formatOrderNumber } from '@/lib/order/utils';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { FullscreenProductEditor } from '@/components/products/FullscreenProductEditor';
+import { useGlobalProducts } from '@/hooks/useGlobalProducts';
 
 interface OrderProductCardProps {
   product: Product;
@@ -15,8 +17,7 @@ interface OrderProductCardProps {
   onReview: () => void;
   isReviewed: boolean;
   allowEdit?: boolean;
-  onDragStart?: () => void;
-  onDragEnd?: () => void;
+  onDragHandleHold?: () => void;
   isDragging?: boolean;
 }
 
@@ -27,16 +28,21 @@ export function OrderProductCard({
   onReview,
   isReviewed,
   allowEdit = true,
-  onDragStart,
-  onDragEnd,
+  onDragHandleHold,
   isDragging
 }: OrderProductCardProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showQuantityInput, setShowQuantityInput] = useState(false);
   const [inputValue, setInputValue] = useState(quantity.toString());
   const quantityControlsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const clickTimeoutRef = useRef<NodeJS.Timeout>();
-  const dragControls = useDragControls();
+  const { products, updateProduct } = useGlobalProducts();
+  const dragHandleRef = useRef<HTMLDivElement>(null);
+
+  // Get latest product data
+  const currentProduct = products.find(p => p.id === product.id) || product;
 
   useEffect(() => {
     setInputValue(quantity.toString());
@@ -60,6 +66,18 @@ export function OrderProductCard({
     }
   }, [showQuantityInput]);
 
+  const handleProductUpdate = async (data: Omit<Product, 'id'>) => {
+    setIsSubmitting(true);
+    try {
+      await updateProduct(currentProduct.id!, data);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating product:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleCardClick = (e: React.MouseEvent) => {
     // Ignore clicks on buttons and inputs
     if (
@@ -67,17 +85,20 @@ export function OrderProductCard({
       e.target instanceof HTMLInputElement ||
       (e.target as HTMLElement).closest('button') ||
       (e.target as HTMLElement).closest('input') ||
-      (e.target as HTMLElement).closest('.quantity-controls')
+      (e.target as HTMLElement).closest('.quantity-controls') ||
+      (e.target as HTMLElement).closest('.drag-handle')
     ) {
       return;
     }
 
     // Handle single/double click
     if (clickTimeoutRef.current) {
+      // Double click - toggle product selection
       clearTimeout(clickTimeoutRef.current);
       clickTimeoutRef.current = undefined;
-      onQuantityChange(quantity > 0 ? 0 : product.desiredStock);
+      onQuantityChange(quantity > 0 ? 0 : currentProduct.desiredStock);
     } else {
+      // Single click - mark as reviewed
       clickTimeoutRef.current = setTimeout(() => {
         clickTimeoutRef.current = undefined;
         if (!isReviewed) {
@@ -123,30 +144,14 @@ export function OrderProductCard({
   };
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ 
-        opacity: 1, 
-        y: 0,
-        scale: isDragging ? 1.02 : 1,
-        zIndex: isDragging ? 1 : 0,
-        boxShadow: isDragging ? "0 8px 20px rgba(0,0,0,0.12)" : "none"
-      }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.2 }}
-      drag="y"
-      dragControls={dragControls}
-      dragListener={true}
-      dragElastic={0.1}
-      dragConstraints={{ top: 0, bottom: 0 }}
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      className="relative touch-none cursor-grab active:cursor-grabbing"
-    >
+    <>
       <Card isSelected={quantity > 0}>
         <Card.Header className="!p-3">
-          <div className="relative" onClick={handleCardClick}>
+          <motion.div 
+            className="relative" 
+            onClick={handleCardClick}
+            animate={isDragging ? { scale: 1.02, boxShadow: "0 5px 15px rgba(0,0,0,0.1)" } : { scale: 1 }}
+          >
             {/* Review Indicator */}
             {isReviewed && (
               <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-1">
@@ -155,28 +160,49 @@ export function OrderProductCard({
             )}
 
             <div className="flex items-start gap-3">
-              {/* Drag Handle */}
-              <div className="flex-shrink-0 w-5 h-5 mt-1 cursor-grab active:cursor-grabbing">
-                <ArrowUpDown className="w-5 h-5 text-gray-400 hover:text-gray-600" />
+              {/* Checkbox */}
+              <div
+                className={`
+                  flex-shrink-0 w-5 h-5 rounded border cursor-pointer transition-colors mt-1
+                  ${quantity > 0 
+                    ? 'bg-blue-500 border-blue-500' 
+                    : 'border-gray-300 hover:border-blue-500'
+                  }
+                `}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleQuantityChange(quantity > 0 ? 0 : currentProduct.desiredStock);
+                }}
+              >
+                {quantity > 0 && (
+                  <Check className="w-full h-full text-white p-0.5" />
+                )}
               </div>
 
               <div className="flex-1 min-w-0">
                 {/* Product Name */}
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold text-gray-900">
-                    {product.name}
+                    {currentProduct.name}
                   </h3>
                 </div>
 
                 {/* Product Details */}
                 <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-3">
-                  <div className="flex items-center">
-                    <ArrowUpDown className="w-4 h-4 mr-1.5 flex-shrink-0" />
-                    <span>Orden: {formatOrderNumber(product.order)}</span>
+                  <div 
+                    ref={dragHandleRef}
+                    className="flex items-center gap-2 cursor-grab active:cursor-grabbing drag-handle"
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      onDragHandleHold?.();
+                    }}
+                  >
+                    <GripVertical className="w-4 h-4 text-gray-400" />
+                    <span>Orden: {formatOrderNumber(currentProduct.order)}</span>
                   </div>
                   <div className="flex items-center">
                     <Archive className="w-4 h-4 mr-1.5 flex-shrink-0" />
-                    <span>Stock: {product.minPackageStock} - {product.desiredStock}</span>
+                    <span>Stock: {currentProduct.minPackageStock} - {currentProduct.desiredStock}</span>
                   </div>
                 </div>
 
@@ -206,7 +232,7 @@ export function OrderProductCard({
                               value={inputValue}
                               onChange={handleInputChange}
                               onClick={(e) => e.stopPropagation()}
-                              placeholder={product.desiredStock.toString()}
+                              placeholder={currentProduct.desiredStock.toString()}
                               className="text-center text-lg h-12"
                             />
                             
@@ -226,7 +252,7 @@ export function OrderProductCard({
                             className="w-full h-12 px-4 text-left bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
                           >
                             <span className="text-lg font-medium">
-                              {quantity} {product.purchasePackaging}
+                              {quantity} {currentProduct.purchasePackaging}
                             </span>
                           </button>
                         )}
@@ -235,10 +261,10 @@ export function OrderProductCard({
 
                     <div className="text-right">
                       <div className="text-lg font-bold text-blue-600">
-                        {formatPrice(product.price)}
+                        {formatPrice(currentProduct.price)}
                       </div>
                       <div className="text-sm text-gray-500">
-                        Total: {formatPrice(product.price * quantity)}
+                        Total: {formatPrice(currentProduct.price * quantity)}
                       </div>
                     </div>
                   </div>
@@ -247,14 +273,25 @@ export function OrderProductCard({
                 {/* Price (when not selected) */}
                 {!quantity && (
                   <div className="text-lg font-bold text-blue-600">
-                    {formatPrice(product.price)}
+                    {formatPrice(currentProduct.price)}
                   </div>
                 )}
               </div>
             </div>
-          </div>
+          </motion.div>
         </Card.Header>
       </Card>
-    </motion.div>
+
+      {/* Product Edit Modal - Only show if editing is allowed */}
+      {allowEdit && isEditing && (
+        <FullscreenProductEditor
+          providerId={currentProduct.providerId}
+          product={currentProduct}
+          onSubmit={handleProductUpdate}
+          onCancel={() => setIsEditing(false)}
+          isSubmitting={isSubmitting}
+        />
+      )}
+    </>
   );
 }
