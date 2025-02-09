@@ -18,7 +18,12 @@ export function useProducts(providerId?: string) {
     }
 
     const unsubscribe = repository.subscribeToProviderProducts(providerId, (updatedProducts) => {
-      setProducts(updatedProducts);
+      // Ensure all products have the enabled property with default true
+      const productsWithEnabled = updatedProducts.map(product => ({
+        ...product,
+        enabled: product.enabled ?? true // Set default enabled state
+      }));
+      setProducts(productsWithEnabled);
       setLoading(false);
     });
 
@@ -27,7 +32,11 @@ export function useProducts(providerId?: string) {
 
   const addProduct = async (product: Omit<Product, 'id'>) => {
     try {
-      await repository.create(product);
+      // Ensure enabled is set to true for new products
+      await repository.create({
+        ...product,
+        enabled: true
+      });
       toast.success('Producto creado exitosamente');
     } catch (error) {
       console.error('Error creating product:', error);

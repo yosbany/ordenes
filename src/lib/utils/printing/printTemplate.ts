@@ -30,7 +30,7 @@ export function generatePrintTemplate(order: Order, products: Product[]): string
       return `
         <tr>
           <td class="quantity">${item.quantity} ${product.purchasePackaging}</td>
-          <td class="name">${product.name}</td>
+          <td class="name font-bold text-gray-900">${product.name}</td>
         </tr>
       `;
     })
@@ -44,6 +44,20 @@ export function generatePrintTemplate(order: Order, products: Product[]): string
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Orden de Compra</title>
         <style>${thermalPrintStyles}</style>
+        <style>
+          /* Additional styles for bold product names */
+          td.name {
+            font-weight: bold !important;
+            color: #111827 !important; /* text-gray-900 */
+          }
+          
+          @media print {
+            td.name {
+              font-weight: bold !important;
+              color: #000000 !important;
+            }
+          }
+        </style>
       </head>
       <body>
         <div class="content">

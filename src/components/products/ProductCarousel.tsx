@@ -20,8 +20,8 @@ export function ProductCarousel({
   const sortedProducts = [...products].sort((a, b) => {
     // Calculate margins
     const getMargin = (product: Product) => {
-      if (!product.forSale || !product.salePrice || !product.price) return null;
-      return ((product.salePrice - product.price) / product.salePrice) * 100;
+      if (!product.forSale || !product.salePrice || !product.saleCostPerUnit) return null;
+      return ((product.salePrice - product.saleCostPerUnit) / product.salePrice) * 100;
     };
 
     const marginA = getMargin(a);

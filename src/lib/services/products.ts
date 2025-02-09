@@ -18,10 +18,20 @@ export async function updateProduct(id: string, updates: Partial<Product>): Prom
       throw new DatabaseError('Product not found');
     }
 
-    const currentProduct = snapshot.val() as Product;
+    const currentProduct = {
+      ...snapshot.val(),
+      enabled: snapshot.val().enabled ?? true // Set default enabled state
+    } as Product;
     
     // Create a clean updates object with only defined values
-    const cleanUpdates: Record<string, any> = {};
+    const cleanUpdates: Record<string, any> = {
+      lastUpdated: Date.now()
+    };
+
+    // Handle enabled state explicitly
+    if (typeof updates.enabled === 'boolean') {
+      cleanUpdates.enabled = updates.enabled;
+    }
 
     // Handle price updates and history
     if (typeof updates.price === 'number') {
@@ -71,29 +81,68 @@ export async function updateProduct(id: string, updates: Partial<Product>): Prom
       }
     }
 
-    // Handle forSale flag
+    // Handle other fields
+    if (typeof updates.name === 'string') {
+      cleanUpdates.name = updates.name.trim().toUpperCase();
+    }
+    if (typeof updates.sku === 'string') {
+      cleanUpdates.sku = updates.sku.trim().toUpperCase();
+    }
+    if (typeof updates.supplierCode === 'string') {
+      cleanUpdates.supplierCode = updates.supplierCode.trim().toUpperCase();
+    }
+    if (typeof updates.purchasePackaging === 'string') {
+      cleanUpdates.purchasePackaging = updates.purchasePackaging.trim().toUpperCase();
+    }
+    if (typeof updates.salePackaging === 'string') {
+      cleanUpdates.salePackaging = updates.salePackaging.trim().toUpperCase();
+    }
+    if (typeof updates.order === 'number') {
+      cleanUpdates.order = updates.order;
+    }
+    if (typeof updates.minPackageStock === 'number') {
+      cleanUpdates.minPackageStock = updates.minPackageStock;
+    }
+    if (typeof updates.desiredStock === 'number') {
+      cleanUpdates.desiredStock = updates.desiredStock;
+    }
+    if (Array.isArray(updates.tags)) {
+      cleanUpdates.tags = updates.tags;
+    }
+    if (typeof updates.isProduction === 'boolean') {
+      cleanUpdates.isProduction = updates.isProduction;
+    }
     if (typeof updates.forSale === 'boolean') {
       cleanUpdates.forSale = updates.forSale;
     }
-
-    // Handle pricePerUnit
+    if (typeof updates.unitMeasure === 'string') {
+      cleanUpdates.unitMeasure = updates.unitMeasure.trim().toUpperCase();
+    }
     if (typeof updates.pricePerUnit === 'number') {
-      cleanUpdates.pricePerUnit = Number(updates.pricePerUnit);
+      cleanUpdates.pricePerUnit = updates.pricePerUnit;
+    }
+    if (typeof updates.saleCostPerUnit === 'number') {
+      cleanUpdates.saleCostPerUnit = updates.saleCostPerUnit;
+    }
+    if (typeof updates.priceThreshold === 'number') {
+      cleanUpdates.priceThreshold = updates.priceThreshold;
     }
 
     // Handle stock adjustments
     if (Array.isArray(updates.stockAdjustments)) {
-      cleanUpdates.stockAdjustments = updates.stockAdjustments;
-    }
+      // Only add new adjustments that don't exist
+      const currentAdjustments = currentProduct.stockAdjustments || [];
+      const newAdjustments = updates.stockAdjustments.filter(adj => 
+        !currentAdjustments.some(current => 
+          current.date === adj.date && 
+          current.quantity === adj.quantity
+        )
+      );
 
-    // Handle lastStockCheck
-    if (typeof updates.lastStockCheck === 'number') {
-      cleanUpdates.lastStockCheck = updates.lastStockCheck;
-    }
-
-    // Handle priceThreshold
-    if (typeof updates.priceThreshold === 'number') {
-      cleanUpdates.priceThreshold = updates.priceThreshold;
+      if (newAdjustments.length > 0) {
+        cleanUpdates.stockAdjustments = [...currentAdjustments, ...newAdjustments];
+        cleanUpdates.lastStockCheck = Date.now();
+      }
     }
 
     // Only update if we have valid changes

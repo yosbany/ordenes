@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Building2, ChevronDown, Search, X } from 'lucide-react';
 import { Provider } from '@/types';
 import { mergeClasses } from '@/lib/utils';
+import { useGlobalProducts } from '@/hooks/useGlobalProducts';
 
 interface ProviderSelectorProps {
   providers: Provider[];
@@ -16,8 +17,15 @@ export function ProviderSelector({
 }: ProviderSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const selectedProvider = providers.find(p => p.id === selectedProviderId);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { products } = useGlobalProducts();
+
+  // Filter providers to only those with products
+  const providersWithProducts = providers.filter(provider =>
+    products.some(product => product.providerId === provider.id)
+  );
+
+  const selectedProvider = providersWithProducts.find(p => p.id === selectedProviderId);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -30,7 +38,7 @@ export function ProviderSelector({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const filteredProviders = providers.filter(provider => 
+  const filteredProviders = providersWithProducts.filter(provider => 
     provider.commercialName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     provider.legalName?.toLowerCase().includes(searchTerm.toLowerCase())
   );

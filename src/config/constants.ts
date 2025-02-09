@@ -16,7 +16,6 @@ export const SECTORS: Sector[] = [
   { code: 'FRU', name: 'Frutas' }
 ];
 
-export const PACKAGING_TYPES = ['CAJA', 'BOLSA', 'PAQUETE', 'KILO'];
 
 export const BUSINESS_INFO = {
   name: 'Panadería Nueva Río D\'or',

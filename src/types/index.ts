@@ -1,17 +1,4 @@
-import { WeekDay } from './weekDay';
-
-export interface Provider {
-  id?: string;
-  commercialName: string;
-  legalName?: string;
-  rut?: string;
-  phone?: string;
-  deliveryDays?: WeekDay[];
-  orderDays?: WeekDay[];
-  billingType?: 'weekly' | 'monthly';
-  billingDays?: number[]; // For monthly billing, days of the month (1-31)
-}
-
+// Update Product interface to include enabled state
 export interface Product {
   id?: string;
   name: string;
@@ -33,47 +20,10 @@ export interface Product {
   forSale?: boolean;
   saleUnit?: string;
   salePrice?: number;
-  saleCostPerUnit?: number; // New field for unit cost in sale units
+  saleCostPerUnit?: number;
   priceHistory?: PriceHistoryEntry[];
   salePriceHistory?: PriceHistoryEntry[];
   priceThreshold?: number;
-}
-
-export interface PriceHistoryEntry {
-  date: number;
-  price: number;
-  changePercentage: number;
-}
-
-export interface StockAdjustment {
-  date: number;
-  quantity: number;
-  notes?: string;
-}
-
-export interface Order {
-  id?: string;
-  providerId: string;
-  date: number;
-  status: OrderStatus;
-  items: OrderItem[];
-  total: number;
-}
-
-export interface OrderItem {
-  productId: string;
-  quantity: number;
-  price: number;
-  subtotal: number;
-}
-
-export type OrderStatus = 'pending' | 'completed';
-
-export interface UnitConversion {
-  id?: string;
-  fromUnit: string;
-  toUnit: string;
-  factor: number;
-  createdAt: number;
-  updatedAt: number;
+  enabled: boolean; // New field
+  lastUpdated?: number;
 }

@@ -20,7 +20,8 @@ export function useGlobalProducts() {
 
       const productsData = Object.entries(snapshot.val()).map(([id, data]) => ({
         id,
-        ...(data as Omit<Product, 'id'>)
+        ...(data as Omit<Product, 'id'>),
+        enabled: (data as any).enabled ?? true // Set default enabled state
       }));
 
       setProducts(productsData);
@@ -33,7 +34,10 @@ export function useGlobalProducts() {
   const updateProduct = async (id: string, updates: Partial<Product>) => {
     try {
       const productRef = ref(db, `products/${id}`);
-      await update(productRef, updates);
+      await update(productRef, {
+        ...updates,
+        lastUpdated: Date.now()
+      });
       toast.success('Producto actualizado exitosamente');
     } catch (error) {
       console.error('Error updating product:', error);

@@ -1,4 +1,3 @@
-import React from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
@@ -11,7 +10,7 @@ import { Products } from './pages/Products';
 import { Recipes } from './pages/Recipes';
 import { Orders } from './pages/Orders';
 import { Schedule } from './pages/Schedule';
-import { Inventory } from './pages/Inventory';
+import Inventory from './pages/Inventory'; // Changed to default import
 
 function App() {
   return (

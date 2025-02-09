@@ -14,9 +14,10 @@ interface ProductGroup {
   products: Product[];
   stockAdjustments: Product['stockAdjustments'];
   lastStockCheck: number | null;
+  unitCost: number;
 }
 
-export function Inventory() {
+export default function Inventory() {
   const { products, loading, updateProduct } = useGlobalProducts();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -54,7 +55,8 @@ export function Inventory() {
           sku,
           products: [],
           stockAdjustments: product.stockAdjustments || [],
-          lastStockCheck: product.lastStockCheck || null
+          lastStockCheck: product.lastStockCheck || null,
+          unitCost: product.pricePerUnit || product.price || 0
         };
       }
       acc[sku].products.push(product);
@@ -111,7 +113,8 @@ export function Inventory() {
     sku: group.sku,
     names: group.products.map(p => p.name),
     stockAdjustments: group.stockAdjustments || [],
-    packaging: group.products[0].salePackaging || group.products[0].purchasePackaging
+    packaging: group.products[0].salePackaging || group.products[0].purchasePackaging,
+    unitCost: group.unitCost
   }));
 
   return (

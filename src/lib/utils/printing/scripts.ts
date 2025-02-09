@@ -33,13 +33,6 @@ export const printScripts = `
     }, 5000);
   }
 
-  function setupPrintButton() {
-    const printButton = document.getElementById('print-button');
-    if (printButton) {
-      printButton.innerHTML = createPrintIcon() + 'Imprimir';
-    }
-  }
-
   function handlePrint() {
     if (isPrinting) return;
 
@@ -80,14 +73,20 @@ export const printScripts = `
     }
   }
 
+  function setupPrintButton() {
+    const printButton = document.getElementById('print-button');
+    if (printButton) {
+      printButton.innerHTML = createPrintIcon() + 'Imprimir';
+      printButton.onclick = handlePrint;
+    }
+  }
+
   window.onload = () => {
     try {
       setupPrintButton();
-      // Delay initial print to ensure content is rendered
-      setTimeout(handlePrint, 800);
     } catch (error) {
-      console.error('Print error:', error);
-      showError('Error al iniciar la impresión. Por favor, use el botón Imprimir.');
+      console.error('Setup error:', error);
+      showError('Error al inicializar. Por favor, use el botón Imprimir.');
     }
   };
 

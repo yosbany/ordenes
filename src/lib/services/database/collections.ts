@@ -1,7 +1,6 @@
 import { ref, get, set } from 'firebase/database';
 import { db } from './index';
 import { auth } from '@/lib/firebase/auth';
-import { initializeMeasures } from './initializeMeasures';
 
 const COLLECTIONS = [
   'orders', 
@@ -86,9 +85,6 @@ export async function initializeCollections(): Promise<void> {
       });
 
     await Promise.all(createPromises);
-
-    // Initialize standard measures
-    await initializeMeasures();
 
     console.info('Collections initialization completed');
   } catch (error) {

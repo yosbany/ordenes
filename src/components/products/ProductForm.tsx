@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { TagsInput } from '@/components/ui/TagsInput';
 import { MeasureSelect } from '@/components/ui/MeasureSelect';
-import { Calculator, Info, AlertTriangle, ChefHat, ShoppingCart, Package, FileText, ArrowUpDown } from 'lucide-react';
+import { Calculator, Info, AlertTriangle, ChefHat, ShoppingCart, Package, FileText, ArrowUpDown, Power } from 'lucide-react';
 import { Product } from '@/types';
 import { useProviders } from '@/hooks/useProviders';
 import { useTags } from '@/hooks/useTags';
@@ -75,7 +75,8 @@ export function ProductForm({
     saleUnit: initialData?.saleUnit || '',
     salePrice: initialData?.salePrice || 0,
     saleCostPerUnit: initialData?.saleCostPerUnit || 0,
-    averageOrderQuantity
+    averageOrderQuantity,
+    enabled: initialData?.enabled ?? true
   });
 
   const unitCost = useMemo(() => {
@@ -201,7 +202,31 @@ export function ProductForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       <Card>
         <Card.Header>
-          <Card.Title>Información Básica</Card.Title>
+          <div className="flex items-center justify-between">
+            <Card.Title>Información Básica</Card.Title>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Estado:</span>
+              <button
+                type="button"
+                onClick={() => updateField('enabled', !formData.enabled)}
+                className={`
+                  relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent 
+                  transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                  ${formData.enabled ? 'bg-green-500' : 'bg-gray-200'}
+                `}
+              >
+                <span className="sr-only">Estado del producto</span>
+                <span
+                  className={`
+                    pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 
+                    transition duration-200 ease-in-out
+                    ${formData.enabled ? 'translate-x-5' : 'translate-x-0'}
+                  `}
+                />
+              </button>
+              <Power className={`w-4 h-4 ${formData.enabled ? 'text-green-500' : 'text-gray-400'}`} />
+            </div>
+          </div>
         </Card.Header>
         <Card.Content className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -356,7 +381,7 @@ export function ProductForm({
 
       <Card>
         <Card.Header>
-          <Card.Title>Material de Producción</Card.Title>
+          <Card.Title>Configuración de Material</Card.Title>
         </Card.Header>
         <Card.Content>
           <div className="space-y-4">
