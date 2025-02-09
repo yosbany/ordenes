@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Product } from '@/types';
 import { OrderProductCard } from './OrderProductCard';
 import { ProductFilter } from './ProductFilter';
 import { Button } from '@/components/ui/Button';
 import { Filter } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { updateProductOrder } from '@/lib/services/database/productOrder';
+import { toast } from 'react-hot-toast';
 
 interface ProductSelectorProps {
   products: Product[];
@@ -21,9 +24,13 @@ export function ProductSelector({
   const [reviewedProducts, setReviewedProducts] = useState<Set<string>>(new Set());
   const [filterValue, setFilterValue] = useState('');
   const [showOnlySelected, setShowOnlySelected] = useState(false);
+  const [draggedProduct, setDraggedProduct] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Sort products by order
-  const sortedProducts = [...products].sort((a, b) => a.order - b.order);
+  // Filter out disabled products first, then sort by order
+  const sortedProducts = [...products]
+    .filter(product => product.enabled !== false) // Only show enabled products
+    .sort((a, b) => a.order - b.order);
 
   // Filter products based on search term and selected filter
   const filteredProducts = sortedProducts.filter(product => {
@@ -57,6 +64,45 @@ export function ProductSelector({
     setReviewedProducts(prev => new Set(prev).add(productId));
   };
 
+  const handleDragStart = (productId: string) => {
+    setDraggedProduct(productId);
+  };
+
+  const handleDragEnd = async (productId: string, info: any) => {
+    setDraggedProduct(null);
+
+    if (!containerRef.current) return;
+
+    const draggedProduct = products.find(p => p.id === productId);
+    if (!draggedProduct) return;
+
+    // Get all product cards
+    const cards = Array.from(containerRef.current.children);
+    const draggedIndex = cards.findIndex(card => card.getAttribute('data-product-id') === productId);
+    
+    // Calculate drop position
+    const cardHeight = cards[draggedIndex].getBoundingClientRect().height;
+    const dropIndex = Math.round((draggedIndex * cardHeight + info.offset.y) / cardHeight);
+    
+    // Ensure drop index is within bounds
+    const finalIndex = Math.max(0, Math.min(dropIndex, cards.length - 1));
+    
+    if (draggedIndex === finalIndex) return;
+
+    try {
+      // Get target product's order
+      const targetProduct = products[finalIndex];
+      if (!targetProduct) return;
+
+      // Update the product's order
+      await updateProductOrder(productId, targetProduct.order);
+      toast.success('Orden actualizado');
+    } catch (error) {
+      console.error('Error updating order:', error);
+      toast.error('Error al actualizar el orden');
+    }
+  };
+
   return (
     <div className="space-y-3">
       {/* Filters */}
@@ -78,19 +124,26 @@ export function ProductSelector({
         </Button>
       </div>
       
-      {filteredProducts.map((product) => (
-        <OrderProductCard
-          key={product.id}
-          product={product}
-          products={products}
-          isSelected={selectedProducts.has(product.id!)}
-          quantity={selectedProducts.get(product.id!) || 0}
-          onQuantityChange={(quantity) => handleQuantityChange(product.id!, quantity)}
-          onReview={() => markAsReviewed(product.id!)}
-          isReviewed={reviewedProducts.has(product.id!)}
-          allowEdit={allowEdit}
-        />
-      ))}
+      {/* Products List */}
+      <div ref={containerRef} className="space-y-3">
+        <AnimatePresence>
+          {filteredProducts.map((product) => (
+            <div key={product.id} data-product-id={product.id}>
+              <OrderProductCard
+                product={product}
+                quantity={selectedProducts.get(product.id!) || 0}
+                onQuantityChange={(quantity) => handleQuantityChange(product.id!, quantity)}
+                onReview={() => markAsReviewed(product.id!)}
+                isReviewed={reviewedProducts.has(product.id!)}
+                allowEdit={allowEdit}
+                onDragStart={() => handleDragStart(product.id!)}
+                onDragEnd={(_, info) => handleDragEnd(product.id!, info)}
+                isDragging={draggedProduct === product.id}
+              />
+            </div>
+          ))}
+        </AnimatePresence>
+      </div>
 
       {filteredProducts.length === 0 && (
         <div className="text-center py-8 text-gray-500">
