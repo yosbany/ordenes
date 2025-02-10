@@ -13,7 +13,7 @@ interface AdvancedFiltersProps {
   onUpdateFilters: (filters: Filters) => void;
 }
 
-type MarginFilter = 'all' | 'red' | 'orange' | 'green' | 'gray';
+type MarginFilter = 'all' | 'red' | 'orange' | 'green';
 type PriceFilter = 'all' | 'no-purchase' | 'no-sale';
 type CodesFilter = 'all' | 'no-sku' | 'no-code';
 type SortBy = 'updated' | 'margin' | 'name' | 'price';
@@ -62,7 +62,7 @@ export function AdvancedFilters({
 
   const getProductMargin = (product: Product): MarginFilter => {
     const margin = calculateMargin(product);
-    if (margin === null) return 'gray';
+    if (margin === null) return 'all';
     if (margin < 0) return 'red';
     if (margin >= 0 && margin <= 5) return 'orange';
     return 'green';
@@ -103,8 +103,6 @@ export function AdvancedFilters({
           const margin = calculateMargin(p);
           
           switch (filters.margin) {
-            case 'gray':
-              return margin === null;
             case 'red':
               return margin !== null && margin < 0;
             case 'orange':
@@ -119,7 +117,7 @@ export function AdvancedFilters({
 
       // Apply price filter
       if (filters.price === 'no-purchase') {
-        filtered = filtered.filter(p => !p.price || p.price <= 0);
+        filtered = filtered.filter(p => !p.price || p.price === 0 || p.price === null);
       } else if (filters.price === 'no-sale') {
         filtered = filtered.filter(p => p.forSale && (!p.salePrice || p.salePrice <= 0));
       }
@@ -211,8 +209,7 @@ export function AdvancedFilters({
             { value: 'all', label: 'Todos', color: 'bg-gray-100 hover:bg-gray-200 text-gray-700' },
             { value: 'red', label: 'Pérdida (<0%)', color: 'bg-red-100 hover:bg-red-200 text-red-700' },
             { value: 'orange', label: 'Riesgo (0-5%)', color: 'bg-orange-100 hover:bg-orange-200 text-orange-700' },
-            { value: 'green', label: 'Ganancia (>5%)', color: 'bg-green-100 hover:bg-green-200 text-green-700' },
-            { value: 'gray', label: 'Sin margen', color: 'bg-gray-100 hover:bg-gray-200 text-gray-700' }
+            { value: 'green', label: 'Ganancia (>5%)', color: 'bg-green-100 hover:bg-green-200 text-green-700' }
           ].map(option => (
             <button
               key={option.value}
@@ -226,6 +223,24 @@ export function AdvancedFilters({
             </button>
           ))}
         </div>
+
+        {/* Price Filter */}
+        <button
+          onClick={() => setFilters(prev => ({ 
+            ...prev, 
+            price: prev.price === 'no-purchase' ? 'all' : 'no-purchase'
+          }))}
+          className={`
+            px-3 py-1.5 rounded-full text-sm font-medium transition-colors inline-flex items-center gap-1.5
+            ${filters.price === 'no-purchase'
+              ? 'bg-red-100 text-red-700'
+              : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+            }
+          `}
+        >
+          <DollarSign className="w-4 h-4" />
+          Sin Precio Compra
+        </button>
 
         {/* Type Filters */}
         <button

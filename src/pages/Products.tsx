@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Plus, Filter } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
@@ -41,10 +41,8 @@ export function Products() {
   const [currentFilters, setCurrentFilters] = useState(initialFilters);
   const [hasAppliedFilters, setHasAppliedFilters] = useState(false);
 
-  // Get base products to display (filtered by provider if selected)
-  const baseProducts = selectedProviderId 
-    ? providerProducts 
-    : allProducts;
+  // Get base products to display
+  const baseProducts = allProducts;
 
   // Calculate number of active filters
   const getActiveFiltersCount = (filters: typeof initialFilters) => {
@@ -62,17 +60,122 @@ export function Products() {
 
   const activeFiltersCount = getActiveFiltersCount(currentFilters);
 
-  const handleApplyFilters = useCallback((filters: typeof initialFilters, products: Product[]) => {
-    setCurrentFilters(filters);
-    setFilteredProducts(products);
-    setHasAppliedFilters(true);
-  }, []);
+  // Apply filters when provider changes
+  useEffect(() => {
+    if (!providerLoading && !allProductsLoading) {
+      applyCurrentFilters();
+    }
+  }, [selectedProviderId, providerLoading, allProductsLoading]);
 
-  const handleClearFilters = useCallback(() => {
-    setFilteredProducts(baseProducts);
+  const applyCurrentFilters = useCallback(() => {
+    let filtered = [...baseProducts];
+
+    // Apply provider filter first
+    if (selectedProviderId) {
+      filtered = filtered.filter(p => p.providerId === selectedProviderId);
+    }
+
+    // Apply text search filter
+    if (currentFilters.terms) {
+      const searchLower = currentFilters.terms.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(searchLower) ||
+        p.sku.toLowerCase().includes(searchLower) ||
+        p.supplierCode?.toLowerCase().includes(searchLower) ||
+        p.tags?.some(tag => tag.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Apply margin filter
+    if (currentFilters.margin !== 'all') {
+      filtered = filtered.filter(p => {
+        const margin = p.forSale && p.salePrice && p.saleCostPerUnit
+          ? ((p.salePrice - p.saleCostPerUnit) / p.salePrice) * 100
+          : null;
+        
+        switch (currentFilters.margin) {
+          case 'red':
+            return margin !== null && margin < 0;
+          case 'orange':
+            return margin !== null && margin >= 0 && margin <= 5;
+          case 'green':
+            return margin !== null && margin > 5;
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Apply price filter
+    if (currentFilters.price === 'no-purchase') {
+      filtered = filtered.filter(p => !p.price || p.price === 0 || p.price === null);
+    } else if (currentFilters.price === 'no-sale') {
+      filtered = filtered.filter(p => p.forSale && (!p.salePrice || p.salePrice <= 0));
+    }
+
+    // Apply type filters
+    if (currentFilters.isProduction) {
+      filtered = filtered.filter(p => p.isProduction);
+    }
+    if (currentFilters.forSale) {
+      filtered = filtered.filter(p => p.forSale);
+    }
+
+    // Apply enabled state filter
+    if (currentFilters.enabled !== 'all') {
+      filtered = filtered.filter(p => 
+        currentFilters.enabled === 'enabled' 
+          ? p.enabled !== false 
+          : p.enabled === false
+      );
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      const direction = currentFilters.sortDirection === 'asc' ? 1 : -1;
+      
+      switch (currentFilters.sortBy) {
+        case 'updated':
+          return ((a.lastUpdated || 0) - (b.lastUpdated || 0)) * direction;
+        case 'margin': {
+          const marginA = a.forSale && a.salePrice && a.saleCostPerUnit
+            ? ((a.salePrice - a.saleCostPerUnit) / a.salePrice) * 100
+            : -Infinity;
+          const marginB = b.forSale && b.salePrice && b.saleCostPerUnit
+            ? ((b.salePrice - b.saleCostPerUnit) / b.salePrice) * 100
+            : -Infinity;
+          return (marginA - marginB) * direction;
+        }
+        case 'name':
+          return a.name.localeCompare(b.name) * direction;
+        case 'price':
+          return ((a.price || 0) - (b.price || 0)) * direction;
+        default:
+          return 0;
+      }
+    });
+
+    setFilteredProducts(filtered);
+    setHasAppliedFilters(true);
+  }, [baseProducts, currentFilters, selectedProviderId]);
+
+  const handleProviderChange = (providerId: string) => {
+    setSelectedProviderId(providerId);
+    // Reset filters when changing provider
     setCurrentFilters(initialFilters);
     setHasAppliedFilters(false);
-  }, [baseProducts]);
+  };
+
+  const handleApplyFilters = useCallback((filters: typeof initialFilters, _products: Product[]) => {
+    setCurrentFilters(filters);
+    applyCurrentFilters();
+  }, [applyCurrentFilters]);
+
+  const handleClearFilters = useCallback(() => {
+    setCurrentFilters(initialFilters);
+    setHasAppliedFilters(false);
+    applyCurrentFilters();
+  }, [applyCurrentFilters]);
 
   const handleSubmit = async (data: Omit<Product, 'id'>) => {
     setIsSubmitting(true);
@@ -173,7 +276,7 @@ export function Products() {
   }
 
   const isLoading = providerLoading || allProductsLoading;
-  const displayProducts = hasAppliedFilters ? filteredProducts : baseProducts;
+  const displayProducts = hasAppliedFilters ? filteredProducts : (selectedProviderId ? providerProducts : allProducts);
 
   return (
     <div className="space-y-6">
@@ -185,7 +288,7 @@ export function Products() {
               <ProviderSelector
                 providers={providers}
                 selectedProviderId={selectedProviderId}
-                onChange={setSelectedProviderId}
+                onChange={handleProviderChange}
               />
             </div>
             <div className="relative">
@@ -226,7 +329,7 @@ export function Products() {
         <div className="bg-gray-50 border border-gray-200 rounded-lg shadow-inner">
           <AdvancedFilters
             products={baseProducts}
-            onFilter={(filtered) => handleApplyFilters(currentFilters, filtered)}
+            onFilter={handleApplyFilters}
             onClear={handleClearFilters}
             onClose={() => setShowAdvancedFilters(false)}
             initialFilters={currentFilters}
